@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp } from 'lucide-react';
+import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -13,6 +13,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { deals, DealStage, getContactById, getStageLabel, formatCurrency } from '@/lib/data';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const Pipeline = () => {
   // Define the stages in the order they should appear
@@ -21,12 +26,25 @@ const Pipeline = () => {
   const [activeTab, setActiveTab] = useState<'kanban' | 'list'>('kanban');
   const [sortField, setSortField] = useState<'value' | 'probability'>('value');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [allDeals, setAllDeals] = useState([...deals]);
+  const [addDealOpen, setAddDealOpen] = useState(false);
+  const [newDeal, setNewDeal] = useState({
+    name: '',
+    company: '',
+    value: 0,
+    currency: 'USD',
+    probability: 50,
+    stage: 'lead' as DealStage,
+    contactId: 'contact1',
+    expectedCloseDate: new Date().toISOString().split('T')[0]
+  });
+  const { toast } = useToast();
   
   // Group deals by stage
   const dealsByStage = stages.reduce((acc, stage) => {
-    acc[stage] = deals.filter(deal => deal.stage === stage);
+    acc[stage] = allDeals.filter(deal => deal.stage === stage);
     return acc;
-  }, {} as Record<DealStage, typeof deals>);
+  }, {} as Record<DealStage, typeof allDeals>);
   
   // Get the total value of deals in each stage
   const stageValues = stages.reduce((acc, stage) => {
@@ -44,7 +62,7 @@ const Pipeline = () => {
   
   // Sort deals based on current sort settings
   const getSortedDeals = () => {
-    return [...deals].sort((a, b) => {
+    return [...allDeals].sort((a, b) => {
       const aValue = sortField === 'value' ? a.value : a.probability;
       const bValue = sortField === 'value' ? b.value : b.probability;
       return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
@@ -61,6 +79,34 @@ const Pipeline = () => {
     }
   };
 
+  // Handle adding a new deal
+  const handleAddDeal = () => {
+    const dealId = `deal${allDeals.length + 1}`;
+    const deal = { 
+      id: dealId,
+      ...newDeal
+    };
+    
+    setAllDeals([...allDeals, deal]);
+    setAddDealOpen(false);
+    toast({
+      title: "Deal Added",
+      description: `${newDeal.name} has been added to ${getStageLabel(newDeal.stage)}`,
+    });
+    
+    // Reset the form
+    setNewDeal({
+      name: '',
+      company: '',
+      value: 0,
+      currency: 'USD',
+      probability: 50,
+      stage: 'lead',
+      contactId: 'contact1',
+      expectedCloseDate: new Date().toISOString().split('T')[0]
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -73,7 +119,10 @@ const Pipeline = () => {
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
-            <Button className="flex items-center gap-1">
+            <Button 
+              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 shadow-md" 
+              onClick={() => setAddDealOpen(true)}
+            >
               <Plus className="h-4 w-4" /> Add Deal
             </Button>
           </div>
@@ -100,7 +149,15 @@ const Pipeline = () => {
                         {dealsByStage[stage].length} deals • {formatCurrency(stageValues[stage], 'USD')}
                       </p>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 rounded-full"
+                      onClick={() => {
+                        setNewDeal({...newDeal, stage: stage});
+                        setAddDealOpen(true);
+                      }}
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -109,8 +166,9 @@ const Pipeline = () => {
                     {dealsByStage[stage].map((deal, index) => (
                       <Card 
                         key={deal.id} 
-                        className="border hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-grab active:cursor-grabbing animate-scale-in"
+                        className="border hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer bg-card"
                         style={{ animationDelay: `${index * 0.05}s` }}
+                        draggable
                       >
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
@@ -170,8 +228,16 @@ const Pipeline = () => {
                     ))}
                     
                     {dealsByStage[stage].length === 0 && (
-                      <div className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground">
-                        <span>Drop a deal here</span>
+                      <div 
+                        className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground hover:bg-accent/10 hover:border-accent transition-colors" 
+                        onClick={() => {
+                          setNewDeal({...newDeal, stage: stage});
+                          setAddDealOpen(true);
+                        }}
+                      >
+                        <span className="flex items-center gap-1">
+                          <Plus className="h-4 w-4" /> Add a deal here
+                        </span>
                       </div>
                     )}
                   </div>
@@ -266,6 +332,112 @@ const Pipeline = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Add Deal Dialog */}
+      <Dialog open={addDealOpen} onOpenChange={setAddDealOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Add New Deal</DialogTitle>
+            <DialogDescription>
+              Enter the details for your new deal. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="name">Deal Name</Label>
+                <Input
+                  id="name"
+                  value={newDeal.name}
+                  onChange={(e) => setNewDeal({...newDeal, name: e.target.value})}
+                  placeholder="e.g. Annual Software License"
+                  className="w-full"
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="company">Company</Label>
+                <Input
+                  id="company"
+                  value={newDeal.company}
+                  onChange={(e) => setNewDeal({...newDeal, company: e.target.value})}
+                  placeholder="e.g. Acme Corp"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="value">Deal Value</Label>
+                <Input
+                  id="value"
+                  type="number"
+                  value={newDeal.value.toString()}
+                  onChange={(e) => setNewDeal({...newDeal, value: Number(e.target.value)})}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="currency">Currency</Label>
+                <Select 
+                  value={newDeal.currency} 
+                  onValueChange={(value) => setNewDeal({...newDeal, currency: value})}
+                >
+                  <SelectTrigger id="currency">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="probability">Probability (%)</Label>
+                <Input
+                  id="probability"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newDeal.probability.toString()}
+                  onChange={(e) => setNewDeal({...newDeal, probability: Number(e.target.value)})}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="stage">Stage</Label>
+                <Select 
+                  value={newDeal.stage} 
+                  onValueChange={(value) => setNewDeal({...newDeal, stage: value as DealStage})}
+                >
+                  <SelectTrigger id="stage">
+                    <SelectValue placeholder="Select stage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stages.map((stage) => (
+                      <SelectItem key={stage} value={stage}>{getStageLabel(stage)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="date">Expected Close Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={newDeal.expectedCloseDate}
+                  onChange={(e) => setNewDeal({...newDeal, expectedCloseDate: e.target.value})}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddDealOpen(false)}>Cancel</Button>
+            <Button type="submit" onClick={handleAddDeal} disabled={!newDeal.name || !newDeal.company}>
+              Add Deal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
