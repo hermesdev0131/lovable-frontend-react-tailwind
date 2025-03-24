@@ -30,10 +30,8 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <BrowserRouter>
+        <TooltipProvider>
           <div className="flex h-screen overflow-hidden">
             <Sidebar />
             <div className="flex flex-col flex-1 overflow-x-hidden ml-64">
@@ -51,8 +49,10 @@ const App = () => {
               </main>
             </div>
           </div>
-        </BrowserRouter>
-      </TooltipProvider>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
