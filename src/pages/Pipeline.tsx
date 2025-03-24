@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X } from 'lucide-react';
+import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { deals, DealStage, getContactById, getStageLabel, formatCurrency } from '@/lib/data';
+import { deals as initialDeals, Deal, DealStage, getContactById, getStageLabel, formatCurrency } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +27,7 @@ const Pipeline = () => {
   const [activeTab, setActiveTab] = useState<'kanban' | 'list'>('kanban');
   const [sortField, setSortField] = useState<'value' | 'probability'>('value');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [allDeals, setAllDeals] = useState([...deals]);
+  const [allDeals, setAllDeals] = useState<Deal[]>([...initialDeals]);
   const [addDealOpen, setAddDealOpen] = useState(false);
   const [newDeal, setNewDeal] = useState({
     name: '',
@@ -36,15 +37,18 @@ const Pipeline = () => {
     probability: 50,
     stage: 'lead' as DealStage,
     contactId: 'contact1',
-    expectedCloseDate: new Date().toISOString().split('T')[0]
+    expectedCloseDate: new Date().toISOString().split('T')[0],
+    notes: '',
+    createdAt: '',
+    updatedAt: ''
   });
   const { toast } = useToast();
-  
+
   // Group deals by stage
   const dealsByStage = stages.reduce((acc, stage) => {
     acc[stage] = allDeals.filter(deal => deal.stage === stage);
     return acc;
-  }, {} as Record<DealStage, typeof allDeals>);
+  }, {} as Record<DealStage, Deal[]>);
   
   // Get the total value of deals in each stage
   const stageValues = stages.reduce((acc, stage) => {
@@ -82,9 +86,14 @@ const Pipeline = () => {
   // Handle adding a new deal
   const handleAddDeal = () => {
     const dealId = `deal${allDeals.length + 1}`;
-    const deal = { 
+    const currentDate = new Date().toISOString();
+    
+    const deal: Deal = { 
       id: dealId,
-      ...newDeal
+      ...newDeal,
+      notes: '',
+      createdAt: currentDate,
+      updatedAt: currentDate
     };
     
     setAllDeals([...allDeals, deal]);
@@ -103,7 +112,42 @@ const Pipeline = () => {
       probability: 50,
       stage: 'lead',
       contactId: 'contact1',
-      expectedCloseDate: new Date().toISOString().split('T')[0]
+      expectedCloseDate: new Date().toISOString().split('T')[0],
+      notes: '',
+      createdAt: '',
+      updatedAt: ''
+    });
+  };
+
+  // Handle drag and drop
+  const onDragEnd = (result: any) => {
+    const { destination, source, draggableId } = result;
+
+    // If there's no destination or if the item was dropped back in its original position
+    if (!destination || 
+        (destination.droppableId === source.droppableId && 
+         destination.index === source.index)) {
+      return;
+    }
+
+    const deal = allDeals.find(d => d.id === draggableId);
+    if (!deal) return;
+
+    // Create a new deal with the updated stage
+    const updatedDeal: Deal = {
+      ...deal,
+      stage: destination.droppableId as DealStage,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Update the deals array with the modified deal
+    const newDeals = allDeals.map(d => d.id === draggableId ? updatedDeal : d);
+    setAllDeals(newDeals);
+
+    // Show toast notification
+    toast({
+      title: "Deal Moved",
+      description: `${deal.name} moved to ${getStageLabel(destination.droppableId as DealStage)}`,
     });
   };
 
@@ -139,111 +183,135 @@ const Pipeline = () => {
           </TabsList>
           
           <TabsContent value="kanban" className="mt-0">
-            <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 overflow-x-auto pb-6">
-              {stages.map((stage) => (
-                <div key={stage} className="min-w-[300px]">
-                  <div className="mb-2 flex justify-between items-center bg-muted/30 rounded-md p-2">
-                    <div>
-                      <h3 className="font-medium">{getStageLabel(stage)}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {dealsByStage[stage].length} deals • {formatCurrency(stageValues[stage], 'USD')}
-                      </p>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 rounded-full"
-                      onClick={() => {
-                        setNewDeal({...newDeal, stage: stage});
-                        setAddDealOpen(true);
-                      }}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {dealsByStage[stage].map((deal, index) => (
-                      <Card 
-                        key={deal.id} 
-                        className="border hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer bg-card"
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                        draggable
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-medium truncate">{deal.name}</h4>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-[180px]">
-                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                <DropdownMenuItem>Edit Deal</DropdownMenuItem>
-                                <DropdownMenuItem>Move to Next Stage</DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">Delete Deal</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          
-                          <div className="text-sm text-muted-foreground mb-3">{deal.company}</div>
-                          
-                          <div className="flex justify-between items-center mb-3">
-                            <div className="font-medium">{formatCurrency(deal.value, deal.currency)}</div>
-                            <div 
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                deal.probability >= 70 ? 'bg-green-100 text-green-800' : 
-                                deal.probability >= 40 ? 'bg-yellow-100 text-yellow-800' : 
-                                'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {deal.probability}%
-                            </div>
-                          </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                  {getInitials(deal.contactId)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {stage !== 'closed-won' && stage !== 'closed-lost' && (
-                                <div className="text-xs text-muted-foreground">
-                                  {new Date(deal.expectedCloseDate).toLocaleDateString()}
-                                </div>
-                              )}
-                            </div>
-                            
-                            {stage !== 'closed-won' && stage !== 'closed-lost' && stages.indexOf(stage) < stages.length - 3 && (
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    
-                    {dealsByStage[stage].length === 0 && (
-                      <div 
-                        className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground hover:bg-accent/10 hover:border-accent transition-colors" 
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 overflow-x-auto pb-6">
+                {stages.map((stage) => (
+                  <div key={stage} className="min-w-[300px]">
+                    <div className="mb-2 flex justify-between items-center bg-muted/30 rounded-md p-2">
+                      <div>
+                        <h3 className="font-medium">{getStageLabel(stage)}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {dealsByStage[stage].length} deals • {formatCurrency(stageValues[stage], 'USD')}
+                        </p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 rounded-full"
                         onClick={() => {
                           setNewDeal({...newDeal, stage: stage});
                           setAddDealOpen(true);
                         }}
                       >
-                        <span className="flex items-center gap-1">
-                          <Plus className="h-4 w-4" /> Add a deal here
-                        </span>
-                      </div>
-                    )}
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <Droppable droppableId={stage}>
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="space-y-3 min-h-[200px] p-1 rounded-md transition-colors"
+                          style={{ background: provided.isDraggingOver ? 'rgba(0, 0, 0, 0.03)' : 'transparent' }}
+                        >
+                          {dealsByStage[stage].map((deal, index) => (
+                            <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    opacity: snapshot.isDragging ? '0.8' : '1'
+                                  }}
+                                >
+                                  <Card 
+                                    className={`border hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-move ${
+                                      snapshot.isDragging ? 'shadow-lg border-primary/30' : ''
+                                    }`}
+                                    style={{ animationDelay: `${index * 0.05}s` }}
+                                  >
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-start">
+                                        <h4 className="font-medium truncate">{deal.name}</h4>
+                                        <div className="flex">
+                                          <div {...provided.dragHandleProps} className="mr-1 cursor-grab">
+                                            <Move className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                          </div>
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-[180px]">
+                                              <DropdownMenuItem>View Details</DropdownMenuItem>
+                                              <DropdownMenuItem>Edit Deal</DropdownMenuItem>
+                                              <DropdownMenuItem>Move to Next Stage</DropdownMenuItem>
+                                              <DropdownMenuItem className="text-destructive">Delete Deal</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="text-sm text-muted-foreground mb-3">{deal.company}</div>
+                                      
+                                      <div className="flex justify-between items-center mb-3">
+                                        <div className="font-medium">{formatCurrency(deal.value, deal.currency)}</div>
+                                        <div 
+                                          className={`text-xs px-2 py-1 rounded-full ${
+                                            deal.probability >= 70 ? 'bg-green-100 text-green-800' : 
+                                            deal.probability >= 40 ? 'bg-yellow-100 text-yellow-800' : 
+                                            'bg-red-100 text-red-800'
+                                          }`}
+                                        >
+                                          {deal.probability}%
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                          <Avatar className="h-6 w-6">
+                                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                              {getInitials(deal.contactId)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          {stage !== 'closed-won' && stage !== 'closed-lost' && (
+                                            <div className="text-xs text-muted-foreground">
+                                              {new Date(deal.expectedCloseDate).toLocaleDateString()}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                          
+                          {dealsByStage[stage].length === 0 && (
+                            <div 
+                              className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground hover:bg-accent/10 hover:border-accent transition-colors" 
+                              onClick={() => {
+                                setNewDeal({...newDeal, stage: stage});
+                                setAddDealOpen(true);
+                              }}
+                            >
+                              <span className="flex items-center gap-1">
+                                <Plus className="h-4 w-4" /> Add a deal here
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Droppable>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </DragDropContext>
           </TabsContent>
           
           <TabsContent value="list" className="mt-0">
