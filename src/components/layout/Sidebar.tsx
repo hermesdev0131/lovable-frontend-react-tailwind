@@ -1,0 +1,109 @@
+
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Users,
+  PieChart,
+  LineChart,
+  Layers,
+  Settings,
+  Menu,
+  X,
+  Zap,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+interface NavItemProps {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  isActive: boolean;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isActive }) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link 
+          to={to} 
+          className={cn(
+            "flex h-10 items-center justify-center w-full rounded-md text-sm transition-all",
+            "hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            isActive 
+              ? "bg-primary/10 text-primary" 
+              : "text-foreground/60 hover:text-foreground"
+          )}
+        >
+          <div className="flex items-center">
+            <div className="mr-3">{icon}</div>
+            <span>{label}</span>
+          </div>
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent side="right" className="hidden lg:block">
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+const Sidebar: React.FC = () => {
+  const [expanded, setExpanded] = useState(true);
+  const location = useLocation();
+  
+  const toggleSidebar = () => {
+    setExpanded(!expanded);
+  };
+
+  const navItems = [
+    { to: '/', icon: <PieChart className="h-5 w-5" />, label: 'Dashboard' },
+    { to: '/contacts', icon: <Users className="h-5 w-5" />, label: 'Contacts' },
+    { to: '/pipeline', icon: <LineChart className="h-5 w-5" />, label: 'Pipeline' },
+    { to: '/opportunities', icon: <Layers className="h-5 w-5" />, label: 'Opportunities' },
+    { to: '/integrations', icon: <Zap className="h-5 w-5" />, label: 'Integrations' },
+    { to: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Settings' },
+  ];
+
+  return (
+    <div 
+      className={cn(
+        "fixed inset-y-0 left-0 z-20 flex h-full flex-col border-r border-border",
+        "bg-sidebar transition-all duration-300 ease-in-out",
+        expanded ? "w-64" : "w-16"
+      )}
+    >
+      <div className="flex h-16 items-center justify-between border-b border-border px-4">
+        <div className={cn("flex items-center space-x-2", expanded ? "opacity-100" : "opacity-0 hidden")}>
+          <div className="rounded-full bg-primary/10 p-1">
+            <Zap className="h-5 w-5 text-primary" />
+          </div>
+          <span className="text-lg font-semibold tracking-tight">CRM Pro</span>
+        </div>
+        <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+          {expanded ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      </div>
+      
+      <div className="flex flex-col p-4 gap-2">
+        {navItems.map((item) => (
+          <NavItem
+            key={item.to}
+            to={item.to}
+            icon={item.icon}
+            label={expanded ? item.label : ''}
+            isActive={location.pathname === item.to}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
