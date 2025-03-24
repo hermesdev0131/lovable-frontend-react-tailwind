@@ -10,6 +10,7 @@ import Contacts from "./pages/Contacts";
 import Pipeline from "./pages/Pipeline";
 import Opportunities from "./pages/Opportunities";
 import Integrations from "./pages/Integrations";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
@@ -44,6 +45,7 @@ const App = () => {
                   <Route path="/pipeline" element={<Pipeline />} />
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/integrations" element={<Integrations />} />
+                  <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
