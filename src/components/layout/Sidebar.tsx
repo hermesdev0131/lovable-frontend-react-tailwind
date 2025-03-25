@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -12,9 +11,9 @@ import {
   BookOpen, 
   Cable,
   Star,
-  Send
+  Send,
+  Building2
 } from 'lucide-react';
-import logoImage from '/lovable-uploads/79d93cdf-670f-4b28-afd9-f50da7a6bec7.png';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -49,18 +48,13 @@ const Sidebar = () => {
       <div className="flex flex-col h-full">
         <div className={cn("p-6 flex items-center", isExpanded ? "justify-between" : "justify-center")}>
           {isExpanded ? (
-            <img 
-              src={logoImage} 
-              alt="Company Logo" 
-              className="h-8 w-auto object-contain" 
-            />
+            <div className="flex items-center">
+              <Building2 className="h-8 w-8 text-primary" />
+              <span className="ml-2 font-semibold text-primary">CRM Pro</span>
+            </div>
           ) : (
             <div className="h-8 w-8 flex items-center justify-center">
-              <img 
-                src={logoImage} 
-                alt="Company Logo" 
-                className="h-6 w-auto object-contain" 
-              />
+              <Building2 className="h-6 w-6 text-primary" />
             </div>
           )}
           <button 
