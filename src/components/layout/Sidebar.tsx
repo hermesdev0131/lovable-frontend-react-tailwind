@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -15,7 +16,8 @@ import {
   HelpCircle, 
   MessageCircle, 
   Bot,
-  Building2 // Adding new icon for master account
+  Building2, // Adding new icon for master account
+  Globe // Adding new icon for website management
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
@@ -123,6 +125,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
             >
               <CalendarIcon className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
               {isExpanded && <span>Calendar</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/website-management"
+              className={cn(
+                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                isActive("/website-management") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                !isExpanded && "justify-center"
+              )}
+            >
+              <Globe className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+              {isExpanded && <span>Website</span>}
             </Link>
           </li>
           <li>

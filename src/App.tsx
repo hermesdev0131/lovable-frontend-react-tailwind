@@ -19,6 +19,7 @@ import ContentScheduling from "./pages/ContentScheduling";
 import ChatbotManagement from "./pages/ChatbotManagement";
 import Conversations from "./pages/Conversations";
 import MasterAccount from "./pages/MasterAccount";
+import WebsiteManagement from "./pages/WebsiteManagement"; // Import the new page
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
@@ -91,6 +92,7 @@ const App = () => {
                       <Route path="/conversations" element={<Conversations />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/master-account" element={<MasterAccount />} />
+                      <Route path="/website-management" element={<WebsiteManagement />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>

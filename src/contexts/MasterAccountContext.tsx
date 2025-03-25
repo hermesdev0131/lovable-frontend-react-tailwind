@@ -23,10 +23,24 @@ interface Webhook {
   lastTriggered?: string;
 }
 
+interface WebsitePage {
+  id: number;
+  title: string;
+  url: string;
+  status: 'published' | 'draft' | 'scheduled';
+  type: 'landing' | 'blog' | 'product' | 'other';
+  createdAt: string;
+  updatedAt: string;
+  views: number;
+  conversions: number;
+  bounceRate: number;
+}
+
 interface MasterAccountContextType {
   clients: Client[];
   currentClientId: number | null;
   webhooks: Webhook[];
+  websitePages: WebsitePage[];
   addClient: (client: Omit<Client, 'id'>) => void;
   removeClient: (id: number) => void;
   switchToClient: (id: number | null) => void;
@@ -36,6 +50,9 @@ interface MasterAccountContextType {
   removeWebhook: (id: number) => void;
   updateWebhook: (id: number, data: Partial<Webhook>) => void;
   triggerWebhook: (webhookId: number, data: any) => Promise<void>;
+  addWebsitePage: (page: Omit<WebsitePage, 'id'>) => void;
+  removeWebsitePage: (id: number) => void;
+  updateWebsitePage: (id: number, data: Partial<WebsitePage>) => void;
 }
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
@@ -97,6 +114,69 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       url: "https://hook.eu1.make.com/sample987654321",
       events: ["client.status.updated"],
       active: false
+    }
+  ]);
+  
+  const [websitePages, setWebsitePages] = useState<WebsitePage[]>([
+    {
+      id: 1,
+      title: "Home Page",
+      url: "/",
+      status: "published",
+      type: "landing",
+      createdAt: "2023-08-10T14:30:00Z",
+      updatedAt: "2023-09-15T11:45:00Z",
+      views: 2547,
+      conversions: 98,
+      bounceRate: 32.4
+    },
+    {
+      id: 2,
+      title: "Product Features",
+      url: "/features",
+      status: "published",
+      type: "product",
+      createdAt: "2023-08-15T09:20:00Z",
+      updatedAt: "2023-09-10T16:30:00Z",
+      views: 1243,
+      conversions: 56,
+      bounceRate: 28.7
+    },
+    {
+      id: 3,
+      title: "Summer Sale Campaign",
+      url: "/summer-sale",
+      status: "scheduled",
+      type: "landing",
+      createdAt: "2023-09-01T10:15:00Z",
+      updatedAt: "2023-09-20T13:25:00Z",
+      views: 0,
+      conversions: 0,
+      bounceRate: 0
+    },
+    {
+      id: 4,
+      title: "About Us",
+      url: "/about",
+      status: "published",
+      type: "other",
+      createdAt: "2023-07-05T08:45:00Z",
+      updatedAt: "2023-08-28T14:10:00Z",
+      views: 876,
+      conversions: 12,
+      bounceRate: 45.2
+    },
+    {
+      id: 5,
+      title: "New Product Launch",
+      url: "/new-product",
+      status: "draft",
+      type: "landing",
+      createdAt: "2023-09-18T11:30:00Z",
+      updatedAt: "2023-09-18T11:30:00Z",
+      views: 0,
+      conversions: 0,
+      bounceRate: 0
     }
   ]);
 
@@ -212,12 +292,44 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     }
   };
 
+  const addWebsitePage = (page: Omit<WebsitePage, 'id'>) => {
+    const newPage = {
+      ...page,
+      id: websitePages.length > 0 ? Math.max(...websitePages.map(p => p.id)) + 1 : 1
+    };
+    
+    setWebsitePages([...websitePages, newPage]);
+    toast({
+      title: "Page Added",
+      description: `${page.title} has been created successfully.`
+    });
+  };
+
+  const removeWebsitePage = (id: number) => {
+    setWebsitePages(websitePages.filter(page => page.id !== id));
+    toast({
+      title: "Page Removed",
+      description: "The page has been removed successfully."
+    });
+  };
+
+  const updateWebsitePage = (id: number, data: Partial<WebsitePage>) => {
+    setWebsitePages(websitePages.map(page => 
+      page.id === id ? { ...page, ...data, updatedAt: new Date().toISOString() } : page
+    ));
+    toast({
+      title: "Page Updated",
+      description: "The page has been updated successfully."
+    });
+  };
+
   return (
     <MasterAccountContext.Provider 
       value={{ 
         clients, 
         currentClientId, 
         webhooks,
+        websitePages,
         addClient, 
         removeClient, 
         switchToClient,
@@ -226,7 +338,10 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         addWebhook,
         removeWebhook,
         updateWebhook,
-        triggerWebhook
+        triggerWebhook,
+        addWebsitePage,
+        removeWebsitePage,
+        updateWebsitePage
       }}
     >
       {children}
