@@ -1,4 +1,3 @@
-
 // Mock data for the CRM application
 
 export type Contact = {
@@ -18,13 +17,9 @@ export type Contact = {
   updatedAt: string;
 };
 
-export type DealStage = 
-  | 'lead'
-  | 'contact'
-  | 'proposal'
-  | 'negotiation'
-  | 'closed-won'
-  | 'closed-lost';
+export type DealStage = string;
+
+export const DEFAULT_STAGES: DealStage[] = ['lead', 'contact', 'proposal', 'negotiation', 'closed-won', 'closed-lost'];
 
 export type Deal = {
   id: string;
@@ -371,21 +366,26 @@ export const integrations: Integration[] = [
   }
 ];
 
+// Default stage labels map
+export const DEFAULT_STAGE_LABELS: Record<DealStage, string> = {
+  'lead': 'Lead',
+  'contact': 'Contact Made',
+  'proposal': 'Proposal Sent',
+  'negotiation': 'Negotiation',
+  'closed-won': 'Closed Won',
+  'closed-lost': 'Closed Lost'
+};
+
 // Helper functions for working with data
 export const getContactById = (id: string): Contact | undefined => {
   return contacts.find(contact => contact.id === id);
 };
 
-export const getStageLabel = (stage: DealStage): string => {
-  const stageLabels: Record<DealStage, string> = {
-    'lead': 'Lead',
-    'contact': 'Contact Made',
-    'proposal': 'Proposal Sent',
-    'negotiation': 'Negotiation',
-    'closed-won': 'Closed Won',
-    'closed-lost': 'Closed Lost'
-  };
-  return stageLabels[stage];
+export const getStageLabel = (stage: DealStage, customLabels?: Record<DealStage, string>): string => {
+  if (customLabels && customLabels[stage]) {
+    return customLabels[stage];
+  }
+  return DEFAULT_STAGE_LABELS[stage] || stage;
 };
 
 export const formatCurrency = (value: number, currency: string): string => {

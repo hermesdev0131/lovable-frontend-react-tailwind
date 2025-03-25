@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move, Settings } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,22 +13,29 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { deals as initialDeals, Deal, DealStage, getContactById, getStageLabel, formatCurrency } from '@/lib/data';
+import { deals as initialDeals, Deal, DealStage, getContactById, getStageLabel, formatCurrency, DEFAULT_STAGES, DEFAULT_STAGE_LABELS } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import StageManager from "@/components/pipeline/StageManager";
+
+const LOCAL_STORAGE_KEYS = {
+  STAGES: 'crm_pipeline_stages',
+  STAGE_LABELS: 'crm_pipeline_stage_labels'
+};
 
 const Pipeline = () => {
-  // Define the stages in the order they should appear
-  const stages: DealStage[] = ['lead', 'contact', 'proposal', 'negotiation', 'closed-won', 'closed-lost'];
+  const [stages, setStages] = useState<DealStage[]>(DEFAULT_STAGES);
+  const [stageLabels, setStageLabels] = useState<Record<DealStage, string>>(DEFAULT_STAGE_LABELS);
   
   const [activeTab, setActiveTab] = useState<'kanban' | 'list'>('kanban');
   const [sortField, setSortField] = useState<'value' | 'probability'>('value');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [allDeals, setAllDeals] = useState<Deal[]>([...initialDeals]);
   const [addDealOpen, setAddDealOpen] = useState(false);
+  const [stageManagerOpen, setStageManagerOpen] = useState(false);
   const [newDeal, setNewDeal] = useState({
     name: '',
     company: '',
@@ -44,6 +51,34 @@ const Pipeline = () => {
   });
   const { toast } = useToast();
 
+  // Load custom stages from localStorage
+  useEffect(() => {
+    const savedStages = localStorage.getItem(LOCAL_STORAGE_KEYS.STAGES);
+    const savedLabels = localStorage.getItem(LOCAL_STORAGE_KEYS.STAGE_LABELS);
+    
+    if (savedStages) {
+      try {
+        const parsedStages = JSON.parse(savedStages);
+        if (Array.isArray(parsedStages)) {
+          setStages(parsedStages);
+        }
+      } catch (e) {
+        console.error("Error parsing saved stages:", e);
+      }
+    }
+    
+    if (savedLabels) {
+      try {
+        const parsedLabels = JSON.parse(savedLabels);
+        if (parsedLabels && typeof parsedLabels === 'object') {
+          setStageLabels(parsedLabels);
+        }
+      } catch (e) {
+        console.error("Error parsing saved stage labels:", e);
+      }
+    }
+  }, []);
+
   // Group deals by stage
   const dealsByStage = stages.reduce((acc, stage) => {
     acc[stage] = allDeals.filter(deal => deal.stage === stage);
@@ -52,7 +87,7 @@ const Pipeline = () => {
   
   // Get the total value of deals in each stage
   const stageValues = stages.reduce((acc, stage) => {
-    const total = dealsByStage[stage].reduce((sum, deal) => sum + deal.value, 0);
+    const total = dealsByStage[stage]?.reduce((sum, deal) => sum + deal.value, 0) || 0;
     acc[stage] = total;
     return acc;
   }, {} as Record<DealStage, number>);
@@ -100,7 +135,7 @@ const Pipeline = () => {
     setAddDealOpen(false);
     toast({
       title: "Deal Added",
-      description: `${newDeal.name} has been added to ${getStageLabel(newDeal.stage)}`,
+      description: `${newDeal.name} has been added to ${getStageLabel(newDeal.stage, stageLabels)}`,
     });
     
     // Reset the form
@@ -110,13 +145,26 @@ const Pipeline = () => {
       value: 0,
       currency: 'USD',
       probability: 50,
-      stage: 'lead',
+      stage: stages[0] || 'lead',
       contactId: 'contact1',
       expectedCloseDate: new Date().toISOString().split('T')[0],
       notes: '',
       createdAt: '',
       updatedAt: ''
     });
+  };
+
+  // Handle saving custom stages
+  const handleSaveStages = (newStages: DealStage[], newLabels: Record<DealStage, string>) => {
+    setStages(newStages);
+    setStageLabels(newLabels);
+    
+    // Save to localStorage
+    localStorage.setItem(LOCAL_STORAGE_KEYS.STAGES, JSON.stringify(newStages));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.STAGE_LABELS, JSON.stringify(newLabels));
+    
+    // Close the dialog
+    setStageManagerOpen(false);
   };
 
   // Handle drag and drop
@@ -147,7 +195,7 @@ const Pipeline = () => {
     // Show toast notification
     toast({
       title: "Deal Moved",
-      description: `${deal.name} moved to ${getStageLabel(destination.droppableId as DealStage)}`,
+      description: `${deal.name} moved to ${getStageLabel(destination.droppableId as DealStage, stageLabels)}`,
     });
   };
 
@@ -160,6 +208,14 @@ const Pipeline = () => {
             <p className="text-muted-foreground">Manage and track your sales pipeline</p>
           </div>
           <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setStageManagerOpen(true)}
+            >
+              <Settings className="h-4 w-4" /> Customize Stages
+            </Button>
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
@@ -189,9 +245,9 @@ const Pipeline = () => {
                   <div key={stage} className="min-w-[300px]">
                     <div className="mb-2 flex justify-between items-center bg-muted/30 rounded-md p-2">
                       <div>
-                        <h3 className="font-medium">{getStageLabel(stage)}</h3>
+                        <h3 className="font-medium">{getStageLabel(stage, stageLabels)}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {dealsByStage[stage].length} deals • {formatCurrency(stageValues[stage], 'USD')}
+                          {dealsByStage[stage]?.length || 0} deals • {formatCurrency(stageValues[stage] || 0, 'USD')}
                         </p>
                       </div>
                       <Button 
@@ -215,7 +271,7 @@ const Pipeline = () => {
                           className="space-y-3 min-h-[200px] p-1 rounded-md transition-colors"
                           style={{ background: provided.isDraggingOver ? 'rgba(0, 0, 0, 0.03)' : 'transparent' }}
                         >
-                          {dealsByStage[stage].map((deal, index) => (
+                          {(dealsByStage[stage] || []).map((deal, index) => (
                             <Draggable key={deal.id} draggableId={deal.id} index={index}>
                               {(provided, snapshot) => (
                                 <div
@@ -292,7 +348,7 @@ const Pipeline = () => {
                           ))}
                           {provided.placeholder}
                           
-                          {dealsByStage[stage].length === 0 && (
+                          {(!dealsByStage[stage] || dealsByStage[stage].length === 0) && (
                             <div 
                               className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground hover:bg-accent/10 hover:border-accent transition-colors" 
                               onClick={() => {
@@ -361,7 +417,7 @@ const Pipeline = () => {
                         <TableCell>{deal.company}</TableCell>
                         <TableCell>
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted">
-                            {getStageLabel(deal.stage)}
+                            {getStageLabel(deal.stage, stageLabels)}
                           </span>
                         </TableCell>
                         <TableCell>{formatCurrency(deal.value, deal.currency)}</TableCell>
@@ -481,7 +537,7 @@ const Pipeline = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {stages.map((stage) => (
-                      <SelectItem key={stage} value={stage}>{getStageLabel(stage)}</SelectItem>
+                      <SelectItem key={stage} value={stage}>{getStageLabel(stage, stageLabels)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -504,6 +560,23 @@ const Pipeline = () => {
               Add Deal
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stage Manager Dialog */}
+      <Dialog open={stageManagerOpen} onOpenChange={setStageManagerOpen}>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle>Customize Pipeline Stages</DialogTitle>
+            <DialogDescription>
+              Rearrange, add, or remove stages to customize your sales pipeline.
+            </DialogDescription>
+          </DialogHeader>
+          <StageManager 
+            stages={stages} 
+            stageLabels={stageLabels} 
+            onStagesChange={handleSaveStages} 
+          />
         </DialogContent>
       </Dialog>
     </div>
