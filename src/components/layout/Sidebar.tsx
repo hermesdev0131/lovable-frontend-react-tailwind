@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -168,19 +169,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
                 >
                   <Mail className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                   {isExpanded && <span>Email</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/integrations"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/integrations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <Cable className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Integrations</span>}
                 </Link>
               </li>
               <li>

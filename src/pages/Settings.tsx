@@ -1,4 +1,6 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,11 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Check, Copy, ExternalLink, Plus, Trash2, Zap } from "lucide-react";
+import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Settings, Cable, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { integrations, formatDate } from '@/lib/data';
 
 const Settings = () => {
+  const location = useLocation();
   const { webhooks, addWebhook, removeWebhook, updateWebhook, triggerWebhook } = useMasterAccount();
   const [generalSettings, setGeneralSettings] = useState({
     companyName: "CRM Pro",
@@ -31,7 +37,109 @@ const Settings = () => {
     events: ["client.created"],
     active: true
   });
+  
+  const [webhookUrl, setWebhookUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  
+  // Determine the initial tab from location state
+  const [activeTab, setActiveTab] = useState("general");
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
+
+  const getIntegrationIcon = (type: string) => {
+    const icons: Record<string, React.ReactNode> = {
+      'email': <Mail className="h-5 w-5" />,
+      'calendar': <Calendar className="h-5 w-5" />,
+      'webhook': <Zap className="h-5 w-5" />,
+      'api': <ExternalLink className="h-5 w-5" />,
+      'other': <Settings className="h-5 w-5" />
+    };
+    return icons[type] || icons.other;
+  };
+  
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, {variant: 'default' | 'secondary' | 'destructive' | 'outline', text: string}> = {
+      'active': { variant: 'outline', text: 'Active' },
+      'inactive': { variant: 'secondary', text: 'Inactive' },
+      'error': { variant: 'destructive', text: 'Error' }
+    };
+    const config = variants[status] || variants.inactive;
+    return <Badge variant={config.variant}>{config.text}</Badge>;
+  };
+  
+  const handleRefresh = (id: string) => {
+    toast({
+      title: 'Syncing...',
+      description: 'Attempting to sync integration',
+    });
+  };
+  
+  const handleZapierSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!webhookUrl) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a Zapier webhook URL',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!webhookUrl.includes('hooks.zapier.com')) {
+      toast({
+        title: 'Warning',
+        description: 'This doesn\'t look like a Zapier webhook URL',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    toast({
+      title: 'Webhook Saved',
+      description: 'Your Zapier webhook has been connected',
+    });
+  };
+
+  const handleMakeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!webhookUrl) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a Make.com webhook URL',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!webhookUrl.includes('hook.eu1.make.com') && !webhookUrl.includes('hook.make.com')) {
+      toast({
+        title: 'Warning',
+        description: 'This doesn\'t look like a Make.com webhook URL',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    addWebhook({
+      name: "New Integration Webhook",
+      url: webhookUrl,
+      events: ["client.created"],
+      active: true
+    });
+    
+    setWebhookUrl('');
+    
+    toast({
+      title: 'Make.com Webhook Added',
+      description: 'Your Make.com webhook has been connected',
+    });
+  };
 
   const handleGeneralSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,12 +208,12 @@ const Settings = () => {
     <div className="container py-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
       
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="integrations">API & Integrations</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="make">Make.com</TabsTrigger>
         </TabsList>
         
@@ -253,76 +361,214 @@ const Settings = () => {
         </TabsContent>
         
         <TabsContent value="integrations">
-          <Card>
-            <CardHeader>
-              <CardTitle>API & Integrations</CardTitle>
-              <CardDescription>
-                Manage your API keys and third-party integrations.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="apiKey">API Key</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="apiKey" 
-                    value="sk_live_51HG6HhLmN0D4hsNkQvCzIxZfXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" 
-                    disabled 
-                    className="font-mono"
-                  />
-                  <Button variant="outline" onClick={() => {
-                    navigator.clipboard.writeText("sk_live_51HG6HhLmN0D4hsNkQvCzIxZfXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-                    toast({
-                      title: "API key copied",
-                      description: "The API key has been copied to clipboard."
-                    });
-                  }}>
-                    Copy
-                  </Button>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Connected Integrations</CardTitle>
+                <CardDescription>
+                  Manage your API keys and third-party integrations.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="apiKey">API Key</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      id="apiKey" 
+                      value="sk_live_51HG6HhLmN0D4hsNkQvCzIxZfXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" 
+                      disabled 
+                      className="font-mono"
+                    />
+                    <Button variant="outline" onClick={() => {
+                      navigator.clipboard.writeText("sk_live_51HG6HhLmN0D4hsNkQvCzIxZfXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                      toast({
+                        title: "API key copied",
+                        description: "The API key has been copied to clipboard."
+                      });
+                    }}>
+                      Copy
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This is your secret API key. Keep it secure and never share it publicly.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  This is your secret API key. Keep it secure and never share it publicly.
-                </p>
-              </div>
-              
-              <div className="pt-4">
-                <h3 className="text-lg font-medium mb-3">Connected Services</h3>
                 
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-blue-100 p-2 rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
-                      </div>
-                      <div>
-                        <p className="font-medium">Slack</p>
-                        <p className="text-sm text-muted-foreground">Connected on Apr 12, 2023</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">Disconnect</Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-green-100 p-2 rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
-                      </div>
-                      <div>
-                        <p className="font-medium">LinkedIn</p>
-                        <p className="text-sm text-muted-foreground">Connected on Mar 8, 2023</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">Disconnect</Button>
-                  </div>
-                  
-                  <Button className="mt-2" variant="outline">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-                    Connect New Service
-                  </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {integrations.map((integration, index) => (
+                    <Card 
+                      key={integration.id} 
+                      className="glass-card hover:shadow-md transition-all duration-300 animate-scale-in"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-full">
+                              {getIntegrationIcon(integration.type)}
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">{integration.name}</CardTitle>
+                              <CardDescription>{integration.description}</CardDescription>
+                            </div>
+                          </div>
+                          {getStatusBadge(integration.status)}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <div className="space-y-2">
+                          {integration.lastSync && (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Last sync: </span>
+                              <span>{formatDate(integration.lastSync)}</span>
+                            </div>
+                          )}
+                          
+                          {integration.type === 'api' && (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">API Key: </span>
+                              <code className="bg-muted px-1 py-0.5 rounded text-xs">
+                                {integration.apiKey.substring(0, 10)}...
+                              </code>
+                            </div>
+                          )}
+                          
+                          {integration.webhookUrl && (
+                            <div className="text-sm break-all">
+                              <span className="text-muted-foreground">Webhook: </span>
+                              <code className="bg-muted px-1 py-0.5 rounded text-xs">
+                                {integration.webhookUrl.substring(0, 30)}...
+                              </code>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-between pt-2">
+                        <Button variant="outline" size="sm" onClick={() => handleRefresh(integration.id)}>
+                          <RefreshCw className="h-4 w-4 mr-1" /> Sync Now
+                        </Button>
+                        <Button variant="ghost" size="sm">Configure</Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            
+            <h3 className="text-lg font-medium mb-4">Add New Integration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card className="glass-card hover:shadow-md transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-base">Zapier Integration</CardTitle>
+                  </div>
+                  <CardDescription>Connect with 3,000+ apps via Zapier</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleZapierSubmit}>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="webhook-url">Zapier Webhook URL</Label>
+                        <Input
+                          id="webhook-url"
+                          placeholder="https://hooks.zapier.com/..."
+                          value={webhookUrl}
+                          onChange={(e) => setWebhookUrl(e.target.value)}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">Connect to Zapier</Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+              
+              <Card className="glass-card hover:shadow-md transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-base">Google Calendar</CardTitle>
+                  </div>
+                  <CardDescription>Sync meetings and appointments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Connect your Google Calendar to automatically track meetings and set reminders.
+                    </p>
+                    <Button className="w-full">Connect Google Calendar</Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="glass-card hover:shadow-md transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <ExternalLink className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-base">Custom Webhook</CardTitle>
+                  </div>
+                  <CardDescription>Send data to your own endpoints</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="custom-webhook">Webhook URL</Label>
+                      <Input
+                        id="custom-webhook"
+                        placeholder="https://your-service.com/webhook"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="webhook-desc">Description (optional)</Label>
+                      <Textarea
+                        id="webhook-desc"
+                        placeholder="Describe what this webhook does"
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
+                    <Button className="w-full">Create Webhook</Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="glass-card hover:shadow-md transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-base">Make.com Integration</CardTitle>
+                  </div>
+                  <CardDescription>Automate workflows with Make.com</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleMakeSubmit}>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="make-webhook-url">Make.com Webhook URL</Label>
+                        <Input
+                          id="make-webhook-url"
+                          placeholder="https://hook.eu1.make.com/..."
+                          value={webhookUrl}
+                          onChange={(e) => setWebhookUrl(e.target.value)}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">Connect to Make.com</Button>
+                      <p className="text-xs text-muted-foreground">
+                        For advanced options including event selection, go to Settings → Make.com
+                      </p>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="make">

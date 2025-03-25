@@ -13,7 +13,6 @@ import Contacts from "./pages/Contacts";
 import Pipeline from "./pages/Pipeline";
 import Calendar from "./pages/Calendar";
 import Opportunities from "./pages/Opportunities";
-import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import Reputation from "./pages/Reputation";
 import ContentScheduling from "./pages/ContentScheduling";
@@ -88,7 +87,6 @@ const App = () => {
                         <Route path="/pipeline" element={<Pipeline />} />
                         <Route path="/opportunities" element={<Opportunities />} />
                         <Route path="/calendar" element={<Calendar />} />
-                        <Route path="/integrations" element={<Integrations />} />
                         <Route path="/reputation" element={<Reputation />} />
                         <Route path="/content-scheduling" element={<ContentScheduling />} />
                         <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
