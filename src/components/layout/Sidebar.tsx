@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   Zap,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,8 @@ const Sidebar: React.FC = () => {
   
   const toggleSidebar = () => {
     setExpanded(!expanded);
+    // Save sidebar state to localStorage
+    localStorage.setItem('sidebar-expanded', String(!expanded));
   };
 
   const navItems = [
@@ -67,6 +70,7 @@ const Sidebar: React.FC = () => {
     { to: '/contacts', icon: <Users className="h-5 w-5" />, label: 'Contacts' },
     { to: '/pipeline', icon: <LineChart className="h-5 w-5" />, label: 'Pipeline' },
     { to: '/opportunities', icon: <Layers className="h-5 w-5" />, label: 'Opportunities' },
+    { to: '/calendar', icon: <Calendar className="h-5 w-5" />, label: 'Calendar' },
     { to: '/integrations', icon: <Zap className="h-5 w-5" />, label: 'Integrations' },
     { to: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Settings' },
   ];

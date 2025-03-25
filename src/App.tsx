@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Contacts from "./pages/Contacts";
 import Pipeline from "./pages/Pipeline";
+import Calendar from "./pages/Calendar";
 import Opportunities from "./pages/Opportunities";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
@@ -49,6 +50,7 @@ const App = () => {
                   <Route path="/contacts" element={<Contacts />} />
                   <Route path="/pipeline" element={<Pipeline />} />
                   <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/calendar" element={<Calendar />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
