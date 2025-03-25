@@ -39,26 +39,28 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar />
-          <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
-            <Navbar />
-            <main className="flex-1 overflow-y-auto">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/contacts" element={<Contacts />} />
-                <Route path="/pipeline" element={<Pipeline />} />
-                <Route path="/opportunities" element={<Opportunities />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/integrations" element={<Integrations />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
+        <TooltipProvider>
+          <div className="flex h-screen overflow-hidden">
+            <Sidebar />
+            <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
+              <Navbar />
+              <main className="flex-1 overflow-y-auto">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/pipeline" element={<Pipeline />} />
+                  <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/integrations" element={<Integrations />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+            </div>
           </div>
-        </div>
-        <Toaster />
-        <Sonner />
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

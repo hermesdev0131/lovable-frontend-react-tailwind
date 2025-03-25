@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -58,7 +57,6 @@ const Sidebar: React.FC = () => {
   
   const toggleSidebar = () => {
     setExpanded(!expanded);
-    // Save sidebar state to localStorage
     localStorage.setItem('sidebar-expanded', String(!expanded));
   };
 
