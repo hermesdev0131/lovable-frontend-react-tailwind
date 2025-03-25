@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -10,6 +11,7 @@ import {
   X,
   Zap,
   Calendar,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -66,6 +68,7 @@ const Sidebar: React.FC = () => {
     { to: '/pipeline', icon: <LineChart className="h-5 w-5" />, label: 'Pipeline' },
     { to: '/opportunities', icon: <Layers className="h-5 w-5" />, label: 'Opportunities' },
     { to: '/calendar', icon: <Calendar className="h-5 w-5" />, label: 'Calendar' },
+    { to: '/reputation', icon: <Star className="h-5 w-5" />, label: 'Reputation' },
     { to: '/integrations', icon: <Zap className="h-5 w-5" />, label: 'Integrations' },
     { to: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Settings' },
   ];
