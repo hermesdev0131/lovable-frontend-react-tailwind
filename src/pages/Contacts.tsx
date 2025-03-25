@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, MoreHorizontal, Calendar, Mail, Phone, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Search, Filter, MoreHorizontal, Calendar, Mail, Phone, ChevronDown, ChevronRight, UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -23,20 +23,10 @@ const Contacts = () => {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
   
-  // Filter contacts based on search query
-  const filteredContacts = contacts.filter(contact => {
-    const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase();
-    const company = contact.company.toLowerCase();
-    const email = contact.email.toLowerCase();
-    const query = searchQuery.toLowerCase();
-    
-    return fullName.includes(query) || company.includes(query) || email.includes(query);
-  });
-
   // Extract all unique tags from contacts
   const allTags = Array.from(
     new Set(
-      filteredContacts.flatMap(contact => contact.tags)
+      contacts.flatMap(contact => contact.tags)
     )
   ).sort();
 
@@ -53,7 +43,7 @@ const Contacts = () => {
     });
     
     // Distribute contacts to their respective tag groups
-    filteredContacts.forEach(contact => {
+    contacts.forEach(contact => {
       if (contact.tags.length === 0) {
         groupedContacts["No Tags"].push(contact);
       } else {
@@ -250,6 +240,7 @@ const Contacts = () => {
                     setExpandedGroups(expandAll);
                   }
                 }}
+                disabled={contacts.length === 0}
               />
               <label
                 htmlFor="groupByTags"
@@ -267,7 +258,20 @@ const Contacts = () => {
           </div>
         </div>
         
-        {groupByTags ? (
+        {contacts.length === 0 ? (
+          <Card className="w-full p-8 text-center">
+            <CardContent className="flex flex-col items-center pt-6">
+              <UserIcon className="h-12 w-12 text-muted-foreground mb-4" />
+              <CardTitle className="mb-2">No Contacts Yet</CardTitle>
+              <CardDescription className="mb-6">
+                Add your first contact to start building your network.
+              </CardDescription>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add Contact
+              </Button>
+            </CardContent>
+          </Card>
+        ) : groupByTags ? (
           Object.keys(groupedContacts).map(tag => (
             <div key={tag} className="mb-8">
               <Button
@@ -291,19 +295,9 @@ const Contacts = () => {
             </div>
           ))
         ) : (
-          <>
-            {filteredContacts.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium mb-2">No contacts found</h3>
-                <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
-                <Button>Add New Contact</Button>
-              </div>
-            ) : (
-              viewMode === 'card' 
-                ? renderContactGrid(filteredContacts)
-                : renderContactTable(filteredContacts)
-            )}
-          </>
+          viewMode === 'card' 
+            ? renderContactGrid(contacts)
+            : renderContactTable(contacts)
         )}
       </div>
     </div>

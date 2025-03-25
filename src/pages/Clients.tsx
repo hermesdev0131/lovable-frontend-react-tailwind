@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -56,81 +56,88 @@ const Clients = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClients.map((client) => (
-            <Card key={client.id} className="hover:shadow-md transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center">
-                    <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src={client.logo} alt={client.name} />
-                      <AvatarFallback>{client.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="text-lg font-medium">{client.name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={getStatusBadgeVariant(client.status)}>
-                          {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{client.subscription}</span>
+        {filteredClients.length === 0 ? (
+          <Card className="w-full p-8 text-center">
+            <CardContent className="flex flex-col items-center pt-6">
+              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <CardTitle className="mb-2">No Clients Yet</CardTitle>
+              <CardDescription className="mb-6">
+                Add your first client to start managing your accounts.
+              </CardDescription>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add Client
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredClients.map((client) => (
+              <Card key={client.id} className="hover:shadow-md transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center">
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarImage src={client.logo} alt={client.name} />
+                        <AvatarFallback>{client.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-lg font-medium">{client.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={getStatusBadgeVariant(client.status)}>
+                            {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">{client.subscription}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                        <DropdownMenuItem>Manage Access</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  
+                  <div className="space-y-3 mt-4">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Email: </span>
+                      <span>{client.email}</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2 mt-4">
+                      <div className="text-center p-2 bg-background rounded-lg border border-border">
+                        <div className="text-lg font-semibold">{client.users}</div>
+                        <div className="text-xs text-muted-foreground">Users</div>
+                      </div>
+                      <div className="text-center p-2 bg-background rounded-lg border border-border">
+                        <div className="text-lg font-semibold">{client.deals}</div>
+                        <div className="text-xs text-muted-foreground">Deals</div>
+                      </div>
+                      <div className="text-center p-2 bg-background rounded-lg border border-border">
+                        <div className="text-lg font-semibold">{client.contacts}</div>
+                        <div className="text-xs text-muted-foreground">Contacts</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Last Activity: </span>
+                        <span>{new Date(client.lastActivity).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
-                      <DropdownMenuItem>Manage Access</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                
-                <div className="space-y-3 mt-4">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Email: </span>
-                    <span>{client.email}</span>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2 mt-4">
-                    <div className="text-center p-2 bg-background rounded-lg border border-border">
-                      <div className="text-lg font-semibold">{client.users}</div>
-                      <div className="text-xs text-muted-foreground">Users</div>
-                    </div>
-                    <div className="text-center p-2 bg-background rounded-lg border border-border">
-                      <div className="text-lg font-semibold">{client.deals}</div>
-                      <div className="text-xs text-muted-foreground">Deals</div>
-                    </div>
-                    <div className="text-center p-2 bg-background rounded-lg border border-border">
-                      <div className="text-lg font-semibold">{client.contacts}</div>
-                      <div className="text-xs text-muted-foreground">Contacts</div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Last Activity: </span>
-                      <span>{new Date(client.lastActivity).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          
-          {filteredClients.length === 0 && (
-            <div className="col-span-full text-center py-12">
-              <h3 className="text-lg font-medium mb-2">No clients found</h3>
-              <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
-              <Button>Add New Client</Button>
-            </div>
-          )}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

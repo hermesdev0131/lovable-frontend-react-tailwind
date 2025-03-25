@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, FolderOpen, Users, Clock, CheckCircle } from 'lucide-react';
@@ -15,40 +15,7 @@ interface Project {
   progress: number;
 }
 
-const sampleProjects: Project[] = [
-  {
-    id: 1,
-    name: "Website Redesign",
-    client: "Acme Corp",
-    status: 'active',
-    dueDate: "2023-12-15",
-    progress: 65
-  },
-  {
-    id: 2,
-    name: "SEO Campaign",
-    client: "Global Tech",
-    status: 'active',
-    dueDate: "2023-11-30",
-    progress: 42
-  },
-  {
-    id: 3,
-    name: "Social Media Strategy",
-    client: "Bright Future",
-    status: 'on-hold',
-    dueDate: "2023-12-20",
-    progress: 18
-  },
-  {
-    id: 4,
-    name: "Content Calendar",
-    client: "Sunshine Bakery",
-    status: 'completed',
-    dueDate: "2023-11-10",
-    progress: 100
-  }
-];
+const projects: Project[] = [];
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   return (
@@ -94,6 +61,8 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
 };
 
 const Projects = () => {
+  const [showEmptyState, setShowEmptyState] = useState(projects.length === 0);
+  
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -103,11 +72,26 @@ const Projects = () => {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sampleProjects.map(project => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-      </div>
+      {showEmptyState ? (
+        <Card className="w-full p-8 text-center">
+          <CardContent className="flex flex-col items-center pt-6">
+            <FolderOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <CardTitle className="mb-2">No Projects Yet</CardTitle>
+            <CardDescription className="mb-6">
+              Create your first project to start tracking your work.
+            </CardDescription>
+            <Button onClick={() => setShowEmptyState(false)}>
+              <Plus className="mr-2 h-4 w-4" /> Create Project
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map(project => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
