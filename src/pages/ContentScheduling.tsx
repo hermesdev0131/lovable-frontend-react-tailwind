@@ -27,35 +27,7 @@ interface ScheduledContent {
   rejectionReason?: string;
 }
 
-const initialScheduledContent: ScheduledContent[] = [
-  {
-    id: 1,
-    content: "Check out our latest product updates! We've added new features to help you manage your business better.",
-    date: new Date(new Date().setDate(new Date().getDate() + 2)),
-    time: "09:00",
-    platforms: ["facebook", "twitter", "linkedin"],
-    status: "scheduled",
-    media: null
-  },
-  {
-    id: 2,
-    content: "We're excited to announce our new partnership with @acmecorp! Stay tuned for exclusive deals.",
-    date: new Date(new Date().setDate(new Date().getDate() + 5)),
-    time: "14:30",
-    platforms: ["instagram", "facebook"],
-    status: "scheduled",
-    media: "product-image.jpg"
-  },
-  {
-    id: 3,
-    content: "Thank you to all our customers for the amazing reviews this month! We're committed to providing the best service.",
-    date: new Date(new Date().setDate(new Date().getDate() - 1)),
-    time: "10:15",
-    platforms: ["facebook", "linkedin", "twitter"],
-    status: "published",
-    media: null
-  }
-];
+const initialScheduledContent: ScheduledContent[] = [];
 
 const platformIcons = {
   facebook: <Facebook className="text-blue-600" />,

@@ -258,47 +258,18 @@ const Contacts = () => {
           </div>
         </div>
         
-        {contacts.length === 0 ? (
-          <Card className="w-full p-8 text-center">
-            <CardContent className="flex flex-col items-center pt-6">
-              <UserIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <CardTitle className="mb-2">No Contacts Yet</CardTitle>
-              <CardDescription className="mb-6">
-                Add your first contact to start building your network.
-              </CardDescription>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add Contact
-              </Button>
-            </CardContent>
-          </Card>
-        ) : groupByTags ? (
-          Object.keys(groupedContacts).map(tag => (
-            <div key={tag} className="mb-8">
-              <Button
-                variant="ghost"
-                className="mb-4 font-semibold text-base flex items-center justify-start p-2 w-full"
-                onClick={() => toggleGroupExpansion(tag)}
-              >
-                {expandedGroups[tag] ? (
-                  <ChevronDown className="h-4 w-4 mr-2" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 mr-2" />
-                )}
-                {tag} ({groupedContacts[tag].length})
-              </Button>
-              
-              {expandedGroups[tag] && (
-                viewMode === 'card' 
-                  ? renderContactGrid(groupedContacts[tag])
-                  : renderContactTable(groupedContacts[tag])
-              )}
-            </div>
-          ))
-        ) : (
-          viewMode === 'card' 
-            ? renderContactGrid(contacts)
-            : renderContactTable(contacts)
-        )}
+        <Card className="w-full p-8 text-center">
+          <CardContent className="flex flex-col items-center pt-6">
+            <UserIcon className="h-12 w-12 text-muted-foreground mb-4" />
+            <CardTitle className="mb-2">No Contacts Yet</CardTitle>
+            <CardDescription className="mb-6">
+              Add your first contact to start building your network.
+            </CardDescription>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Add Contact
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
