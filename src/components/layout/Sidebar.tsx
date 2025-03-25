@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, Briefcase, BookOpen, Cable, Star, Send } from 'lucide-react';
+import logoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
+
 const Sidebar = () => {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(true);
@@ -23,11 +25,23 @@ const Sidebar = () => {
   return <div className={cn("fixed left-0 top-0 h-screen bg-sidebar border-r border-border transition-all duration-300 z-30", isExpanded ? "w-64" : "w-16")}>
       <div className="flex flex-col h-full">
         <div className={cn("p-6 flex items-center", isExpanded ? "justify-between" : "justify-center")}>
-          {isExpanded ? <div className="flex items-center">
-              <img src="/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png" alt="MI Logo" className="h-8 w-auto object-fill" />
-            </div> : <div className="h-8 w-8 flex items-center justify-center">
-              <img src="/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png" alt="MI Logo" className="h-6 w-auto" />
-            </div>}
+          {isExpanded ? 
+            <div className="flex items-center w-full h-8">
+              <img 
+                src={logoImage} 
+                alt="MI Logo" 
+                className="max-w-full max-h-full object-contain" 
+              />
+            </div> 
+            : 
+            <div className="h-8 w-8 flex items-center justify-center">
+              <img 
+                src={logoImage} 
+                alt="MI Logo" 
+                className="max-w-full max-h-full object-contain" 
+              />
+            </div>
+          }
           <button onClick={toggleSidebar} className="h-6 w-6 rounded-full bg-background flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("transform transition-transform", isExpanded ? "" : "rotate-180")}>
               <path d="M10.5 3.5L5.5 8L10.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -110,4 +124,5 @@ const Sidebar = () => {
       </div>
     </div>;
 };
+
 export default Sidebar;
