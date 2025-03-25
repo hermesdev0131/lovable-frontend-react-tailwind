@@ -8,14 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Settings, Cable, RefreshCw } from "lucide-react";
+import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Cable, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { integrations, formatDate } from '@/lib/data';
+import { integrations } from '@/lib/data';
 
-const Settings = () => {
+const SettingsPage = () => {
   const location = useLocation();
   const { webhooks, addWebhook, removeWebhook, updateWebhook, triggerWebhook } = useMasterAccount();
   const [generalSettings, setGeneralSettings] = useState({
@@ -56,7 +56,7 @@ const Settings = () => {
       'calendar': <Calendar className="h-5 w-5" />,
       'webhook': <Zap className="h-5 w-5" />,
       'api': <ExternalLink className="h-5 w-5" />,
-      'other': <Settings className="h-5 w-5" />
+      'other': <Cable className="h-5 w-5" />
     };
     return icons[type] || icons.other;
   };
@@ -757,4 +757,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default SettingsPage;

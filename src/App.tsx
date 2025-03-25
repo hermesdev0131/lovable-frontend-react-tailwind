@@ -13,7 +13,7 @@ import Contacts from "./pages/Contacts";
 import Pipeline from "./pages/Pipeline";
 import Calendar from "./pages/Calendar";
 import Opportunities from "./pages/Opportunities";
-import Settings from "./pages/Settings";
+import SettingsPage from "./pages/Settings";
 import Reputation from "./pages/Reputation";
 import ContentScheduling from "./pages/ContentScheduling";
 import ChatbotManagement from "./pages/ChatbotManagement";
@@ -91,7 +91,7 @@ const App = () => {
                         <Route path="/content-scheduling" element={<ContentScheduling />} />
                         <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
                         <Route path="/conversations" element={<Conversations />} />
-                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                         <Route path="/master-account" element={<MasterAccount />} />
                         <Route path="/website-management" element={<WebsiteManagement />} />
                         <Route path="/email-marketing" element={<EmailMarketing />} />
