@@ -24,17 +24,17 @@ const Sidebar = () => {
   };
   return <div className={cn("fixed left-0 top-0 h-screen bg-sidebar border-r border-border transition-all duration-300 z-30", isExpanded ? "w-64" : "w-16")}>
       <div className="flex flex-col h-full">
-        <div className={cn("p-6 flex items-center", isExpanded ? "justify-between" : "justify-center")}>
+        <div className={cn("flex items-center", isExpanded ? "p-4 pb-8 justify-between" : "p-2 justify-center")}>
           {isExpanded ? 
-            <div className="flex items-center w-full h-8">
+            <div className="flex items-center w-full h-14">
               <img 
                 src={logoImage} 
                 alt="MI Logo" 
-                className="max-w-full max-h-full object-contain" 
+                className="w-full h-auto object-contain" 
               />
             </div> 
             : 
-            <div className="h-8 w-8 flex items-center justify-center">
+            <div className="h-10 w-10 flex items-center justify-center">
               <img 
                 src={logoImage} 
                 alt="MI Logo" 
@@ -42,7 +42,7 @@ const Sidebar = () => {
               />
             </div>
           }
-          <button onClick={toggleSidebar} className="h-6 w-6 rounded-full bg-background flex items-center justify-center">
+          <button onClick={toggleSidebar} className="h-6 w-6 rounded-full bg-background flex items-center justify-center shrink-0 ml-2">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("transform transition-transform", isExpanded ? "" : "rotate-180")}>
               <path d="M10.5 3.5L5.5 8L10.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
