@@ -146,20 +146,6 @@ function App() {
               />
 
               <Route
-                path="/notifications"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Notifications</h1>
-                        <p>Notification management page content will go here.</p>
-                      </div>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
                 path="/opportunities"
                 element={
                   <ProtectedRoute>

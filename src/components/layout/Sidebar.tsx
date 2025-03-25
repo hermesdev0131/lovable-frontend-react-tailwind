@@ -12,7 +12,6 @@ import {
   BookOpen, 
   Cable, 
   HelpCircle, 
-  MessageCircle, 
   Building2,
   Globe,
   ChevronLeft,
@@ -208,19 +207,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                 >
                   <BookOpen className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                   {isExpanded && <span>Content</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/notifications"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/notifications") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <MessageCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Notifications</span>}
                 </Link>
               </li>
               
