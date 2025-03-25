@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MoonStar, Sun, Menu, User, LogOut } from 'lucide-react';
+import { MoonStar, Sun, Menu, User, LogOut, Search } from 'lucide-react';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -19,6 +19,8 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
 import { Toggle } from '@/components/ui/toggle';
+import { Input } from '@/components/ui/input';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -49,6 +51,18 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
         <Menu className="h-5 w-5" />
       </Button>
       
+      {/* Search bar */}
+      <div className="relative max-w-md flex-1">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search..."
+            className="w-full bg-background pl-8 md:w-[300px] lg:w-[400px] border-gray-800 focus-visible:ring-gray-700"
+          />
+        </div>
+      </div>
+      
       <div className="flex flex-1 items-center justify-end">
         <nav className="flex items-center gap-4">
           <NotificationsPopover />
@@ -56,18 +70,8 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
           <ClientSwitcher />
           <Separator orientation="vertical" className="h-6" />
           
-          {/* Theme toggle with prominent styling */}
-          <Toggle
-            pressed={theme === 'dark'}
-            onPressedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="border-2 border-primary/50 p-0.5 rounded-full h-10 w-10 flex items-center justify-center"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? 
-              <Sun className="h-5 w-5 text-yellow-400" /> : 
-              <MoonStar className="h-5 w-5 text-primary" />
-            }
-          </Toggle>
+          {/* Theme toggle - now using ThemeToggle component */}
+          <ThemeToggle />
           
           <Separator orientation="vertical" className="h-6" />
           
@@ -90,7 +94,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="z-50 w-64 mt-1 bg-popover border-2 border-primary shadow-lg rounded-lg"
+              className="z-50 w-64 mt-1 bg-popover border-2 border-primary/20 shadow-lg rounded-lg"
             >
               <DropdownMenuLabel className="font-normal py-3">
                 <div className="flex flex-col space-y-1">
