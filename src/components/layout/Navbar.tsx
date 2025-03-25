@@ -18,6 +18,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
+import { Toggle } from '@/components/ui/toggle';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -43,38 +44,45 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   };
   
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="lg:hidden">
         <Menu className="h-5 w-5" />
       </Button>
       
       <div className="flex flex-1 items-center justify-end">
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-4">
           <NotificationsPopover />
           <Separator orientation="vertical" className="h-6" />
           <ClientSwitcher />
           <Separator orientation="vertical" className="h-6" />
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          
+          {/* Theme toggle with prominent styling */}
+          <Toggle
+            pressed={theme === 'dark'}
+            onPressedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="border-2 border-primary/50 p-0.5 rounded-full h-10 w-10 flex items-center justify-center"
+            aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />}
-          </Button>
+            {theme === 'dark' ? 
+              <Sun className="h-5 w-5 text-yellow-400" /> : 
+              <MoonStar className="h-5 w-5 text-primary" />
+            }
+          </Toggle>
+          
           <Separator orientation="vertical" className="h-6" />
           
-          {/* User dropdown menu with prominent styling */}
+          {/* User dropdown menu with very prominent styling */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="rounded-full h-12 w-12 flex items-center justify-center border-2 border-primary hover:bg-accent hover:text-accent-foreground ml-1 relative"
+                className="rounded-full h-12 w-12 flex items-center justify-center border-2 border-primary hover:bg-accent hover:text-accent-foreground ml-1 relative shadow-md"
               >
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                 </span>
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-10 w-10 border border-primary/20">
                   <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt="User" />
                   <AvatarFallback className="bg-primary/10 text-lg font-bold">U</AvatarFallback>
                 </Avatar>
