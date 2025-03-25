@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -9,7 +8,7 @@ import { MasterAccountProvider } from "@/contexts/MasterAccountContext"
 import { Toaster } from "@/components/ui/toaster"
 import Layout from "@/components/layout/Sidebar"
 import { ProtectedRoute } from "./components/auth/ProtectedRoute"
-import ErrorBoundary from "./components/ErrorBoundary"
+import CustomErrorBoundary from "./components/CustomErrorBoundary"
 import { useState } from "react"
 
 function App() {
@@ -23,7 +22,7 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="ui-theme">
       <MasterAccountProvider>
         <BrowserRouter>
-          <ErrorBoundary>
+          <CustomErrorBoundary>
             <Toaster />
             <Routes>
               <Route
@@ -194,7 +193,7 @@ function App() {
               {/* The 404 route doesn't need to be protected */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </ErrorBoundary>
+          </CustomErrorBoundary>
         </BrowserRouter>
       </MasterAccountProvider>
     </ThemeProvider>

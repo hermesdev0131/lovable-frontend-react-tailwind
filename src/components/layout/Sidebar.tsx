@@ -29,9 +29,10 @@ import { useMasterAccount } from '@/contexts/MasterAccountContext';
 interface SidebarProps {
   isExpanded: boolean;
   onToggle: () => void;
+  children?: React.ReactNode; // Added children to the interface
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -292,6 +293,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
       >
         {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
       </button>
+      
+      {/* Main content */}
+      <div className="flex-1 p-6">
+        {children}
+      </div>
     </div>
   );
 };
