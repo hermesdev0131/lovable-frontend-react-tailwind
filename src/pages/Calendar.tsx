@@ -34,7 +34,7 @@ const sampleEvents = [
     title: 'Contract Review',
     start: addDays(new Date(), 1),
     end: addDays(new Date(), 1),
-    type: 'follow-up',
+    type: 'followup',
   },
   {
     id: 4,
@@ -49,7 +49,7 @@ const sampleEvents = [
 const eventTypes = {
   meeting: { label: 'Meeting', color: 'bg-blue-500' },
   demo: { label: 'Demo', color: 'bg-green-500' },
-  follow-up: { label: 'Follow-up', color: 'bg-amber-500' },
+  followup: { label: 'Follow-up', color: 'bg-amber-500' },
   internal: { label: 'Internal', color: 'bg-purple-500' },
 };
 
