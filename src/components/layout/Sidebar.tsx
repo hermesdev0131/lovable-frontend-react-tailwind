@@ -14,6 +14,7 @@ import {
   Star,
   Send
 } from 'lucide-react';
+import logoImage from '/lovable-uploads/79d93cdf-670f-4b28-afd9-f50da7a6bec7.png';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -47,7 +48,13 @@ const Sidebar = () => {
     >
       <div className="flex flex-col h-full">
         <div className={cn("p-6 flex items-center", isExpanded ? "justify-between" : "justify-center")}>
-          {isExpanded && <span className="text-xl font-semibold">Business CRM</span>}
+          {isExpanded && (
+            <img 
+              src={logoImage} 
+              alt="Company Logo" 
+              className="max-h-8 object-contain" 
+            />
+          )}
           <button 
             onClick={toggleSidebar} 
             className="h-6 w-6 rounded-full bg-background flex items-center justify-center"
@@ -234,3 +241,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
