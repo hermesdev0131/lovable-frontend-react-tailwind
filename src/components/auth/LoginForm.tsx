@@ -43,7 +43,7 @@ export const LoginForm = () => {
               <Input 
                 id="email" 
                 type="email" 
-                placeholder="admin@mastercrm.com"
+                placeholder="dej@avai.vip"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -57,7 +57,7 @@ export const LoginForm = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Default master account: admin@mastercrm.com / master123
+                Default master account: dej@avai.vip / FilthyRich2025!\
               </p>
             </div>
           </CardContent>

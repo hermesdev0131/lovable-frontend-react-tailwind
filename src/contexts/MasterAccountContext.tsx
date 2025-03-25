@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -77,7 +76,6 @@ interface MasterAccountContextType {
   isInMasterMode: boolean;
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
-  // Add missing properties to the type
   addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
   removeWebhook: (id: number) => void;
   updateWebhook: (id: number, data: Partial<Webhook>) => void;
@@ -525,7 +523,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   };
 
   const loginToAccount = (email: string, password: string): boolean => {
-    if (email === "admin@mastercrm.com" && password === "master123") {
+    if (email === "dej@avai.vip" && password === "FilthyRich2025!\\") {
       setCurrentClientId(null);
       setIsInMasterMode(true);
       toast({
