@@ -47,6 +47,45 @@
     --sidebar-ring: 240 5.9% 10%;
   }
 
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 210 100% 50%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
+  }
+
   * {
     @apply border-border;
   }
@@ -59,11 +98,11 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/70 backdrop-blur-lg shadow-sm border border-slate-200/50 rounded-lg;
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 rounded-lg;
   }
   
   .glass-panel {
-    @apply bg-white/90 backdrop-blur-md shadow-sm border border-slate-200/50 rounded-lg;
+    @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-slate-700/50 rounded-lg;
   }
 
   .transition-standard {
@@ -106,6 +145,14 @@ html {
   border-radius: 3px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }

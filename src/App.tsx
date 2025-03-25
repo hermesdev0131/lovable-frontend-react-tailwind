@@ -21,6 +21,7 @@ import Conversations from "./pages/Conversations";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
+import { ThemeProvider } from "./components/theme/ThemeProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,37 +61,39 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <ErrorBoundary>
-            <div className="flex h-screen overflow-hidden">
-              <Sidebar />
-              <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
-                <Navbar />
-                <main className="flex-1 overflow-y-auto">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/pipeline" element={<Pipeline />} />
-                    <Route path="/opportunities" element={<Opportunities />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/integrations" element={<Integrations />} />
-                    <Route path="/reputation" element={<Reputation />} />
-                    <Route path="/content-scheduling" element={<ContentScheduling />} />
-                    <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
-                    <Route path="/conversations" element={<Conversations />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
+      <ThemeProvider defaultTheme="system" storageKey="crm-theme">
+        <BrowserRouter>
+          <TooltipProvider>
+            <ErrorBoundary>
+              <div className="flex h-screen overflow-hidden">
+                <Sidebar />
+                <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
+                  <Navbar />
+                  <main className="flex-1 overflow-y-auto">
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/contacts" element={<Contacts />} />
+                      <Route path="/pipeline" element={<Pipeline />} />
+                      <Route path="/opportunities" element={<Opportunities />} />
+                      <Route path="/calendar" element={<Calendar />} />
+                      <Route path="/integrations" element={<Integrations />} />
+                      <Route path="/reputation" element={<Reputation />} />
+                      <Route path="/content-scheduling" element={<ContentScheduling />} />
+                      <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
+                      <Route path="/conversations" element={<Conversations />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                </div>
+                <ChatDrawer knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />
               </div>
-              <ChatDrawer knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />
-            </div>
-          </ErrorBoundary>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
-      </BrowserRouter>
+            </ErrorBoundary>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
