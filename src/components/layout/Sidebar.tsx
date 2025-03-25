@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -32,6 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { isInMasterMode } = useMasterAccount();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -229,19 +231,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
                   {isExpanded && <span>Conversations</span>}
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/master-account"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/master-account") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <Building2 className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Master Account</span>}
-                </Link>
-              </li>
+              
+              {isInMasterMode && (
+                <li>
+                  <Link
+                    to="/master-account"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                      isActive("/master-account") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                      !isExpanded && "justify-center"
+                    )}
+                  >
+                    <Building2 className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                    {isExpanded && <span>Master Account</span>}
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
           
