@@ -63,39 +63,49 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
           </Button>
           <Separator orientation="vertical" className="h-6" />
           
-          {/* User dropdown menu - highly visible in top right */}
+          {/* User dropdown menu with prominent styling */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="rounded-full p-1 h-10 w-10 flex items-center justify-center border-2 hover:bg-accent hover:text-accent-foreground">
-                <Avatar className="h-8 w-8">
+              <Button 
+                variant="outline" 
+                className="rounded-full h-12 w-12 flex items-center justify-center border-2 border-primary hover:bg-accent hover:text-accent-foreground ml-1 relative"
+              >
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                </span>
+                <Avatar className="h-10 w-10">
                   <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt="User" />
-                  <AvatarFallback className="bg-primary/10">U</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-lg font-bold">U</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50 w-56 mt-1 bg-popover border border-border shadow-lg">
-              <DropdownMenuLabel className="font-normal">
+            <DropdownMenuContent 
+              align="end" 
+              className="z-50 w-64 mt-1 bg-popover border-2 border-primary shadow-lg rounded-lg"
+            >
+              <DropdownMenuLabel className="font-normal py-3">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">My Account</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-base font-medium">My Account</p>
+                  <p className="text-sm text-muted-foreground">
                     {isInMasterMode ? 'Master Account' : 'Client Account'}
                   </p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-primary/20" />
               <DropdownMenuItem 
-                className="cursor-pointer flex items-center" 
+                className="cursor-pointer flex items-center py-2.5 text-base" 
                 onClick={() => navigate('/account')}
               >
-                <User className="mr-2 h-4 w-4" />
+                <User className="mr-2 h-5 w-5" />
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="cursor-pointer flex items-center" 
+                className="cursor-pointer flex items-center py-2.5 text-base" 
                 onClick={() => navigate('/settings')}
               >
                 <svg
-                  className="mr-2 h-4 w-4"
+                  className="mr-2 h-5 w-5"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -109,12 +119,12 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                 </svg>
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-primary/20" />
               <DropdownMenuItem 
                 onClick={handleLogout} 
-                className="cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 flex items-center font-medium"
+                className="cursor-pointer bg-red-50 dark:bg-red-950/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-950/30 flex items-center font-medium py-2.5 text-base"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-5 w-5" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
