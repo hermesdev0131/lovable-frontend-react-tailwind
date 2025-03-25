@@ -52,6 +52,13 @@ const App = () => {
     }
   }, []);
 
+  const handleToggleSidebar = () => {
+    const newState = !sidebarExpanded;
+    setSidebarExpanded(newState);
+    // Save to localStorage
+    localStorage.setItem('sidebar-expanded', String(newState));
+  };
+
   const handleAddKnowledge = (knowledge: string) => {
     setKnowledgeBase(prev => [...prev, knowledge]);
   };
@@ -67,7 +74,7 @@ const App = () => {
           <TooltipProvider>
             <ErrorBoundary>
               <div className="flex h-screen overflow-hidden">
-                <Sidebar />
+                <Sidebar isExpanded={sidebarExpanded} onToggle={handleToggleSidebar} />
                 <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
                   <Navbar />
                   <main className="flex-1 overflow-y-auto">
