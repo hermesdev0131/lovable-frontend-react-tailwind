@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, Briefcase, BookOpen, Cable, Star, Send, HelpCircle, MessageCircle, Bot } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
-import newLogoImage from '/lovable-uploads/05a76ee8-59e3-4846-955b-86885eccbdb0.png';
+import logoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -13,10 +13,8 @@ const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const { theme } = useTheme();
   
-  // The new logo is white, so we don't need to invert it for dark mode
-  // For light mode, we'll add a slight shadow to make it visible against light backgrounds
-  const logoStyle = theme === 'light' ? { filter: 'drop-shadow(0px 0px 1px rgba(0,0,0,0.5))' } : {};
-  const logoImage = newLogoImage;
+  // Apply different styling based on theme
+  const logoStyle = theme === 'dark' ? { filter: 'invert(1)' } : {};
   
   useEffect(() => {
     const savedState = localStorage.getItem('sidebar-expanded');
