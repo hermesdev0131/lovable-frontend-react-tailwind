@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ThumbsDown, MessageSquare, Bell, BarChart2, Filter, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
-// Sample data for ratings and reviews
 const ratingData = Array.from({ length: 30 }, (_, i) => ({
   date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split('T')[0],
   average: (3.5 + Math.sin(i / 3) + Math.random() * 0.5).toFixed(1),
@@ -74,7 +72,6 @@ const reviewsData = [
   },
 ];
 
-// Platform data
 const platformData = [
   { name: 'Google', reviews: 45, average: 4.7 },
   { name: 'Yelp', reviews: 23, average: 4.2 },
@@ -88,20 +85,21 @@ const Reputation = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
 
-  // Calculate summary statistics
   const totalReviews = reviewsData.length;
   const averageRating = (reviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1);
   const positiveReviews = reviewsData.filter(review => review.rating >= 4).length;
   const negativeReviews = reviewsData.filter(review => review.rating <= 2).length;
   const pendingResponses = reviewsData.filter(review => !review.replied).length;
 
-  // Format date for display - Fixed to use proper DateTimeFormatOptions
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Star rating component
   const StarRating = ({ rating }) => {
     return (
       <div className="flex items-center">
@@ -115,10 +113,8 @@ const Reputation = () => {
     );
   };
 
-  // Handle refresh
   const handleRefresh = () => {
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       toast({
@@ -128,7 +124,6 @@ const Reputation = () => {
     }, 1500);
   };
 
-  // Handle responding to a review
   const handleRespond = (reviewId) => {
     toast({
       title: "Response mode activated",
@@ -171,7 +166,6 @@ const Reputation = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="pb-2">
@@ -252,7 +246,6 @@ const Reputation = () => {
               </Card>
             </div>
 
-            {/* Rating Trend Chart */}
             <Card>
               <CardHeader>
                 <CardTitle>Rating Trend</CardTitle>
@@ -302,7 +295,6 @@ const Reputation = () => {
               </CardContent>
             </Card>
 
-            {/* Platform Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
