@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, Briefcase, BookOpen, Cable, Star, Send, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, Briefcase, BookOpen, Cable, Star, Send, HelpCircle, MessageCircle, Bot } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import logoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
 
@@ -112,6 +112,12 @@ const Sidebar = () => {
               </Link>
             </li>
             <li>
+              <Link to="/conversations" className={cn("flex items-center rounded-lg px-3 py-2 text-sm transition-colors", isActive("/conversations") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground", !isExpanded && "justify-center")}>
+                <MessageCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Conversations</span>}
+              </Link>
+            </li>
+            <li>
               <Link to="/reputation" className={cn("flex items-center rounded-lg px-3 py-2 text-sm transition-colors", isActive("/reputation") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground", !isExpanded && "justify-center")}>
                 <Star className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                 {isExpanded && <span>Reputation</span>}
@@ -127,6 +133,12 @@ const Sidebar = () => {
               <Link to="/integrations" className={cn("flex items-center rounded-lg px-3 py-2 text-sm transition-colors", isActive("/integrations") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground", !isExpanded && "justify-center")}>
                 <Cable className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                 {isExpanded && <span>Integrations</span>}
+              </Link>
+            </li>
+            <li>
+              <Link to="/chatbot" className={cn("flex items-center rounded-lg px-3 py-2 text-sm transition-colors", isActive("/chatbot") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground", !isExpanded && "justify-center")}>
+                <Bot className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Chatbot</span>}
               </Link>
             </li>
             <li>

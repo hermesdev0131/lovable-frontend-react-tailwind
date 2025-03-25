@@ -17,6 +17,7 @@ import Settings from "./pages/Settings";
 import Reputation from "./pages/Reputation";
 import ContentScheduling from "./pages/ContentScheduling";
 import ChatbotManagement from "./pages/ChatbotManagement";
+import Conversations from "./pages/Conversations";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
@@ -77,6 +78,7 @@ const App = () => {
                     <Route path="/reputation" element={<Reputation />} />
                     <Route path="/content-scheduling" element={<ContentScheduling />} />
                     <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
+                    <Route path="/conversations" element={<Conversations />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
