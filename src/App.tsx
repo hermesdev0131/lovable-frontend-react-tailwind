@@ -1,5 +1,4 @@
 
-import { ErrorBoundary } from "react-error-boundary"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -9,9 +8,17 @@ import NotFound from "@/pages/NotFound"
 import { MasterAccountProvider } from "@/contexts/MasterAccountContext"
 import { Toaster } from "@/components/ui/toaster"
 import Layout from "@/components/layout/Sidebar"
-import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute"
+import ErrorBoundary from "./components/ErrorBoundary"
+import { useState } from "react"
 
 function App() {
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  
+  const toggleSidebar = () => {
+    setSidebarExpanded(!sidebarExpanded);
+  };
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="ui-theme">
       <MasterAccountProvider>
@@ -23,7 +30,7 @@ function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <Index />
                     </Layout>
                   </ProtectedRoute>
@@ -35,7 +42,7 @@ function App() {
                 path="/calendar"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <Calendar />
                     </Layout>
                   </ProtectedRoute>
@@ -47,7 +54,7 @@ function App() {
                 path="/account"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Account</div>
                     </Layout>
                   </ProtectedRoute>
@@ -57,7 +64,7 @@ function App() {
                 path="/campaigns"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Campaigns</div>
                     </Layout>
                   </ProtectedRoute>
@@ -67,7 +74,7 @@ function App() {
                 path="/clients"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Clients</div>
                     </Layout>
                   </ProtectedRoute>
@@ -77,7 +84,7 @@ function App() {
                 path="/content"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Content</div>
                     </Layout>
                   </ProtectedRoute>
@@ -87,7 +94,7 @@ function App() {
                 path="/deals"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Deals</div>
                     </Layout>
                   </ProtectedRoute>
@@ -97,7 +104,7 @@ function App() {
                 path="/email"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Email</div>
                     </Layout>
                   </ProtectedRoute>
@@ -107,7 +114,7 @@ function App() {
                 path="/integrations"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Integrations</div>
                     </Layout>
                   </ProtectedRoute>
@@ -117,7 +124,7 @@ function App() {
                 path="/notifications"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Notifications</div>
                     </Layout>
                   </ProtectedRoute>
@@ -127,7 +134,7 @@ function App() {
                 path="/projects"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Projects</div>
                     </Layout>
                   </ProtectedRoute>
@@ -137,7 +144,7 @@ function App() {
                 path="/settings"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Settings</div>
                     </Layout>
                   </ProtectedRoute>
@@ -147,7 +154,7 @@ function App() {
                 path="/social"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Social</div>
                     </Layout>
                   </ProtectedRoute>
@@ -157,7 +164,7 @@ function App() {
                 path="/tasks"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Tasks</div>
                     </Layout>
                   </ProtectedRoute>
@@ -167,7 +174,7 @@ function App() {
                 path="/webhooks"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Webhooks</div>
                     </Layout>
                   </ProtectedRoute>
@@ -177,7 +184,7 @@ function App() {
                 path="/website"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Website</div>
                     </Layout>
                   </ProtectedRoute>

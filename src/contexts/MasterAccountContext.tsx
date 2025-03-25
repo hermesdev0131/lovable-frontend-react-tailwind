@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -76,6 +77,21 @@ interface MasterAccountContextType {
   isInMasterMode: boolean;
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
+  // Add missing properties to the type
+  addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
+  removeWebhook: (id: number) => void;
+  updateWebhook: (id: number, data: Partial<Webhook>) => void;
+  triggerWebhook: (webhookId: number, data: any) => Promise<void>;
+  addWebsitePage: (page: Omit<WebsitePage, 'id'>) => void;
+  removeWebsitePage: (id: number) => void;
+  updateWebsitePage: (id: number, data: Partial<WebsitePage>) => void;
+  addContentItem: (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => void;
+  updateContentStatus: (id: number, status: 'approved' | 'rejected', reason?: string) => void;
+  getContentItems: (clientId?: number | null, status?: string) => ContentItem[];
+  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
+  markNotificationAsRead: (id: number) => void;
+  getNotifications: (forClientId?: number | null) => Notification[];
+  getUnreadNotificationsCount: (forClientId?: number | null) => number;
 }
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
