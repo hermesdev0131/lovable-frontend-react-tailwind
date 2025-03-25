@@ -1,11 +1,26 @@
 
-import React from 'react';
-import { LineChart, PieChart, Users, Layers, ArrowUp, ArrowDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { LineChart, PieChart, Users, Layers, ArrowUp, ArrowDown, Plus, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { deals, opportunities, contacts } from '@/lib/data';
+import { toast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [recentActivity, setRecentActivity] = useState([
+    { id: 1, action: "New contact added", time: "1 hour ago", name: "Sarah Johnson" },
+    { id: 2, action: "Deal moved to negotiation", time: "2 hours ago", name: "ACME Corp" },
+    { id: 3, action: "New opportunity created", time: "3 hours ago", name: "Global Expansion" },
+    { id: 4, action: "Email sent", time: "5 hours ago", name: "Michael Chang" },
+    { id: 5, action: "Meeting scheduled", time: "Yesterday", name: "Tech Partners Ltd" },
+  ]);
+  
   // Calculate summary statistics
   const totalContacts = contacts.length;
   const totalDeals = deals.length;
@@ -17,6 +32,13 @@ const Index = () => {
   const totalDealValue = deals.reduce((sum, deal) => sum + deal.value, 0);
   const potentialValue = opportunities.reduce((sum, opp) => sum + opp.potentialValue, 0);
   
+  const taskForm = useForm({
+    defaultValues: {
+      title: '',
+      date: '',
+    },
+  });
+
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -27,20 +49,38 @@ const Index = () => {
     }).format(amount);
   };
 
-  // Sample chart data (would be generated from real data)
-  const recentActivity = [
-    { action: "New contact added", time: "1 hour ago", name: "Sarah Johnson" },
-    { action: "Deal moved to negotiation", time: "2 hours ago", name: "ACME Corp" },
-    { action: "New opportunity created", time: "3 hours ago", name: "Global Expansion" },
-    { action: "Email sent", time: "5 hours ago", name: "Michael Chang" },
-    { action: "Meeting scheduled", time: "Yesterday", name: "Tech Partners Ltd" },
-  ];
+  const handleCardClick = (title: string, path: string) => {
+    toast({
+      title: `Viewing ${title}`,
+      description: "Navigating to detailed view",
+      duration: 2000,
+    });
+    navigate(path);
+  };
+
+  const handleCreateTask = (data: { title: string; date: string }) => {
+    toast({
+      title: "Task Created",
+      description: `New task "${data.title}" scheduled for ${data.date}`,
+      duration: 3000,
+    });
+    
+    taskForm.reset();
+    
+    setRecentActivity(prev => [
+      { id: Date.now(), action: "Task created", time: "Just now", name: data.title },
+      ...prev,
+    ]);
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out">
+          <Card 
+            className="glass-card hover:shadow transition-all duration-300 ease-in-out cursor-pointer"
+            onClick={() => handleCardClick("Contacts", "/contacts")}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Contacts</CardTitle>
             </CardHeader>
@@ -59,7 +99,10 @@ const Index = () => {
             </CardContent>
           </Card>
           
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out">
+          <Card 
+            className="glass-card hover:shadow transition-all duration-300 ease-in-out cursor-pointer"
+            onClick={() => handleCardClick("Deals Pipeline", "/pipeline")}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Deals</CardTitle>
             </CardHeader>
@@ -83,7 +126,10 @@ const Index = () => {
             </CardContent>
           </Card>
           
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out">
+          <Card 
+            className="glass-card hover:shadow transition-all duration-300 ease-in-out cursor-pointer"
+            onClick={() => handleCardClick("Opportunities", "/opportunities")}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Pipeline Value</CardTitle>
             </CardHeader>
@@ -112,7 +158,12 @@ const Index = () => {
               <div className="text-center text-muted-foreground">
                 <PieChart className="h-16 w-16 mx-auto mb-4 text-primary/40" />
                 <p>Pipeline visualization will appear here</p>
-                <p className="text-sm mt-2">Connect your data to see insights</p>
+                <Button 
+                  className="mt-4"
+                  onClick={() => navigate('/pipeline')}
+                >
+                  View Pipeline
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -124,7 +175,7 @@ const Index = () => {
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((item, i) => (
-                  <div key={i} className="flex items-start space-x-3 animate-slide-in-right" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <div key={item.id} className="flex items-start space-x-3 animate-slide-in-right" style={{ animationDelay: `${i * 0.1}s` }}>
                     <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
                     <div>
                       <div className="font-medium">{item.action}</div>
@@ -144,10 +195,66 @@ const Index = () => {
             <CardHeader>
               <CardTitle>Upcoming Tasks</CardTitle>
             </CardHeader>
-            <CardContent className="h-[200px] flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <p>No upcoming tasks scheduled</p>
-                <Button variant="outline" className="mt-4">Create Task</Button>
+            <CardContent>
+              <div className="text-center text-muted-foreground mb-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="default" className="mb-4">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Task
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Task</DialogTitle>
+                    </DialogHeader>
+                    <Form {...taskForm}>
+                      <form onSubmit={taskForm.handleSubmit(handleCreateTask)} className="space-y-4">
+                        <FormField
+                          control={taskForm.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Task Title</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter task title" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={taskForm.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Due Date</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex justify-end space-x-2">
+                          <DialogClose asChild>
+                            <Button variant="outline" type="button">Cancel</Button>
+                          </DialogClose>
+                          <Button type="submit">Create Task</Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+                
+                <div className="flex items-center justify-center space-x-3 mt-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center" 
+                    onClick={() => navigate('/calendar')}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    View Calendar
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -162,7 +269,19 @@ const Index = () => {
                   .filter(opp => opp.probability >= 40)
                   .slice(0, 3)
                   .map((opp, i) => (
-                    <div key={opp.id} className="animate-slide-in-right" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div 
+                      key={opp.id} 
+                      className="animate-slide-in-right cursor-pointer p-2 rounded-md hover:bg-accent/50 transition-colors" 
+                      style={{ animationDelay: `${i * 0.1}s` }}
+                      onClick={() => {
+                        toast({
+                          title: opp.name,
+                          description: `Potential value: ${formatCurrency(opp.potentialValue)}`,
+                          duration: 3000,
+                        });
+                        navigate('/opportunities');
+                      }}
+                    >
                       <div className="font-medium truncate">{opp.name}</div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">

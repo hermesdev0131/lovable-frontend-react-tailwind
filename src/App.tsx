@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ChatDrawer } from "./components/chatbot/ChatDrawer";
 import Index from "./pages/Index";
 import Contacts from "./pages/Contacts";
 import Pipeline from "./pages/Pipeline";
@@ -32,6 +33,11 @@ const queryClient = new QueryClient({
 const App = () => {
   const [mounted, setMounted] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [knowledgeBase, setKnowledgeBase] = useState([
+    "The CRM system helps manage contacts and leads.",
+    "You can schedule meetings and set reminders for follow-ups.",
+    "The pipeline view shows all deals in progress and their status."
+  ]);
 
   useEffect(() => {
     setMounted(true);
@@ -42,6 +48,10 @@ const App = () => {
       setSidebarExpanded(savedSidebarState === 'true');
     }
   }, []);
+
+  const handleAddKnowledge = (knowledge: string) => {
+    setKnowledgeBase(prev => [...prev, knowledge]);
+  };
 
   if (!mounted) {
     return null;
@@ -66,12 +76,13 @@ const App = () => {
                     <Route path="/integrations" element={<Integrations />} />
                     <Route path="/reputation" element={<Reputation />} />
                     <Route path="/content-scheduling" element={<ContentScheduling />} />
-                    <Route path="/chatbot" element={<ChatbotManagement />} />
+                    <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
               </div>
+              <ChatDrawer knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />
             </div>
           </ErrorBoundary>
           <Toaster />
