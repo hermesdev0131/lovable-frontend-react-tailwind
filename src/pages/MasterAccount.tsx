@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,45 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 
 const MasterAccount = () => {
-  const { clients, addClient } = useMasterAccount();
-  const [clients, setClients] = useState([
-    { 
-      id: 1, 
-      name: "Acme Corporation", 
-      email: "admin@acme.com", 
-      subscription: "Enterprise", 
-      status: "active", 
-      users: 12, 
-      deals: 45, 
-      contacts: 230, 
-      lastActivity: "2023-09-15T10:30:00Z",
-      logo: "/placeholder.svg"
-    },
-    { 
-      id: 2, 
-      name: "TechStart Inc", 
-      email: "admin@techstart.com", 
-      subscription: "Professional", 
-      status: "active", 
-      users: 5, 
-      deals: 18, 
-      contacts: 87, 
-      lastActivity: "2023-09-14T16:45:00Z",
-      logo: "/placeholder.svg"
-    },
-    { 
-      id: 3, 
-      name: "Global Services Ltd", 
-      email: "admin@globalserv.com", 
-      subscription: "Basic", 
-      status: "inactive", 
-      users: 3, 
-      deals: 7, 
-      contacts: 42, 
-      lastActivity: "2023-09-10T09:15:00Z",
-      logo: "/placeholder.svg"
-    }
-  ]);
+  const { clients, addClient, switchToClient } = useMasterAccount();
   
   const [newClientName, setNewClientName] = useState('');
   const [newClientEmail, setNewClientEmail] = useState('');
@@ -63,8 +24,7 @@ const MasterAccount = () => {
   
   const handleAddClient = () => {
     if (newClientName && newClientEmail) {
-      const newClient = {
-        id: clients.length + 1,
+      addClient({
         name: newClientName,
         email: newClientEmail,
         subscription: "Basic",
@@ -74,32 +34,25 @@ const MasterAccount = () => {
         contacts: 0,
         lastActivity: new Date().toISOString(),
         logo: "/placeholder.svg"
-      };
+      });
       
-      setClients([...clients, newClient]);
       setNewClientName('');
       setNewClientEmail('');
-      
-      toast({
-        title: "Client Added",
-        description: `${newClientName} has been added to your master account.`
-      });
     }
   };
   
   const handleAccessClient = (clientId: number) => {
+    switchToClient(clientId);
     toast({
       title: "Accessing Client",
       description: "Switching to client account view..."
     });
-    // In a real implementation, this would switch the current user context to the selected client
   };
   
   const handleGenerateInviteLink = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
     if (!client) return;
     
-    // Generate a unique invite link
     const uniqueCode = Math.random().toString(36).substring(2, 10);
     const link = `${window.location.origin}/invite/${client.id}/${uniqueCode}`;
     
@@ -137,7 +90,6 @@ const MasterAccount = () => {
     const client = clients.find(c => c.id === selectedClientId);
     if (!client) return;
     
-    // In a real implementation, this would send an email with the invite link
     toast({
       title: "Invite Sent",
       description: `Invitation sent to ${inviteEmail} for ${client.name}`
