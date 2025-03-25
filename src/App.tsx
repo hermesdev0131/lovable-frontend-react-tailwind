@@ -1,13 +1,14 @@
+
 import { ErrorBoundary } from "react-error-boundary"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
-import { ThemeProvider } from "@/components/theme-provider"
-import Calendar from "@/pages/calendar"
-import Index from "@/pages/index"
-import NotFound from "@/pages/not-found"
+import { ThemeProvider } from "@/components/theme/ThemeProvider"
+import Calendar from "@/pages/Calendar"
+import Index from "@/pages/Index"
+import NotFound from "@/pages/NotFound"
 import { MasterAccountProvider } from "@/contexts/MasterAccountContext"
 import { Toaster } from "@/components/ui/toaster"
-import Layout from "@/components/layout"
+import Layout from "@/components/layout/Sidebar"
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 function App() {
