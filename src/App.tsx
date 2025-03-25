@@ -20,6 +20,8 @@ import Projects from "./pages/Projects"
 import ContentScheduling from "./pages/ContentScheduling"
 import Clients from "./pages/Clients"
 import Deals from "./pages/Deals"
+import WebsiteManagement from "./pages/WebsiteManagement"
+import EmailMarketing from "./pages/EmailMarketing"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -123,10 +125,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Email</h1>
-                        <p>Email management page content will go here.</p>
-                      </div>
+                      <EmailMarketing />
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -231,7 +230,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Website</div>
+                      <WebsiteManagement />
                     </Layout>
                   </ProtectedRoute>
                 }
