@@ -64,8 +64,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
                 src="/lovable-uploads/19d0bac1-2f20-4dcb-8a71-c65c4635deb8.png" 
                 alt="M Logo" 
                 className={cn(
-                  "dark:invert w-full max-w-full", 
-                  isExpanded ? "h-16" : "h-10"
+                  "dark:invert w-full max-w-full object-contain", 
+                  isExpanded ? "h-14" : "h-10"
                 )}
               />
             </div>
@@ -75,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
                 <img 
                   src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" 
                   alt="CRM Pro" 
-                  className="h-8 w-full max-w-full dark:invert"
+                  className="h-7 w-full max-w-full object-contain dark:invert"
                 />
               </div>
             )}
