@@ -16,8 +16,8 @@ import {
   HelpCircle, 
   MessageCircle, 
   Bot,
-  Building2, // Adding new icon for master account
-  Globe // Adding new icon for website management
+  Building2,
+  Globe
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
@@ -47,27 +47,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
 
   return (
     <aside className={cn(
-      "bg-white border-r border-r-border sticky top-0 z-20 h-screen w-64 flex-col justify-between overflow-y-auto dark:bg-darker",
-      !isExpanded && "w-16",
+      "bg-primary text-white sticky top-0 z-20 h-screen flex-col justify-between overflow-y-auto transition-all duration-300",
+      isExpanded ? "w-64" : "w-16",
     )}>
       <div className="px-6 py-4">
-        <Link to="/" className="flex items-center space-x-2">
-          <LayoutDashboard className="h-5 w-5" />
-          {isExpanded && <span className="font-bold">CRM Pro</span>}
-        </Link>
-        <button
-          className="ml-auto h-6 w-6 rounded-md border bg-secondary p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed data-[state=open]:bg-accent data-[state=open]:text-accent-foreground dark:border-secondary"
-          onClick={onToggle}
-        >
-          {isExpanded ? "<" : ">"}
-        </button>
+        <div className="flex items-center space-x-2 mb-6">
+          {/* Logo */}
+          <img 
+            src="/placeholder.svg" 
+            alt="CRM Pro Logo" 
+            className="h-8 w-8"
+          />
+          {isExpanded && <span className="font-bold text-white">CRM Pro</span>}
+          <button
+            className="ml-auto h-6 w-6 rounded-md bg-primary-foreground/10 p-1 text-white transition-colors hover:bg-primary-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary-foreground/30 focus:ring-offset-1"
+            onClick={onToggle}
+          >
+            {isExpanded ? "<" : ">"}
+          </button>
+        </div>
         <ul className="mt-6 space-y-1">
           <li>
             <Link
               to="/"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -80,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/contacts"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/contacts") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/contacts") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -93,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/pipeline"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/pipeline") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/pipeline") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -106,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/opportunities"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/opportunities") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/opportunities") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -119,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/calendar"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/calendar") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/calendar") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -132,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/website-management"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/website-management") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/website-management") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -145,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/integrations"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/integrations") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/integrations") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -158,7 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/reputation"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/reputation") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/reputation") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -171,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/content-scheduling"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/content-scheduling") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/content-scheduling") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -184,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/chatbot"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/chatbot") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/chatbot") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -197,7 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/conversations"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/conversations") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/conversations") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -210,7 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/master-account"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/master-account") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/master-account") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -227,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/settings"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/settings") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                isActive("/settings") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
                 !isExpanded && "justify-center"
               )}
             >
@@ -248,7 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
                 !isExpanded && "justify-center",
-                "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white"
               )}
             >
               <HelpCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
