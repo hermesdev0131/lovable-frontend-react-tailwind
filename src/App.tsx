@@ -21,6 +21,7 @@ import ChatbotManagement from "./pages/ChatbotManagement";
 import Conversations from "./pages/Conversations";
 import MasterAccount from "./pages/MasterAccount";
 import WebsiteManagement from "./pages/WebsiteManagement";
+import EmailMarketing from "./pages/EmailMarketing";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
@@ -95,6 +96,7 @@ const App = () => {
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/master-account" element={<MasterAccount />} />
                         <Route path="/website-management" element={<WebsiteManagement />} />
+                        <Route path="/email-marketing" element={<EmailMarketing />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
