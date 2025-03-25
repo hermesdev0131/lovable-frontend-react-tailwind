@@ -6,7 +6,7 @@ import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, B
 import { toast } from '@/components/ui/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
 import darkLogoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
-import lightLogoImage from '/lovable-uploads/b4b09b81-644f-4270-8528-546e3e813612.png';
+import lightLogoImage from '/lovable-uploads/cef2e73a-adb7-41f2-9326-c41648b8d07d.png';
 
 const Sidebar = () => {
   const location = useLocation();
