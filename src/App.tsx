@@ -18,6 +18,7 @@ import Reputation from "./pages/Reputation";
 import ContentScheduling from "./pages/ContentScheduling";
 import ChatbotManagement from "./pages/ChatbotManagement";
 import Conversations from "./pages/Conversations";
+import MasterAccount from "./pages/MasterAccount";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
@@ -82,6 +83,7 @@ const App = () => {
                       <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
                       <Route path="/conversations" element={<Conversations />} />
                       <Route path="/settings" element={<Settings />} />
+                      <Route path="/master-account" element={<MasterAccount />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
