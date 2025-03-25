@@ -36,11 +36,39 @@ interface WebsitePage {
   bounceRate: number;
 }
 
+interface ContentItem {
+  id: number;
+  title: string;
+  content: string;
+  type: 'email' | 'social' | 'blog' | 'other';
+  platform?: string;
+  createdBy: number;
+  createdAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  scheduledFor?: string;
+  rejectionReason?: string;
+  approvedBy?: number;
+  approvedAt?: string;
+}
+
+interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  type: 'approval' | 'rejection' | 'system' | 'other';
+  createdAt: string;
+  read: boolean;
+  relatedContentId?: number;
+  forClientId?: number | null;
+}
+
 interface MasterAccountContextType {
   clients: Client[];
   currentClientId: number | null;
   webhooks: Webhook[];
   websitePages: WebsitePage[];
+  contentItems: ContentItem[];
+  notifications: Notification[];
   addClient: (client: Omit<Client, 'id'>) => void;
   removeClient: (id: number) => void;
   switchToClient: (id: number | null) => void;
@@ -53,6 +81,13 @@ interface MasterAccountContextType {
   addWebsitePage: (page: Omit<WebsitePage, 'id'>) => void;
   removeWebsitePage: (id: number) => void;
   updateWebsitePage: (id: number, data: Partial<WebsitePage>) => void;
+  addContentItem: (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => void;
+  updateContentStatus: (id: number, status: 'approved' | 'rejected', reason?: string) => void;
+  getContentItems: (clientId?: number | null, status?: string) => ContentItem[];
+  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
+  markNotificationAsRead: (id: number) => void;
+  getNotifications: (forClientId?: number | null) => Notification[];
+  getUnreadNotificationsCount: (forClientId?: number | null) => number;
 }
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
@@ -177,6 +212,65 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       views: 0,
       conversions: 0,
       bounceRate: 0
+    }
+  ]);
+
+  const [contentItems, setContentItems] = useState<ContentItem[]>([
+    {
+      id: 1,
+      title: "Summer Newsletter",
+      content: "Check out our latest summer deals and promotions!",
+      type: "email",
+      createdBy: 2,
+      createdAt: "2023-09-15T10:30:00Z",
+      status: "pending",
+      scheduledFor: "2023-09-20T09:00:00Z"
+    },
+    {
+      id: 2,
+      title: "Product Launch Announcement",
+      content: "We're excited to announce our new product line!",
+      type: "social",
+      platform: "facebook",
+      createdBy: 3,
+      createdAt: "2023-09-14T15:45:00Z",
+      status: "approved",
+      scheduledFor: "2023-09-18T12:00:00Z",
+      approvedBy: 1,
+      approvedAt: "2023-09-15T09:30:00Z"
+    },
+    {
+      id: 3,
+      title: "Holiday Promotions",
+      content: "Special offers for the upcoming holiday season!",
+      type: "email",
+      createdBy: 2,
+      createdAt: "2023-09-13T14:20:00Z",
+      status: "rejected",
+      rejectionReason: "Needs more specific details about the offers"
+    }
+  ]);
+  
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: 1,
+      title: "Content Approval",
+      message: "TechStart Inc has submitted content for approval",
+      type: "approval",
+      createdAt: "2023-09-15T10:35:00Z",
+      read: false,
+      relatedContentId: 1,
+      forClientId: null
+    },
+    {
+      id: 2,
+      title: "Content Approved",
+      message: "Your social media post has been approved",
+      type: "approval",
+      createdAt: "2023-09-15T09:35:00Z",
+      read: true,
+      relatedContentId: 2,
+      forClientId: 3
     }
   ]);
 
@@ -323,6 +417,106 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     });
   };
 
+  const addContentItem = (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => {
+    const newItem: ContentItem = {
+      ...item,
+      id: contentItems.length > 0 ? Math.max(...contentItems.map(item => item.id)) + 1 : 1,
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    };
+    
+    setContentItems([...contentItems, newItem]);
+    
+    if (item.createdBy !== null) {
+      const client = clients.find(c => c.id === item.createdBy);
+      if (client) {
+        addNotification({
+          title: "Content Approval",
+          message: `${client.name} has submitted ${item.type} content for approval`,
+          type: "approval",
+          relatedContentId: newItem.id,
+          forClientId: null
+        });
+      }
+    }
+    
+    toast({
+      title: "Content Created",
+      description: `${item.title} has been created and is pending approval.`
+    });
+  };
+  
+  const updateContentStatus = (id: number, status: 'approved' | 'rejected', reason?: string) => {
+    const contentItem = contentItems.find(item => item.id === id);
+    if (!contentItem) return;
+    
+    const updatedContentItems = contentItems.map(item => 
+      item.id === id ? { 
+        ...item, 
+        status, 
+        rejectionReason: status === 'rejected' ? reason : undefined,
+        approvedBy: status === 'approved' ? currentClientId : undefined,
+        approvedAt: status === 'approved' ? new Date().toISOString() : undefined
+      } : item
+    );
+    
+    setContentItems(updatedContentItems);
+    
+    const client = clients.find(c => c.id === contentItem.createdBy);
+    if (client) {
+      addNotification({
+        title: status === 'approved' ? "Content Approved" : "Content Rejected",
+        message: status === 'approved' 
+          ? `Your ${contentItem.type} "${contentItem.title}" has been approved` 
+          : `Your ${contentItem.type} "${contentItem.title}" has been rejected${reason ? `: ${reason}` : ''}`,
+        type: status === 'approved' ? "approval" : "rejection",
+        relatedContentId: id,
+        forClientId: contentItem.createdBy
+      });
+    }
+    
+    toast({
+      title: status === 'approved' ? "Content Approved" : "Content Rejected",
+      description: `${contentItem.title} has been ${status}.`
+    });
+  };
+  
+  const getContentItems = (clientId?: number | null, status?: string) => {
+    return contentItems.filter(item => {
+      if (clientId !== undefined && item.createdBy !== clientId) return false;
+      if (status && item.status !== status) return false;
+      return true;
+    });
+  };
+  
+  const addNotification = (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1,
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+    
+    setNotifications([newNotification, ...notifications]);
+  };
+  
+  const markNotificationAsRead = (id: number) => {
+    setNotifications(notifications.map(notification => 
+      notification.id === id ? { ...notification, read: true } : notification
+    ));
+  };
+  
+  const getNotifications = (forClientId?: number | null) => {
+    return notifications.filter(notification => {
+      if (forClientId !== undefined && notification.forClientId !== forClientId) return false;
+      return true;
+    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
+  
+  const getUnreadNotificationsCount = (forClientId?: number | null) => {
+    return getNotifications(forClientId).filter(notification => !notification.read).length;
+  };
+
   return (
     <MasterAccountContext.Provider 
       value={{ 
@@ -330,6 +524,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         currentClientId, 
         webhooks,
         websitePages,
+        contentItems,
+        notifications,
         addClient, 
         removeClient, 
         switchToClient,
@@ -341,7 +537,14 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         triggerWebhook,
         addWebsitePage,
         removeWebsitePage,
-        updateWebsitePage
+        updateWebsitePage,
+        addContentItem,
+        updateContentStatus,
+        getContentItems,
+        addNotification,
+        markNotificationAsRead,
+        getNotifications,
+        getUnreadNotificationsCount
       }}
     >
       {children}

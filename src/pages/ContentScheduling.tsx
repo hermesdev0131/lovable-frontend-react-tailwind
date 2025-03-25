@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Facebook, Instagram, Linkedin, Twitter, Plus, Clock, Send, Filter, Check, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Facebook, Instagram, Linkedin, Twitter, Plus, Clock, Send, Filter, Check, X, ThumbsUp, ThumbsDown, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -9,23 +8,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
 
-// Define the ScheduledContent interface with specific literal types for status
 interface ScheduledContent {
   id: number;
   content: string;
   date: Date;
   time: string;
   platforms: string[];
-  status: "draft" | "scheduled" | "published" | "failed";
+  status: "draft" | "scheduled" | "published" | "failed" | "pending" | "approved" | "rejected";
   media: string | null;
+  rejectionReason?: string;
 }
 
-// Sample scheduled content data with explicitly typed status values
 const initialScheduledContent: ScheduledContent[] = [
   {
     id: 1,
@@ -56,7 +57,6 @@ const initialScheduledContent: ScheduledContent[] = [
   }
 ];
 
-// Define the platformIcons object
 const platformIcons = {
   facebook: <Facebook className="text-blue-600" />,
   instagram: <Instagram className="text-pink-600" />,
@@ -75,6 +75,20 @@ const ContentScheduling = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [filter, setFilter] = useState("all");
   const { toast } = useToast();
+  const [rejectReason, setRejectReason] = useState('');
+  const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  
+  const { 
+    addContentItem,
+    getContentItems,
+    updateContentStatus,
+    isInMasterMode, 
+    currentClientId 
+  } = useMasterAccount();
+  
+  const socialContentItems = getContentItems(undefined, undefined)
+    .filter(item => item.type === 'social');
 
   const handlePlatformToggle = (platform: string) => {
     if (selectedPlatforms.includes(platform)) {
@@ -112,19 +126,30 @@ const ContentScheduling = () => {
       return;
     }
 
+    addContentItem({
+      title: `Social Post - ${selectedPlatforms.join(', ')}`,
+      content: newContent,
+      type: 'social',
+      platform: selectedPlatforms.join(','),
+      createdBy: currentClientId || 0,
+      scheduledFor: new Date(selectedDate.setHours(
+        parseInt(selectedTime.split(':')[0]), 
+        parseInt(selectedTime.split(':')[1])
+      )).toISOString()
+    });
+    
     const newPost: ScheduledContent = {
       id: Date.now(),
       content: newContent,
       date: selectedDate,
       time: selectedTime,
       platforms: selectedPlatforms,
-      status: "scheduled", // Using the literal string type here
+      status: "pending",
       media: null
     };
 
     setScheduledContent([...scheduledContent, newPost]);
     
-    // Reset form
     setNewContent("");
     setSelectedDate(new Date());
     setSelectedTime("12:00");
@@ -132,8 +157,8 @@ const ContentScheduling = () => {
     setIsCreating(false);
 
     toast({
-      title: "Content scheduled",
-      description: "Your content has been scheduled for posting",
+      title: "Content submitted",
+      description: "Your content has been submitted for approval",
     });
   };
 
@@ -144,18 +169,68 @@ const ContentScheduling = () => {
       description: "The scheduled content has been removed",
     });
   };
+  
+  const handleApprove = (contentId: number) => {
+    updateContentStatus(contentId, 'approved');
+    
+    setScheduledContent(scheduledContent.map(content => 
+      content.id === contentId ? { ...content, status: "approved" } : content
+    ));
+  };
+  
+  const openRejectDialog = (contentId: number) => {
+    setSelectedContentId(contentId);
+    setRejectReason('');
+    setIsRejectDialogOpen(true);
+  };
+  
+  const handleReject = () => {
+    if (selectedContentId) {
+      updateContentStatus(selectedContentId, 'rejected', rejectReason);
+      
+      setScheduledContent(scheduledContent.map(content => 
+        content.id === selectedContentId ? { 
+          ...content, 
+          status: "rejected",
+          rejectionReason: rejectReason
+        } : content
+      ));
+      
+      setIsRejectDialogOpen(false);
+      setSelectedContentId(null);
+    }
+  };
 
   const filteredContent = scheduledContent.filter(content => {
     if (filter === "all") return true;
     return content.platforms.includes(filter);
   }).filter(content => {
     if (activeTab === "upcoming") {
-      return content.status === "scheduled";
+      return content.status === "scheduled" || content.status === "pending" || content.status === "approved";
     } else if (activeTab === "published") {
       return content.status === "published";
+    } else if (activeTab === "approval") {
+      return content.status === "pending" || content.status === "rejected";
     }
     return true;
   });
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Pending</Badge>;
+      case 'approved':
+        return <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Approved</Badge>;
+      case 'rejected':
+        return <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Rejected</Badge>;
+      case 'scheduled':
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Scheduled</Badge>;
+      case 'published':
+        return <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Published</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -272,7 +347,7 @@ const ContentScheduling = () => {
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
-            <Button onClick={handleScheduleContent}>Schedule Post</Button>
+            <Button onClick={handleScheduleContent}>Submit for Approval</Button>
           </CardFooter>
         </Card>
       )}
@@ -280,7 +355,7 @@ const ContentScheduling = () => {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
-            <CardTitle>Scheduled Content</CardTitle>
+            <CardTitle>Content Management</CardTitle>
             <div className="flex items-center gap-2">
               <Select value={filter} onValueChange={setFilter}>
                 <SelectTrigger className="w-[180px]">
@@ -303,6 +378,7 @@ const ContentScheduling = () => {
             <TabsList className="mb-4">
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
               <TabsTrigger value="published">Published</TabsTrigger>
+              <TabsTrigger value="approval">Approval Queue</TabsTrigger>
             </TabsList>
             
             <TabsContent value="upcoming" className="space-y-4">
@@ -316,7 +392,10 @@ const ContentScheduling = () => {
                     <CardContent className="p-4">
                       <div className="flex justify-between">
                         <div className="space-y-2 flex-1">
-                          <p className="text-sm font-medium">{content.content}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium">{content.content}</p>
+                            {getStatusBadge(content.status)}
+                          </div>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             <span>{format(content.date, "PPP")} at {content.time}</span>
@@ -371,9 +450,122 @@ const ContentScheduling = () => {
                 ))
               )}
             </TabsContent>
+            
+            <TabsContent value="approval" className="space-y-4">
+              {socialContentItems.filter(item => item.status === 'pending' || item.status === 'rejected').length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">
+                  No content waiting for approval
+                </div>
+              ) : (
+                socialContentItems.filter(item => item.status === 'pending' || item.status === 'rejected').map((item) => (
+                  <Card key={item.id} className="overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-medium">{item.title}</h3>
+                            {getStatusBadge(item.status)}
+                          </div>
+                          <p className="text-sm text-muted-foreground whitespace-pre-line">
+                            {item.content}
+                          </p>
+                          
+                          {item.status === 'rejected' && item.rejectionReason && (
+                            <div className="mt-2 p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-md text-sm">
+                              <div className="font-medium flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Rejection Reason:
+                              </div>
+                              <p>{item.rejectionReason}</p>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
+                            <Clock className="h-3 w-3" />
+                            <span>Created: {format(new Date(item.createdAt), "PPP")}</span>
+                            
+                            {item.scheduledFor && (
+                              <>
+                                <span className="mx-2">•</span>
+                                <CalendarIcon className="h-3 w-3" />
+                                <span>Scheduled: {format(new Date(item.scheduledFor), "PPP")}</span>
+                              </>
+                            )}
+                          </div>
+                          
+                          {item.platform && (
+                            <div className="flex items-center gap-2 mt-2">
+                              {item.platform.split(',').map((platform) => (
+                                <div key={platform} className="tooltip" data-tip={platform}>
+                                  {platformIcons[platform.trim()]}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {item.status === 'pending' && isInMasterMode && (
+                          <div className="flex items-start gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                              onClick={() => handleApprove(item.id)}
+                            >
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-red-600 border-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                              onClick={() => openRejectDialog(item.id)}
+                            >
+                              <ThumbsDown className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Content</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this content.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              placeholder="Enter rejection reason..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleReject}
+              disabled={!rejectReason.trim()}
+            >
+              Reject Content
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -452,7 +644,6 @@ const ContentScheduling = () => {
           </div>
         </CardContent>
       </Card>
-
     </div>
   );
 };
