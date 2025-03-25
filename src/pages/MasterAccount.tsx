@@ -8,10 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, UserPlus, Search, ArrowUpRight, Shield, Bell } from 'lucide-react';
+import { Eye, UserPlus, Search, ArrowUpRight, Shield, Bell, Copy, Check, Mail } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
 
 const MasterAccount = () => {
+  const { clients, addClient } = useMasterAccount();
   const [clients, setClients] = useState([
     { 
       id: 1, 
@@ -54,6 +56,10 @@ const MasterAccount = () => {
   const [newClientName, setNewClientName] = useState('');
   const [newClientEmail, setNewClientEmail] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [inviteLink, setInviteLink] = useState('');
+  const [copied, setCopied] = useState(false);
   
   const handleAddClient = () => {
     if (newClientName && newClientEmail) {
@@ -89,6 +95,57 @@ const MasterAccount = () => {
     // In a real implementation, this would switch the current user context to the selected client
   };
   
+  const handleGenerateInviteLink = (clientId: number) => {
+    const client = clients.find(c => c.id === clientId);
+    if (!client) return;
+    
+    // Generate a unique invite link
+    const uniqueCode = Math.random().toString(36).substring(2, 10);
+    const link = `${window.location.origin}/invite/${client.id}/${uniqueCode}`;
+    
+    setSelectedClientId(clientId);
+    setInviteLink(link);
+    
+    toast({
+      title: "Invite Link Generated",
+      description: `Invite link for ${client.name} is ready to share`
+    });
+  };
+  
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    
+    toast({
+      title: "Link Copied",
+      description: "Invite link copied to clipboard"
+    });
+    
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
+  const handleSendInviteEmail = () => {
+    if (!inviteEmail || !selectedClientId) {
+      toast({
+        title: "Error",
+        description: "Please enter an email address and select a client",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const client = clients.find(c => c.id === selectedClientId);
+    if (!client) return;
+    
+    // In a real implementation, this would send an email with the invite link
+    toast({
+      title: "Invite Sent",
+      description: `Invitation sent to ${inviteEmail} for ${client.name}`
+    });
+    
+    setInviteEmail('');
+  };
+  
   const filteredClients = clients.filter(client => 
     client.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     client.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -112,6 +169,7 @@ const MasterAccount = () => {
       <Tabs defaultValue="clients" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="clients">Client Accounts</TabsTrigger>
+          <TabsTrigger value="invites">User Invitations</TabsTrigger>
           <TabsTrigger value="settings">Master Settings</TabsTrigger>
           <TabsTrigger value="reports">Consolidated Reports</TabsTrigger>
         </TabsList>
@@ -223,6 +281,11 @@ const MasterAccount = () => {
                       <Shield className="h-4 w-4 mr-2" />
                       Permissions
                     </Button>
+                    
+                    <Button variant="outline" size="sm" onClick={() => handleGenerateInviteLink(client.id)}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Invite Users
+                    </Button>
                   </div>
                   
                   <Button onClick={() => handleAccessClient(client.id)}>
@@ -241,6 +304,130 @@ const MasterAccount = () => {
                 </CardContent>
               </Card>
             )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="invites">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Invite Users</CardTitle>
+                <CardDescription>
+                  Generate invitation links to share with users or invite them directly via email
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Generate Invite Link</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="client-select">Select Client Account</Label>
+                      <select
+                        id="client-select"
+                        className="w-full p-2 border border-input rounded"
+                        value={selectedClientId || ''}
+                        onChange={(e) => setSelectedClientId(Number(e.target.value) || null)}
+                      >
+                        <option value="">Select a client</option>
+                        {clients.map(client => (
+                          <option key={client.id} value={client.id}>
+                            {client.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => selectedClientId && handleGenerateInviteLink(selectedClientId)} 
+                      disabled={!selectedClientId}
+                    >
+                      Generate Link
+                    </Button>
+                    
+                    {inviteLink && (
+                      <div className="mt-4 p-3 bg-muted rounded-md">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Invitation Link</Label>
+                          <Button variant="ghost" size="sm" onClick={handleCopyLink}>
+                            {copied ? (
+                              <>
+                                <Check className="h-4 w-4 mr-2" />
+                                Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copy
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        <div className="bg-background p-2 rounded text-sm font-mono break-all">
+                          {inviteLink}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          This link will expire in 7 days
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Send Invite by Email</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-email">Email Address</Label>
+                      <Input
+                        id="invite-email"
+                        type="email"
+                        placeholder="user@example.com"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-client-select">Client Account</Label>
+                      <select
+                        id="invite-client-select"
+                        className="w-full p-2 border border-input rounded"
+                        value={selectedClientId || ''}
+                        onChange={(e) => setSelectedClientId(Number(e.target.value) || null)}
+                      >
+                        <option value="">Select a client</option>
+                        {clients.map(client => (
+                          <option key={client.id} value={client.id}>
+                            {client.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <Button 
+                      onClick={handleSendInviteEmail} 
+                      disabled={!inviteEmail || !selectedClientId}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Invitation
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Invitations</CardTitle>
+                <CardDescription>Manage all pending invitations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center p-6 border border-dashed rounded-md">
+                  <p className="text-muted-foreground">No active invitations</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Generate an invitation link to get started
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
