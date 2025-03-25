@@ -13,6 +13,9 @@ import CustomErrorBoundary from "./components/CustomErrorBoundary"
 import { useState } from "react"
 import MasterAccount from "./pages/MasterAccount"
 import SettingsPage from "./pages/Settings"
+import Opportunities from "./pages/Opportunities"
+import Pipeline from "./pages/Pipeline"
+import Reputation from "./pages/Reputation"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -139,11 +142,44 @@ function App() {
               />
 
               <Route
+                path="/opportunities"
+                element={
+                  <ProtectedRoute>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                      <Opportunities />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/pipeline"
+                element={
+                  <ProtectedRoute>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                      <Pipeline />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/projects"
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Projects</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/reputation"
+                element={
+                  <ProtectedRoute>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                      <Reputation />
                     </Layout>
                   </ProtectedRoute>
                 }

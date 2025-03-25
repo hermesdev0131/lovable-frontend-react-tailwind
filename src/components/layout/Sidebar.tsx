@@ -20,7 +20,9 @@ import {
   Globe,
   ChevronLeft,
   ChevronRight,
-  Mail
+  Mail,
+  Lightbulb,
+  Workflow
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
@@ -52,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
   }
 
   return (
-    <div className="relative flex">
+    <div className="relative flex h-screen">
       <aside className={cn(
         "bg-background text-foreground sticky top-0 z-20 h-screen flex-col justify-between overflow-y-auto transition-all duration-300",
         isExpanded ? "w-64" : "w-16",
@@ -131,6 +133,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                 >
                   <Briefcase className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                   {isExpanded && <span>Projects</span>}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/opportunities"
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive("/opportunities") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    !isExpanded && "justify-center"
+                  )}
+                >
+                  <Lightbulb className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                  {isExpanded && <span>Opportunities</span>}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/pipeline"
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive("/pipeline") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    !isExpanded && "justify-center"
+                  )}
+                >
+                  <Workflow className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                  {isExpanded && <span>Pipeline</span>}
                 </Link>
               </li>
               <li>
@@ -294,8 +322,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
         {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
       </button>
       
-      {/* Main content */}
-      <div className="flex-1 p-6">
+      {/* Main content - Fixed this section to properly display content */}
+      <div className="flex-1 overflow-auto">
         {children}
       </div>
     </div>
