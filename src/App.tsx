@@ -13,6 +13,7 @@ import Opportunities from "./pages/Opportunities";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import Reputation from "./pages/Reputation";
+import ContentScheduling from "./pages/ContentScheduling";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
@@ -54,6 +55,7 @@ const App = () => {
                   <Route path="/calendar" element={<Calendar />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/reputation" element={<Reputation />} />
+                  <Route path="/content-scheduling" element={<ContentScheduling />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
