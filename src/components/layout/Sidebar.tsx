@@ -13,8 +13,9 @@ const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const { theme } = useTheme();
   
-  // Using only one logo image for now since the light logo is causing issues
-  // We'll use the darkLogoImage for both light and dark modes
+  // For dark mode, we'll invert the existing dark logo to make it appear as a white logo
+  // This approach avoids the need for a separate light logo file
+  const logoStyle = theme === 'dark' ? { filter: 'invert(1)' } : {};
   const logoImage = darkLogoImage;
   
   useEffect(() => {
@@ -60,7 +61,7 @@ const Sidebar = () => {
                 alt="Company Logo" 
                 className="w-full h-auto max-h-full object-contain" 
                 onClick={() => navigate('/')}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', ...logoStyle }}
               />
             </div> 
             : 
@@ -70,7 +71,7 @@ const Sidebar = () => {
                 alt="Company Logo" 
                 className="max-w-full max-h-full object-contain" 
                 onClick={() => navigate('/')}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', ...logoStyle }}
               />
             </div>
           }
