@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
@@ -29,30 +28,28 @@ interface NavItemProps {
 }
 
 const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isActive }) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Link 
-          to={to} 
-          className={cn(
-            "flex h-10 items-center rounded-md text-sm transition-all w-full",
-            "hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            isActive 
-              ? "bg-primary/10 text-primary" 
-              : "text-foreground/60 hover:text-foreground"
-          )}
-        >
-          <div className={cn("flex items-center px-3 w-full", !label && "justify-center")}>
-            <div className="shrink-0 w-5 h-5 flex justify-center items-center">{icon}</div>
-            {label && <span className="ml-3 truncate">{label}</span>}
-          </div>
-        </Link>
-      </TooltipTrigger>
-      <TooltipContent side="right" className="hidden lg:block">
-        {label}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Link 
+        to={to} 
+        className={cn(
+          "flex h-10 items-center rounded-md text-sm transition-all w-full",
+          "hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+          isActive 
+            ? "bg-primary/10 text-primary" 
+            : "text-foreground/60 hover:text-foreground"
+        )}
+      >
+        <div className={cn("flex items-center px-3 w-full", !label && "justify-center")}>
+          <div className="shrink-0 w-5 h-5 flex justify-center items-center">{icon}</div>
+          {label && <span className="ml-3 truncate">{label}</span>}
+        </div>
+      </Link>
+    </TooltipTrigger>
+    <TooltipContent side="right" className="hidden lg:block">
+      {label}
+    </TooltipContent>
+  </Tooltip>
 );
 
 const Sidebar: React.FC = () => {
