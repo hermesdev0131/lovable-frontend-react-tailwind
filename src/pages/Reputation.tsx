@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 // Sample data for ratings and reviews
 const ratingData = Array.from({ length: 30 }, (_, i) => ({
@@ -93,7 +95,7 @@ const Reputation = () => {
   const negativeReviews = reviewsData.filter(review => review.rating <= 2).length;
   const pendingResponses = reviewsData.filter(review => !review.replied).length;
 
-  // Format date for display
+  // Format date for display - Fixed to use proper DateTimeFormatOptions
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
