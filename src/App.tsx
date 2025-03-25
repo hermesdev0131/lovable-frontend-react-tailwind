@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -16,6 +15,8 @@ import SettingsPage from "./pages/Settings"
 import Opportunities from "./pages/Opportunities"
 import Pipeline from "./pages/Pipeline"
 import Reputation from "./pages/Reputation"
+import Projects from "./pages/Projects"
+import ContentScheduling from "./pages/ContentScheduling"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -58,7 +59,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Account</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Account</h1>
+                        <p>Account management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -69,7 +73,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Campaigns</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Campaigns</h1>
+                        <p>Campaign management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -80,7 +87,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Clients</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Clients</h1>
+                        <p>Client management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -91,7 +101,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Content</div>
+                      <ContentScheduling />
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -102,7 +112,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Deals</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Deals</h1>
+                        <p>Deal management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -113,7 +126,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Email</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Email</h1>
+                        <p>Email management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -124,7 +140,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Integrations</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Integrations</h1>
+                        <p>Integration management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -135,7 +154,10 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Notifications</div>
+                      <div className="container mx-auto py-6">
+                        <h1 className="text-3xl font-bold mb-6">Notifications</h1>
+                        <p>Notification management page content will go here.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -168,7 +190,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Projects</div>
+                      <Projects />
                     </Layout>
                   </ProtectedRoute>
                 }

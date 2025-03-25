@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -31,7 +30,7 @@ import { useMasterAccount } from '@/contexts/MasterAccountContext';
 interface SidebarProps {
   isExpanded: boolean;
   onToggle: () => void;
-  children?: React.ReactNode; // Added children to the interface
+  children?: React.ReactNode; 
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => {
@@ -54,9 +53,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
   }
 
   return (
-    <div className="relative flex h-screen">
+    <div className="flex h-screen w-full overflow-hidden">
       <aside className={cn(
-        "bg-background text-foreground sticky top-0 z-20 h-screen flex-col justify-between overflow-y-auto transition-all duration-300",
+        "bg-background text-foreground h-screen flex flex-col justify-between overflow-y-auto transition-all duration-300 border-r border-border",
         isExpanded ? "w-64" : "w-16",
       )}>
         <div className="flex flex-col h-full">
@@ -322,10 +321,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
         {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
       </button>
       
-      {/* Main content - Fixed this section to properly display content */}
-      <div className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-y-auto bg-background p-6 w-full">
         {children}
-      </div>
+      </main>
     </div>
   );
 };
