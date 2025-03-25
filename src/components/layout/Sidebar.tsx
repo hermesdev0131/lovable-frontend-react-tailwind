@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -56,25 +57,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
         )}>
           <div className="w-full flex flex-col items-center">
             <div className={cn(
-              "flex items-center justify-center w-full",
+              "flex items-center justify-center w-full px-2",
               isExpanded ? "py-3" : "py-2"
             )}>
               <img 
                 src="/lovable-uploads/19d0bac1-2f20-4dcb-8a71-c65c4635deb8.png" 
                 alt="M Logo" 
                 className={cn(
-                  "dark:invert", 
-                  isExpanded ? "h-16 w-16" : "h-10 w-10"
+                  "dark:invert w-full max-w-full", 
+                  isExpanded ? "h-16" : "h-10"
                 )}
               />
             </div>
             
             {isExpanded && (
-              <div className="flex items-center justify-center w-full">
+              <div className="flex items-center justify-center w-full px-2">
                 <img 
                   src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" 
                   alt="CRM Pro" 
-                  className="h-8 dark:invert"
+                  className="h-8 w-full max-w-full dark:invert"
                 />
               </div>
             )}
