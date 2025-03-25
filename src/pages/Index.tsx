@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { LineChart, PieChart, Users, Layers, ArrowUp, ArrowDown, Plus, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,13 +13,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [recentActivity, setRecentActivity] = useState([
-    { id: 1, action: "New contact added", time: "1 hour ago", name: "Sarah Johnson" },
-    { id: 2, action: "Deal moved to negotiation", time: "2 hours ago", name: "ACME Corp" },
-    { id: 3, action: "New opportunity created", time: "3 hours ago", name: "Global Expansion" },
-    { id: 4, action: "Email sent", time: "5 hours ago", name: "Michael Chang" },
-    { id: 5, action: "Meeting scheduled", time: "Yesterday", name: "Tech Partners Ltd" },
-  ]);
+  const [recentActivity, setRecentActivity] = useState([]);
   
   const totalContacts = contacts.length;
   const totalDeals = deals.length;
@@ -89,8 +84,8 @@ const Index = () => {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                <span className="text-green-500 font-medium flex items-center">
-                  <ArrowUp className="h-3 w-3 mr-1" /> 12% from last month
+                <span className="text-muted-foreground font-medium">
+                  No contacts added yet
                 </span>
               </div>
             </CardContent>
@@ -111,13 +106,8 @@ const Index = () => {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                <span className="flex items-center">
-                  <span className="text-green-500 font-medium flex items-center mr-2">
-                    <ArrowUp className="h-3 w-3 mr-1" /> {wonDeals} won
-                  </span>
-                  <span className="text-red-500 font-medium flex items-center">
-                    <ArrowDown className="h-3 w-3 mr-1" /> {totalDeals - openDeals - wonDeals} lost
-                  </span>
+                <span className="text-muted-foreground font-medium">
+                  No active deals
                 </span>
               </div>
             </CardContent>
@@ -138,8 +128,8 @@ const Index = () => {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                <span className="text-blue-500 font-medium flex items-center">
-                  {formatCurrency(potentialValue)} potential
+                <span className="text-muted-foreground font-medium">
+                  No value in pipeline yet
                 </span>
               </div>
             </CardContent>
@@ -170,19 +160,28 @@ const Index = () => {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((item, i) => (
-                  <div key={item.id} className="flex items-start space-x-3 animate-slide-in-right" style={{ animationDelay: `${i * 0.1}s` }}>
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
-                    <div>
-                      <div className="font-medium">{item.action}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {item.name} • {item.time}
+              {recentActivity.length > 0 ? (
+                <div className="space-y-4">
+                  {recentActivity.map((item, i) => (
+                    <div key={item.id} className="flex items-start space-x-3 animate-slide-in-right" style={{ animationDelay: `${i * 0.1}s` }}>
+                      <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                      <div>
+                        <div className="font-medium">{item.action}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {item.name} • {item.time}
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-center">
+                  <div>
+                    <p className="text-muted-foreground mb-2">No recent activity</p>
+                    <p className="text-sm text-muted-foreground">Your activity will appear here</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -252,6 +251,8 @@ const Index = () => {
                     View Calendar
                   </Button>
                 </div>
+                
+                <p className="mt-4">No tasks scheduled</p>
               </div>
             </CardContent>
           </Card>
@@ -261,34 +262,54 @@ const Index = () => {
               <CardTitle>Hot Opportunities</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {opportunities
-                  .filter(opp => opp.probability >= 40)
-                  .slice(0, 3)
-                  .map((opp, i) => (
-                    <div 
-                      key={opp.id} 
-                      className="animate-slide-in-right cursor-pointer p-2 rounded-md hover:bg-accent/50 transition-colors" 
-                      style={{ animationDelay: `${i * 0.1}s` }}
-                      onClick={() => {
-                        toast({
-                          title: opp.name,
-                          description: `Potential value: ${formatCurrency(opp.potentialValue)}`,
-                          duration: 3000,
-                        });
-                        navigate('/opportunities');
-                      }}
-                    >
-                      <div className="font-medium truncate">{opp.name}</div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {formatCurrency(opp.potentialValue)}
-                        </span>
-                        <span className="text-green-500">{opp.probability}%</span>
+              {opportunities.length > 0 ? (
+                <div className="space-y-3">
+                  {opportunities
+                    .filter(opp => opp.probability >= 40)
+                    .slice(0, 3)
+                    .map((opp, i) => (
+                      <div 
+                        key={opp.id} 
+                        className="animate-slide-in-right cursor-pointer p-2 rounded-md hover:bg-accent/50 transition-colors" 
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                        onClick={() => {
+                          toast({
+                            title: opp.name,
+                            description: `Potential value: ${formatCurrency(opp.potentialValue)}`,
+                            duration: 3000,
+                          });
+                          navigate('/opportunities');
+                        }}
+                      >
+                        <div className="font-medium truncate">{opp.name}</div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {formatCurrency(opp.potentialValue)}
+                          </span>
+                          <span className="text-green-500">{opp.probability}%</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="h-[150px] flex items-center justify-center text-center">
+                  <div>
+                    <p className="text-muted-foreground mb-2">No opportunities</p>
+                    <p className="text-sm text-muted-foreground">
+                      Add opportunities to start tracking potential deals
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      onClick={() => navigate('/opportunities')}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Opportunity
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
