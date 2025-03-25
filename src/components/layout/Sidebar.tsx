@@ -23,6 +23,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import Navbar from './Navbar';
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -279,9 +280,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
         {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
       </button>
       
-      <main className="flex-1 overflow-y-auto bg-background p-6 w-full">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navbar onToggleSidebar={onToggle} />
+        <main className="flex-1 overflow-y-auto bg-background p-6 w-full">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

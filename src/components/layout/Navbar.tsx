@@ -70,7 +70,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
           <ClientSwitcher />
           <Separator orientation="vertical" className="h-6" />
           
-          {/* Theme toggle - now using ThemeToggle component */}
+          {/* Theme toggle */}
           <ThemeToggle />
           
           <Separator orientation="vertical" className="h-6" />
