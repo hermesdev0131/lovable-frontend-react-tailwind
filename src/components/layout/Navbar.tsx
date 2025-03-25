@@ -62,16 +62,18 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />}
           </Button>
           <Separator orientation="vertical" className="h-6" />
+          
+          {/* User dropdown menu - highly visible in top right */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="rounded-full p-0 h-9 w-9 flex items-center justify-center">
+              <Button variant="outline" className="rounded-full p-1 h-10 w-10 flex items-center justify-center border-2 hover:bg-accent hover:text-accent-foreground">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt="User" />
                   <AvatarFallback className="bg-primary/10">U</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50 w-56 mt-1">
+            <DropdownMenuContent align="end" className="z-50 w-56 mt-1 bg-popover border border-border shadow-lg">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">My Account</p>
@@ -110,7 +112,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={handleLogout} 
-                className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-950/10 flex items-center"
+                className="cursor-pointer text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 flex items-center font-medium"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Log out
