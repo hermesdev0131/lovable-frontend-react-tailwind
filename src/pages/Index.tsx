@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LineChart, PieChart, Users, Layers, ArrowUp, ArrowDown, Plus, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,6 @@ const Index = () => {
     { id: 5, action: "Meeting scheduled", time: "Yesterday", name: "Tech Partners Ltd" },
   ]);
   
-  // Calculate summary statistics
   const totalContacts = contacts.length;
   const totalDeals = deals.length;
   const totalOpportunities = opportunities.length;
@@ -39,7 +37,6 @@ const Index = () => {
     },
   });
 
-  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -78,7 +75,7 @@ const Index = () => {
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card 
-            className="glass-card hover:shadow transition-all duration-300 ease-in-out cursor-pointer"
+            className="hover:shadow transition-all duration-300 ease-in-out cursor-pointer bg-white text-black dark:bg-card dark:text-card-foreground"
             onClick={() => handleCardClick("Contacts", "/contacts")}
           >
             <CardHeader className="pb-2">
@@ -100,7 +97,7 @@ const Index = () => {
           </Card>
           
           <Card 
-            className="glass-card hover:shadow transition-all duration-300 ease-in-out cursor-pointer"
+            className="hover:shadow transition-all duration-300 ease-in-out cursor-pointer bg-white text-black dark:bg-card dark:text-card-foreground"
             onClick={() => handleCardClick("Deals Pipeline", "/pipeline")}
           >
             <CardHeader className="pb-2">
@@ -127,7 +124,7 @@ const Index = () => {
           </Card>
           
           <Card 
-            className="glass-card hover:shadow transition-all duration-300 ease-in-out cursor-pointer"
+            className="hover:shadow transition-all duration-300 ease-in-out cursor-pointer bg-white text-black dark:bg-card dark:text-card-foreground"
             onClick={() => handleCardClick("Opportunities", "/opportunities")}
           >
             <CardHeader className="pb-2">
@@ -150,7 +147,7 @@ const Index = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out">
+          <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
             <CardHeader>
               <CardTitle>Deal Pipeline</CardTitle>
             </CardHeader>
@@ -168,7 +165,7 @@ const Index = () => {
             </CardContent>
           </Card>
           
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out">
+          <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
@@ -191,7 +188,7 @@ const Index = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out lg:col-span-2">
+          <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground lg:col-span-2">
             <CardHeader>
               <CardTitle>Upcoming Tasks</CardTitle>
             </CardHeader>
@@ -259,7 +256,7 @@ const Index = () => {
             </CardContent>
           </Card>
           
-          <Card className="glass-card hover:shadow transition-all duration-300 ease-in-out">
+          <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
             <CardHeader>
               <CardTitle>Hot Opportunities</CardTitle>
             </CardHeader>
