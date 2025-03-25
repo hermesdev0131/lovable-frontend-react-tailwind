@@ -5,36 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { KnowledgeEditor } from '@/components/chatbot/KnowledgeEditor';
 import { ChatbotUI } from '@/components/chatbot/ChatbotUI';
-import { ChatDrawer } from '@/components/chatbot/ChatDrawer';
 
-// Sample initial knowledge
-const initialKnowledge = [
-  "Our business hours are Monday to Friday, 9 AM to 6 PM Eastern Time.",
-  "We offer a 30-day money-back guarantee on all our products.",
-  "Our premium support package includes 24/7 phone and email support.",
-  "Our company was founded in 2010 and has offices in New York, London, and Singapore.",
-  "We integrate with most popular CRM systems including Salesforce, HubSpot, and Zoho."
-];
+interface ChatbotManagementProps {
+  knowledgeBase: string[];
+  onAddKnowledge: (knowledge: string) => void;
+}
 
-const ChatbotManagement = () => {
-  // State for knowledge base - in a real app, this would be stored in a database
-  const [knowledgeBase, setKnowledgeBase] = useState<string[]>(() => {
-    // Try to load from localStorage
-    const saved = localStorage.getItem('chatbotKnowledge');
-    return saved ? JSON.parse(saved) : initialKnowledge;
-  });
-
-  // Save knowledge base to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('chatbotKnowledge', JSON.stringify(knowledgeBase));
-  }, [knowledgeBase]);
-
-  const handleAddKnowledge = (knowledge: string) => {
-    if (!knowledgeBase.includes(knowledge)) {
-      setKnowledgeBase([...knowledgeBase, knowledge]);
-    }
-  };
-
+const ChatbotManagement = ({ knowledgeBase, onAddKnowledge }: ChatbotManagementProps) => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="mb-8 animate-fade-in">
@@ -59,7 +36,12 @@ const ChatbotManagement = () => {
             <TabsContent value="knowledge">
               <KnowledgeEditor 
                 knowledgeBase={knowledgeBase} 
-                setKnowledgeBase={setKnowledgeBase} 
+                setKnowledgeBase={(newKnowledgeBase) => {
+                  // This ensures any knowledge base changes from this component
+                  // are properly communicated to the parent component
+                  const addedItems = newKnowledgeBase.filter(item => !knowledgeBase.includes(item));
+                  addedItems.forEach(item => onAddKnowledge(item));
+                }} 
               />
             </TabsContent>
             
@@ -67,7 +49,7 @@ const ChatbotManagement = () => {
               <div className="bg-background border rounded-md overflow-hidden h-[600px]">
                 <ChatbotUI 
                   knowledgeBase={knowledgeBase} 
-                  onAddKnowledge={handleAddKnowledge} 
+                  onAddKnowledge={onAddKnowledge} 
                   className="h-full"
                 />
               </div>
@@ -143,12 +125,6 @@ const ChatbotManagement = () => {
           </Card>
         </div>
       </div>
-
-      {/* The global chat drawer */}
-      <ChatDrawer 
-        knowledgeBase={knowledgeBase} 
-        onAddKnowledge={handleAddKnowledge} 
-      />
     </div>
   );
 };
