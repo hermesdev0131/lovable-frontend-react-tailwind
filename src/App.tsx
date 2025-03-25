@@ -18,6 +18,8 @@ import Pipeline from "./pages/Pipeline"
 import Reputation from "./pages/Reputation"
 import Projects from "./pages/Projects"
 import ContentScheduling from "./pages/ContentScheduling"
+import Clients from "./pages/Clients"
+import Deals from "./pages/Deals"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -88,10 +90,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Clients</h1>
-                        <p>Client management page content will go here.</p>
-                      </div>
+                      <Clients />
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -113,10 +112,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Deals</h1>
-                        <p>Deal management page content will go here.</p>
-                      </div>
+                      <Deals />
                     </Layout>
                   </ProtectedRoute>
                 }
