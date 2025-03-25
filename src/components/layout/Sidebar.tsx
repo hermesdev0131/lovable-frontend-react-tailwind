@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -75,16 +74,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
                   )}
                 />
               </div>
-              
-              {isExpanded && (
-                <div className="flex items-center justify-center w-full px-2">
-                  <img 
-                    src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" 
-                    alt="CRM Pro" 
-                    className="h-7 w-full max-w-full object-contain dark:invert"
-                  />
-                </div>
-              )}
             </div>
           </div>
           
