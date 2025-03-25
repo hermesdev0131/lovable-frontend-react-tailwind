@@ -11,8 +11,7 @@ import {
   BookOpen, 
   Cable,
   Star,
-  Send,
-  Building2
+  Send
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -49,12 +48,19 @@ const Sidebar = () => {
         <div className={cn("p-6 flex items-center", isExpanded ? "justify-between" : "justify-center")}>
           {isExpanded ? (
             <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-primary" />
-              <span className="ml-2 font-semibold text-primary">CRM Pro</span>
+              <img 
+                src="/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png" 
+                alt="MI Logo" 
+                className="h-8 w-auto"
+              />
             </div>
           ) : (
             <div className="h-8 w-8 flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-primary" />
+              <img 
+                src="/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png" 
+                alt="MI Logo" 
+                className="h-6 w-auto"
+              />
             </div>
           )}
           <button 
