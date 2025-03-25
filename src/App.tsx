@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -219,33 +220,11 @@ function App() {
               />
 
               <Route
-                path="/social"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Social</div>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
                 path="/tasks"
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Tasks</div>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/webhooks"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Webhooks</div>
                     </Layout>
                   </ProtectedRoute>
                 }

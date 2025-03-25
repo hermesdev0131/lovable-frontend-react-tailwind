@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -10,11 +11,8 @@ import {
   Briefcase, 
   BookOpen, 
   Cable, 
-  Star, 
-  Send, 
   HelpCircle, 
   MessageCircle, 
-  Bot,
   Building2,
   Globe,
   ChevronLeft,
@@ -201,19 +199,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/social"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/social") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <Star className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Social</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/content"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
@@ -221,21 +206,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                     !isExpanded && "justify-center"
                   )}
                 >
-                  <Send className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                  <BookOpen className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                   {isExpanded && <span>Content</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/webhooks"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/webhooks") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <Bot className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Webhooks</span>}
                 </Link>
               </li>
               <li>
