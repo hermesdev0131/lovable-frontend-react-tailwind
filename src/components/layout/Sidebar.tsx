@@ -4,12 +4,18 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, Briefcase, BookOpen, Cable, Star, Send, HelpCircle, MessageCircle, Bot } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import logoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
+import { useTheme } from '../theme/ThemeProvider';
+import darkLogoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
+import lightLogoImage from '/lovable-uploads/b4b09b81-644f-4270-8528-546e3e813612.png';
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
+  const { theme } = useTheme();
+  
+  // Determine which logo to use based on the theme
+  const logoImage = theme === 'dark' ? lightLogoImage : darkLogoImage;
   
   useEffect(() => {
     const savedState = localStorage.getItem('sidebar-expanded');
@@ -51,7 +57,7 @@ const Sidebar = () => {
             <div className="flex items-center h-16">
               <img 
                 src={logoImage} 
-                alt="MI Logo" 
+                alt="Company Logo" 
                 className="w-full h-auto max-h-full object-contain" 
                 onClick={() => navigate('/')}
                 style={{ cursor: 'pointer' }}
@@ -61,7 +67,7 @@ const Sidebar = () => {
             <div className="h-10 w-10 flex items-center justify-center">
               <img 
                 src={logoImage} 
-                alt="MI Logo" 
+                alt="Company Logo" 
                 className="max-w-full max-h-full object-contain" 
                 onClick={() => navigate('/')}
                 style={{ cursor: 'pointer' }}
