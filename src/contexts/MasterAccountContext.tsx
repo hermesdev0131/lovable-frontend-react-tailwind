@@ -5,6 +5,7 @@ interface Client {
   id: number;
   name: string;
   email: string;
+  password: string;
   subscription: string;
   status: string;
   users: number;
@@ -74,20 +75,7 @@ interface MasterAccountContextType {
   switchToClient: (id: number | null) => void;
   isInMasterMode: boolean;
   toggleMasterMode: () => void;
-  addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
-  removeWebhook: (id: number) => void;
-  updateWebhook: (id: number, data: Partial<Webhook>) => void;
-  triggerWebhook: (webhookId: number, data: any) => Promise<void>;
-  addWebsitePage: (page: Omit<WebsitePage, 'id'>) => void;
-  removeWebsitePage: (id: number) => void;
-  updateWebsitePage: (id: number, data: Partial<WebsitePage>) => void;
-  addContentItem: (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => void;
-  updateContentStatus: (id: number, status: 'approved' | 'rejected', reason?: string) => void;
-  getContentItems: (clientId?: number | null, status?: string) => ContentItem[];
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
-  markNotificationAsRead: (id: number) => void;
-  getNotifications: (forClientId?: number | null) => Notification[];
-  getUnreadNotificationsCount: (forClientId?: number | null) => number;
+  loginToAccount: (email: string, password: string) => boolean;
 }
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
@@ -98,6 +86,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       id: 1, 
       name: "Acme Corporation", 
       email: "admin@acme.com", 
+      password: "acme123",
       subscription: "Enterprise", 
       status: "active", 
       users: 12, 
@@ -110,6 +99,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       id: 2, 
       name: "TechStart Inc", 
       email: "admin@techstart.com", 
+      password: "tech123",
       subscription: "Professional", 
       status: "active", 
       users: 5, 
@@ -122,6 +112,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       id: 3, 
       name: "Global Services Ltd", 
       email: "admin@globalserv.com", 
+      password: "global123",
       subscription: "Basic", 
       status: "inactive", 
       users: 3, 
@@ -517,6 +508,36 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     return getNotifications(forClientId).filter(notification => !notification.read).length;
   };
 
+  const loginToAccount = (email: string, password: string): boolean => {
+    if (email === "admin@mastercrm.com" && password === "master123") {
+      setCurrentClientId(null);
+      setIsInMasterMode(true);
+      toast({
+        title: "Logged In",
+        description: "Successfully logged in to master account."
+      });
+      return true;
+    }
+    
+    const client = clients.find(client => client.email === email && client.password === password);
+    if (client) {
+      setCurrentClientId(client.id);
+      setIsInMasterMode(false);
+      toast({
+        title: "Logged In",
+        description: `Successfully logged in to ${client.name} account.`
+      });
+      return true;
+    }
+    
+    toast({
+      title: "Login Failed",
+      description: "Invalid email or password. Please try again.",
+      variant: "destructive"
+    });
+    return false;
+  };
+
   return (
     <MasterAccountContext.Provider 
       value={{ 
@@ -531,6 +552,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         switchToClient,
         isInMasterMode,
         toggleMasterMode,
+        loginToAccount,
         addWebhook,
         removeWebhook,
         updateWebhook,

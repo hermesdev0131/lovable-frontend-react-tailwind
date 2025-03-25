@@ -1,115 +1,196 @@
+import { ErrorBoundary } from "react-error-boundary"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ChatDrawer } from "./components/chatbot/ChatDrawer";
-import { MasterAccountProvider } from "./contexts/MasterAccountContext"; // Import the provider
-import Index from "./pages/Index";
-import Contacts from "./pages/Contacts";
-import Pipeline from "./pages/Pipeline";
-import Calendar from "./pages/Calendar";
-import Opportunities from "./pages/Opportunities";
-import SettingsPage from "./pages/Settings";
-import Reputation from "./pages/Reputation";
-import ContentScheduling from "./pages/ContentScheduling";
-import ChatbotManagement from "./pages/ChatbotManagement";
-import Conversations from "./pages/Conversations";
-import MasterAccount from "./pages/MasterAccount";
-import WebsiteManagement from "./pages/WebsiteManagement";
-import EmailMarketing from "./pages/EmailMarketing";
-import NotFound from "./pages/NotFound";
-import Navbar from "./components/layout/Navbar";
-import Sidebar from "./components/layout/Sidebar";
-import { ThemeProvider } from "./components/theme/ThemeProvider";
+import { ThemeProvider } from "@/components/theme-provider"
+import Calendar from "@/pages/calendar"
+import Index from "@/pages/index"
+import NotFound from "@/pages/not-found"
+import { MasterAccountProvider } from "@/contexts/MasterAccountContext"
+import { Toaster } from "@/components/ui/toaster"
+import Layout from "@/components/layout"
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-const App = () => {
-  const [mounted, setMounted] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
-  const [knowledgeBase, setKnowledgeBase] = useState([
-    "The CRM system helps manage contacts and leads.",
-    "You can schedule meetings and set reminders for follow-ups.",
-    "The pipeline view shows all deals in progress and their status."
-  ]);
-
-  useEffect(() => {
-    setMounted(true);
-    
-    // Get sidebar state from localStorage if available
-    const savedSidebarState = localStorage.getItem('sidebar-expanded');
-    if (savedSidebarState) {
-      setSidebarExpanded(savedSidebarState === 'true');
-    }
-  }, []);
-
-  const handleToggleSidebar = () => {
-    const newState = !sidebarExpanded;
-    setSidebarExpanded(newState);
-    // Save to localStorage
-    localStorage.setItem('sidebar-expanded', String(newState));
-  };
-
-  const handleAddKnowledge = (knowledge: string) => {
-    setKnowledgeBase(prev => [...prev, knowledge]);
-  };
-
-  if (!mounted) {
-    return null;
-  }
-
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="crm-theme">
-        <MasterAccountProvider>
-          <BrowserRouter>
-            <TooltipProvider>
-              <ErrorBoundary>
-                <div className="flex h-screen overflow-hidden">
-                  <Sidebar isExpanded={sidebarExpanded} onToggle={handleToggleSidebar} />
-                  <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-0' : 'ml-0'}`}>
-                    <Navbar onToggleSidebar={handleToggleSidebar} />
-                    <main className="flex-1 overflow-y-auto">
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/contacts" element={<Contacts />} />
-                        <Route path="/pipeline" element={<Pipeline />} />
-                        <Route path="/opportunities" element={<Opportunities />} />
-                        <Route path="/calendar" element={<Calendar />} />
-                        <Route path="/reputation" element={<Reputation />} />
-                        <Route path="/content-scheduling" element={<ContentScheduling />} />
-                        <Route path="/chatbot" element={<ChatbotManagement knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />} />
-                        <Route path="/conversations" element={<Conversations />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="/master-account" element={<MasterAccount />} />
-                        <Route path="/website-management" element={<WebsiteManagement />} />
-                        <Route path="/email-marketing" element={<EmailMarketing />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </main>
-                  </div>
-                  <ChatDrawer knowledgeBase={knowledgeBase} onAddKnowledge={handleAddKnowledge} />
-                </div>
-              </ErrorBoundary>
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </BrowserRouter>
-        </MasterAccountProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="system" storageKey="ui-theme">
+      <MasterAccountProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <Toaster />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Index />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Protect all other routes with ProtectedRoute */}
+              <Route
+                path="/calendar"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Calendar />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Protect all other routes with ProtectedRoute */}
+              <Route
+                path="/account"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Account</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/campaigns"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Campaigns</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/clients"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Clients</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/content"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Content</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/deals"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Deals</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/email"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Email</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/integrations"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Integrations</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Notifications</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/projects"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Projects</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Settings</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/social"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Social</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tasks"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Tasks</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/webhooks"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Webhooks</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/website"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <div>Website</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* The 404 route doesn't need to be protected */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </MasterAccountProvider>
+    </ThemeProvider>
   );
-};
+}
 
-export default App;
+export default App
