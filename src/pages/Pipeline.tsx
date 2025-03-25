@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move, Settings } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -51,7 +50,6 @@ const Pipeline = () => {
   });
   const { toast } = useToast();
 
-  // Load custom stages from localStorage
   useEffect(() => {
     const savedStages = localStorage.getItem(LOCAL_STORAGE_KEYS.STAGES);
     const savedLabels = localStorage.getItem(LOCAL_STORAGE_KEYS.STAGE_LABELS);
@@ -79,27 +77,23 @@ const Pipeline = () => {
     }
   }, []);
 
-  // Group deals by stage
   const dealsByStage = stages.reduce((acc, stage) => {
     acc[stage] = allDeals.filter(deal => deal.stage === stage);
     return acc;
   }, {} as Record<DealStage, Deal[]>);
   
-  // Get the total value of deals in each stage
   const stageValues = stages.reduce((acc, stage) => {
     const total = dealsByStage[stage]?.reduce((sum, deal) => sum + deal.value, 0) || 0;
     acc[stage] = total;
     return acc;
   }, {} as Record<DealStage, number>);
 
-  // Extract initials for avatar
   const getInitials = (contactId: string) => {
     const contact = getContactById(contactId);
     if (!contact) return '??';
     return `${contact.firstName.charAt(0)}${contact.lastName.charAt(0)}`.toUpperCase();
   };
-  
-  // Sort deals based on current sort settings
+
   const getSortedDeals = () => {
     return [...allDeals].sort((a, b) => {
       const aValue = sortField === 'value' ? a.value : a.probability;
@@ -108,7 +102,6 @@ const Pipeline = () => {
     });
   };
 
-  // Handle toggling sort direction
   const handleSort = (field: 'value' | 'probability') => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -118,7 +111,6 @@ const Pipeline = () => {
     }
   };
 
-  // Handle adding a new deal
   const handleAddDeal = () => {
     const dealId = `deal${allDeals.length + 1}`;
     const currentDate = new Date().toISOString();
@@ -138,7 +130,6 @@ const Pipeline = () => {
       description: `${newDeal.name} has been added to ${getStageLabel(newDeal.stage, stageLabels)}`,
     });
     
-    // Reset the form
     setNewDeal({
       name: '',
       company: '',
@@ -154,24 +145,19 @@ const Pipeline = () => {
     });
   };
 
-  // Handle saving custom stages
   const handleSaveStages = (newStages: DealStage[], newLabels: Record<DealStage, string>) => {
     setStages(newStages);
     setStageLabels(newLabels);
     
-    // Save to localStorage
     localStorage.setItem(LOCAL_STORAGE_KEYS.STAGES, JSON.stringify(newStages));
     localStorage.setItem(LOCAL_STORAGE_KEYS.STAGE_LABELS, JSON.stringify(newLabels));
     
-    // Close the dialog
     setStageManagerOpen(false);
   };
 
-  // Handle drag and drop
   const onDragEnd = (result: any) => {
     const { destination, source, draggableId } = result;
 
-    // If there's no destination or if the item was dropped back in its original position
     if (!destination || 
         (destination.droppableId === source.droppableId && 
          destination.index === source.index)) {
@@ -181,18 +167,15 @@ const Pipeline = () => {
     const deal = allDeals.find(d => d.id === draggableId);
     if (!deal) return;
 
-    // Create a new deal with the updated stage
     const updatedDeal: Deal = {
       ...deal,
       stage: destination.droppableId as DealStage,
       updatedAt: new Date().toISOString()
     };
 
-    // Update the deals array with the modified deal
     const newDeals = allDeals.map(d => d.id === draggableId ? updatedDeal : d);
     setAllDeals(newDeals);
 
-    // Show toast notification
     toast({
       title: "Deal Moved",
       description: `${deal.name} moved to ${getStageLabel(destination.droppableId as DealStage, stageLabels)}`,
@@ -288,17 +271,20 @@ const Pipeline = () => {
                                     }`}
                                     style={{ animationDelay: `${index * 0.05}s` }}
                                   >
-                                    <CardContent className="p-4">
-                                      <div className="flex justify-between items-start">
-                                        <h4 className="font-medium truncate">{deal.name}</h4>
+                                    <CardContent className="p-3">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <div className="truncate pr-2 max-w-[180px]">
+                                          <h4 className="font-medium text-sm truncate">{deal.name}</h4>
+                                          <div className="text-xs text-muted-foreground truncate">{deal.company}</div>
+                                        </div>
                                         <div className="flex">
                                           <div {...provided.dragHandleProps} className="mr-1 cursor-grab">
-                                            <Move className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                            <Move className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                                           </div>
                                           <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <MoreHorizontal className="h-4 w-4" />
+                                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                <MoreHorizontal className="h-3 w-3" />
                                               </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="w-[180px]">
@@ -311,34 +297,48 @@ const Pipeline = () => {
                                         </div>
                                       </div>
                                       
-                                      <div className="text-sm text-muted-foreground mb-3">{deal.company}</div>
-                                      
-                                      <div className="flex justify-between items-center mb-3">
-                                        <div className="font-medium">{formatCurrency(deal.value, deal.currency)}</div>
-                                        <div 
-                                          className={`text-xs px-2 py-1 rounded-full ${
-                                            deal.probability >= 70 ? 'bg-green-100 text-green-800' : 
-                                            deal.probability >= 40 ? 'bg-yellow-100 text-yellow-800' : 
-                                            'bg-red-100 text-red-800'
-                                          }`}
-                                        >
-                                          {deal.probability}%
+                                      <div className="grid grid-cols-2 gap-2 mb-2 text-xs">
+                                        <div className="bg-muted/20 rounded p-1.5">
+                                          <div className="font-medium">{formatCurrency(deal.value, deal.currency)}</div>
+                                          <div className="text-muted-foreground text-[10px]">Value</div>
+                                        </div>
+                                        <div className="bg-muted/20 rounded p-1.5">
+                                          <div 
+                                            className={`font-medium ${
+                                              deal.probability >= 70 ? 'text-green-600' : 
+                                              deal.probability >= 40 ? 'text-amber-600' : 
+                                              'text-red-600'
+                                            }`}
+                                          >
+                                            {deal.probability}%
+                                          </div>
+                                          <div className="text-muted-foreground text-[10px]">Probability</div>
                                         </div>
                                       </div>
                                       
-                                      <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-2">
-                                          <Avatar className="h-6 w-6">
-                                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                      <div className="flex justify-between items-center pt-1 border-t border-border/40">
+                                        <div className="flex items-center gap-1">
+                                          <Avatar className="h-5 w-5">
+                                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                                               {getInitials(deal.contactId)}
                                             </AvatarFallback>
                                           </Avatar>
                                           {stage !== 'closed-won' && stage !== 'closed-lost' && (
-                                            <div className="text-xs text-muted-foreground">
-                                              {new Date(deal.expectedCloseDate).toLocaleDateString()}
+                                            <div className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                              {new Date(deal.expectedCloseDate).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric'
+                                              })}
                                             </div>
                                           )}
                                         </div>
+                                        <div 
+                                          className={`w-2 h-2 rounded-full ${
+                                            deal.probability >= 70 ? 'bg-green-500' : 
+                                            deal.probability >= 40 ? 'bg-amber-500' : 
+                                            'bg-red-500'
+                                          }`}
+                                        />
                                       </div>
                                     </CardContent>
                                   </Card>
@@ -457,7 +457,6 @@ const Pipeline = () => {
         </Tabs>
       </div>
 
-      {/* Add Deal Dialog */}
       <Dialog open={addDealOpen} onOpenChange={setAddDealOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
@@ -563,7 +562,6 @@ const Pipeline = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Stage Manager Dialog */}
       <Dialog open={stageManagerOpen} onOpenChange={setStageManagerOpen}>
         <DialogContent className="sm:max-w-[650px]">
           <DialogHeader>
