@@ -34,16 +34,16 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isActive }) => (
         <Link 
           to={to} 
           className={cn(
-            "flex h-10 items-center justify-center w-full rounded-md text-sm transition-all",
+            "flex h-10 items-center rounded-md text-sm transition-all w-full",
             "hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             isActive 
               ? "bg-primary/10 text-primary" 
               : "text-foreground/60 hover:text-foreground"
           )}
         >
-          <div className="flex items-center">
-            <div className="mr-3">{icon}</div>
-            <span>{label}</span>
+          <div className={cn("flex items-center px-3 w-full", !label && "justify-center")}>
+            <div className="shrink-0 w-5 h-5 flex justify-center items-center">{icon}</div>
+            {label && <span className="ml-3 truncate">{label}</span>}
           </div>
         </Link>
       </TooltipTrigger>
@@ -91,7 +91,7 @@ const Sidebar: React.FC = () => {
         </Button>
       </div>
       
-      <div className="flex flex-col p-4 gap-2">
+      <nav className="flex flex-col space-y-1 p-3">
         {navItems.map((item) => (
           <NavItem
             key={item.to}
@@ -101,7 +101,7 @@ const Sidebar: React.FC = () => {
             isActive={location.pathname === item.to}
           />
         ))}
-      </div>
+      </nav>
     </div>
   );
 };

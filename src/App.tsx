@@ -19,9 +19,16 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [mounted, setMounted] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Get sidebar state from localStorage if available
+    const savedSidebarState = localStorage.getItem('sidebar-expanded');
+    if (savedSidebarState) {
+      setSidebarExpanded(savedSidebarState === 'true');
+    }
   }, []);
 
   if (!mounted) {
@@ -34,7 +41,7 @@ const App = () => {
         <TooltipProvider>
           <div className="flex h-screen overflow-hidden">
             <Sidebar />
-            <div className="flex flex-col flex-1 overflow-x-hidden ml-64">
+            <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
               <Navbar />
               <main className="flex-1 overflow-y-auto">
                 <Routes>
