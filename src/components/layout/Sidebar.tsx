@@ -6,7 +6,6 @@ import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, B
 import { toast } from '@/components/ui/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
 import darkLogoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
-import lightLogoImage from '/lovable-uploads/cef2e73a-adb7-41f2-9326-c41648b8d07d.png';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -14,8 +13,9 @@ const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const { theme } = useTheme();
   
-  // Determine which logo to use based on the theme
-  const logoImage = theme === 'dark' ? lightLogoImage : darkLogoImage;
+  // Using only one logo image for now since the light logo is causing issues
+  // We'll use the darkLogoImage for both light and dark modes
+  const logoImage = darkLogoImage;
   
   useEffect(() => {
     const savedState = localStorage.getItem('sidebar-expanded');
