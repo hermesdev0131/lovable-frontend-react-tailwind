@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -50,239 +49,246 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
       "bg-background text-foreground sticky top-0 z-20 h-screen flex-col justify-between overflow-y-auto transition-all duration-300",
       isExpanded ? "w-64" : "w-16",
     )}>
-      <div className="px-6 py-4">
+      <div className="flex flex-col h-full">
         <div className={cn(
-          "flex flex-col items-center mb-6",
-          isExpanded ? "space-y-2" : ""
+          "w-full flex flex-col items-center bg-background/80 mb-4",
+          isExpanded ? "pb-4" : "pb-2"
         )}>
-          {/* Logo */}
-          <div className={cn(
-            "flex items-center justify-center",
-            isExpanded ? "w-full" : "w-10 h-10"
-          )}>
-            <img 
-              src="/lovable-uploads/19d0bac1-2f20-4dcb-8a71-c65c4635deb8.png" 
-              alt="M Logo" 
-              className={cn(
-                "dark:invert", 
-                isExpanded ? "h-16 w-16" : "h-8 w-8"
-              )}
-            />
-          </div>
-          {isExpanded && (
-            <div className="flex items-center justify-center w-full">
+          <div className="w-full flex flex-col items-center">
+            <div className={cn(
+              "flex items-center justify-center w-full",
+              isExpanded ? "py-3" : "py-2"
+            )}>
               <img 
-                src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" 
-                alt="CRM Pro" 
-                className="h-8 dark:invert"
+                src="/lovable-uploads/19d0bac1-2f20-4dcb-8a71-c65c4635deb8.png" 
+                alt="M Logo" 
+                className={cn(
+                  "dark:invert", 
+                  isExpanded ? "h-16 w-16" : "h-10 w-10"
+                )}
               />
             </div>
-          )}
-          <button
-            className={cn(
-              "h-6 w-6 rounded-md bg-primary/10 p-1 text-primary transition-colors hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1",
-              isExpanded ? "self-end" : "mt-2"
+            
+            {isExpanded && (
+              <div className="flex items-center justify-center w-full">
+                <img 
+                  src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" 
+                  alt="CRM Pro" 
+                  className="h-8 dark:invert"
+                />
+              </div>
             )}
-            onClick={onToggle}
-          >
-            {isExpanded ? "<" : ">"}
-          </button>
+            
+            <button
+              className={cn(
+                "h-6 w-6 rounded-md bg-primary/10 p-1 text-primary transition-colors hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 mt-2",
+                isExpanded ? "self-end mr-4" : "self-center"
+              )}
+              onClick={onToggle}
+            >
+              {isExpanded ? "<" : ">"}
+            </button>
+          </div>
         </div>
-        <ul className="mt-6 space-y-1">
-          <li>
-            <Link
-              to="/"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <LayoutDashboard className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Dashboard</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/contacts"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/contacts") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Users className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Contacts</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/pipeline"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/pipeline") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <PieChart className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Pipeline</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/opportunities"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/opportunities") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Briefcase className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Opportunities</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/calendar"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/calendar") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <CalendarIcon className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Calendar</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/website-management"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/website-management") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Globe className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Website</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/integrations"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/integrations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Cable className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Integrations</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/reputation"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/reputation") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Star className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Reputation</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/content-scheduling"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/content-scheduling") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Send className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Content</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/chatbot"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/chatbot") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Bot className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Chatbot</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/conversations"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/conversations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <MessageCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Conversations</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/master-account"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/master-account") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Building2 className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Master Account</span>}
-            </Link>
-          </li>
-        </ul>
-      </div>
-      <div className="px-6 py-4">
-        <ul className="mt-6 space-y-1">
-          <li>
-            <Link
-              to="/settings"
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/settings") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                !isExpanded && "justify-center"
-              )}
-            >
-              <Settings className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Settings</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="#"
-              onClick={() => {
-                toast({
-                  title: "Help",
-                  description: "Redirecting to help documentation",
-                });
-                window.open('https://help.example.com', '_blank');
-              }}
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                !isExpanded && "justify-center",
-                "text-foreground/80 hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <HelpCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-              {isExpanded && <span>Help</span>}
-            </Link>
-          </li>
-        </ul>
+        
+        <div className="px-4 flex-1">
+          <ul className="mt-2 space-y-1">
+            <li>
+              <Link
+                to="/"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <LayoutDashboard className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Dashboard</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/contacts"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/contacts") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Users className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Contacts</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/pipeline"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/pipeline") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <PieChart className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Pipeline</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/opportunities"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/opportunities") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Briefcase className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Opportunities</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/calendar"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/calendar") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <CalendarIcon className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Calendar</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/website-management"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/website-management") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Globe className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Website</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/integrations"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/integrations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Cable className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Integrations</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/reputation"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/reputation") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Star className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Reputation</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/content-scheduling"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/content-scheduling") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Send className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Content</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/chatbot"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/chatbot") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Bot className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Chatbot</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/conversations"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/conversations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <MessageCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Conversations</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/master-account"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/master-account") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Building2 className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Master Account</span>}
+              </Link>
+            </li>
+          </ul>
+        </div>
+        
+        <div className="px-4 py-4">
+          <ul className="space-y-1">
+            <li>
+              <Link
+                to="/settings"
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive("/settings") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                  !isExpanded && "justify-center"
+                )}
+              >
+                <Settings className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Settings</span>}
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="#"
+                onClick={() => {
+                  toast({
+                    title: "Help",
+                    description: "Redirecting to help documentation",
+                  });
+                  window.open('https://help.example.com', '_blank');
+                }}
+                className={cn(
+                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                  !isExpanded && "justify-center",
+                  "text-foreground/80 hover:bg-primary/10 hover:text-primary"
+                )}
+              >
+                <HelpCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                {isExpanded && <span>Help</span>}
+              </Link>
+            </li>
+          </ul>
+        </div>
       </div>
     </aside>
   );
