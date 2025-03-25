@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { LayoutDashboard, Users, PieChart, Calendar as CalendarIcon, Settings, Briefcase, BookOpen, Cable, Star, Send, HelpCircle, MessageCircle, Bot } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
-import darkLogoImage from '/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png';
+import newLogoImage from '/lovable-uploads/05a76ee8-59e3-4846-955b-86885eccbdb0.png';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -13,10 +13,10 @@ const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const { theme } = useTheme();
   
-  // For dark mode, we'll invert the existing dark logo to make it appear as a white logo
-  // This approach avoids the need for a separate light logo file
-  const logoStyle = theme === 'dark' ? { filter: 'invert(1)' } : {};
-  const logoImage = darkLogoImage;
+  // The new logo is white, so we don't need to invert it for dark mode
+  // For light mode, we'll add a slight shadow to make it visible against light backgrounds
+  const logoStyle = theme === 'light' ? { filter: 'drop-shadow(0px 0px 1px rgba(0,0,0,0.5))' } : {};
+  const logoImage = newLogoImage;
   
   useEffect(() => {
     const savedState = localStorage.getItem('sidebar-expanded');
@@ -158,12 +158,12 @@ const Sidebar = () => {
         </nav>
         <div className="p-4">
           {isExpanded && (
-            <div className="rounded-lg bg-accent/50 p-4 cursor-pointer hover:bg-accent/70 transition-colors" onClick={handleDocumentation}>
+            <div className="rounded-lg bg-white text-black dark:text-white dark:bg-accent/50 p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-accent/70 transition-colors" onClick={handleDocumentation}>
               <div className="flex items-center space-x-2 mb-3">
                 <BookOpen className="h-5 w-5" />
                 <h4 className="font-medium">Need Help?</h4>
               </div>
-              <p className="text-xs text-muted-foreground mb-2">
+              <p className="text-xs text-gray-600 dark:text-muted-foreground mb-2">
                 Check our documentation to get the most out of your CRM.
               </p>
               <span className="text-xs text-primary hover:underline">
