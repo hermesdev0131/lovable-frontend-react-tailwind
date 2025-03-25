@@ -93,7 +93,7 @@ const Index = () => {
           
           <Card 
             className="hover:shadow transition-all duration-300 ease-in-out cursor-pointer bg-white text-black dark:bg-card dark:text-card-foreground"
-            onClick={() => handleCardClick("Deals Pipeline", "/pipeline")}
+            onClick={() => handleCardClick("Deals", "/deals")}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Deals</CardTitle>
@@ -139,17 +139,17 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
             <CardHeader>
-              <CardTitle>Deal Pipeline</CardTitle>
+              <CardTitle>Deal Overview</CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <PieChart className="h-16 w-16 mx-auto mb-4 text-primary/40" />
-                <p>Pipeline visualization will appear here</p>
+                <p>Add deals to see your deal overview</p>
                 <Button 
                   className="mt-4"
-                  onClick={() => navigate('/pipeline')}
+                  onClick={() => navigate('/deals')}
                 >
-                  View Pipeline
+                  View Deals
                 </Button>
               </div>
             </CardContent>
@@ -262,54 +262,23 @@ const Index = () => {
               <CardTitle>Hot Opportunities</CardTitle>
             </CardHeader>
             <CardContent>
-              {opportunities.length > 0 ? (
-                <div className="space-y-3">
-                  {opportunities
-                    .filter(opp => opp.probability >= 40)
-                    .slice(0, 3)
-                    .map((opp, i) => (
-                      <div 
-                        key={opp.id} 
-                        className="animate-slide-in-right cursor-pointer p-2 rounded-md hover:bg-accent/50 transition-colors" 
-                        style={{ animationDelay: `${i * 0.1}s` }}
-                        onClick={() => {
-                          toast({
-                            title: opp.name,
-                            description: `Potential value: ${formatCurrency(opp.potentialValue)}`,
-                            duration: 3000,
-                          });
-                          navigate('/opportunities');
-                        }}
-                      >
-                        <div className="font-medium truncate">{opp.name}</div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {formatCurrency(opp.potentialValue)}
-                          </span>
-                          <span className="text-green-500">{opp.probability}%</span>
-                        </div>
-                      </div>
-                    ))}
+              <div className="h-[150px] flex items-center justify-center text-center">
+                <div>
+                  <p className="text-muted-foreground mb-2">No opportunities</p>
+                  <p className="text-sm text-muted-foreground">
+                    Add opportunities to start tracking potential deals
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-4"
+                    onClick={() => navigate('/opportunities')}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Opportunity
+                  </Button>
                 </div>
-              ) : (
-                <div className="h-[150px] flex items-center justify-center text-center">
-                  <div>
-                    <p className="text-muted-foreground mb-2">No opportunities</p>
-                    <p className="text-sm text-muted-foreground">
-                      Add opportunities to start tracking potential deals
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-4"
-                      onClick={() => navigate('/opportunities')}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Opportunity
-                    </Button>
-                  </div>
-                </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         </div>
