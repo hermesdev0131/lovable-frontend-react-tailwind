@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -10,6 +11,8 @@ import Layout from "@/components/layout/Sidebar"
 import { ProtectedRoute } from "./components/auth/ProtectedRoute"
 import CustomErrorBoundary from "./components/CustomErrorBoundary"
 import { useState } from "react"
+import MasterAccount from "./pages/MasterAccount"
+import SettingsPage from "./pages/Settings"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -36,7 +39,6 @@ function App() {
                 }
               />
               
-              {/* Protect all other routes with ProtectedRoute */}
               <Route
                 path="/calendar"
                 element={
@@ -48,7 +50,6 @@ function App() {
                 }
               />
               
-              {/* Protect all other routes with ProtectedRoute */}
               <Route
                 path="/account"
                 element={
@@ -59,6 +60,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/campaigns"
                 element={
@@ -69,6 +71,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/clients"
                 element={
@@ -79,6 +82,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/content"
                 element={
@@ -89,6 +93,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/deals"
                 element={
@@ -99,6 +104,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/email"
                 element={
@@ -109,6 +115,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/integrations"
                 element={
@@ -119,6 +126,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/notifications"
                 element={
@@ -129,6 +137,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/projects"
                 element={
@@ -139,16 +148,18 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/settings"
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Settings</div>
+                      <SettingsPage />
                     </Layout>
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/social"
                 element={
@@ -159,6 +170,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/tasks"
                 element={
@@ -169,6 +181,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/webhooks"
                 element={
@@ -179,12 +192,24 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/website"
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <div>Website</div>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/master-account"
+                element={
+                  <ProtectedRoute>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                      <MasterAccount />
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -200,4 +225,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

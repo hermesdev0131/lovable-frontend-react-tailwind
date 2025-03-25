@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ const MasterAccount = () => {
   const [newClient, setNewClient] = useState({
     name: "",
     email: "",
+    password: "password123", // Default password
     subscription: "Basic"
   });
   
@@ -26,7 +28,7 @@ const MasterAccount = () => {
   };
 
   const addNewClient = () => {
-    if (!newClient.name || !newClient.email || !newClient.subscription) {
+    if (!newClient.name || !newClient.email || !newClient.password || !newClient.subscription) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
@@ -38,8 +40,7 @@ const MasterAccount = () => {
     addClient({
       name: newClient.name,
       email: newClient.email,
-      // Add password field
-      password: "password123", // Default password that can be changed later
+      password: newClient.password, // Include password field
       subscription: newClient.subscription,
       status: "active",
       users: 0,
@@ -49,7 +50,7 @@ const MasterAccount = () => {
       logo: "/placeholder.svg"
     });
     
-    setNewClient({ name: "", email: "", subscription: "Basic" });
+    setNewClient({ name: "", email: "", password: "password123", subscription: "Basic" });
     toast({
       title: "Client Added",
       description: `${newClient.name} has been added successfully.`
@@ -89,6 +90,16 @@ const MasterAccount = () => {
               id="email" 
               name="email" 
               value={newClient.email} 
+              onChange={handleInputChange} 
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input 
+              type="password" 
+              id="password" 
+              name="password" 
+              value={newClient.password} 
               onChange={handleInputChange} 
             />
           </div>
