@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus, FolderOpen, Users, Clock, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface Project {
   id: number;
@@ -61,9 +62,12 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           <Badge 
             variant={
               project.status === 'active' ? 'default' : 
-              project.status === 'completed' ? 'success' : 'outline'
+              project.status === 'completed' ? 'secondary' : 'outline'
             }
-            className="capitalize"
+            className={cn(
+              "capitalize",
+              project.status === 'completed' && "bg-green-500 hover:bg-green-600"
+            )}
           >
             {project.status}
           </Badge>
