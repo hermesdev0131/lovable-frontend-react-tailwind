@@ -54,11 +54,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
         <div className="flex items-center space-x-2 mb-6">
           {/* Logo */}
           <img 
-            src="/placeholder.svg" 
-            alt="CRM Pro Logo" 
-            className="h-8 w-8"
+            src="/lovable-uploads/19d0bac1-2f20-4dcb-8a71-c65c4635deb8.png" 
+            alt="M Logo" 
+            className="h-8 w-8 dark:invert"
           />
-          {isExpanded && <span className="font-bold">CRM Pro</span>}
+          {isExpanded && (
+            <div className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" 
+                alt="CRM Pro" 
+                className="h-6 dark:invert"
+              />
+            </div>
+          )}
           <button
             className="ml-auto h-6 w-6 rounded-md bg-primary/10 p-1 text-primary transition-colors hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
             onClick={onToggle}
