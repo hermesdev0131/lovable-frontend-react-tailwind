@@ -47,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
 
   return (
     <aside className={cn(
-      "bg-primary text-white sticky top-0 z-20 h-screen flex-col justify-between overflow-y-auto transition-all duration-300",
+      "bg-background text-foreground sticky top-0 z-20 h-screen flex-col justify-between overflow-y-auto transition-all duration-300",
       isExpanded ? "w-64" : "w-16",
     )}>
       <div className="px-6 py-4">
@@ -58,9 +58,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
             alt="CRM Pro Logo" 
             className="h-8 w-8"
           />
-          {isExpanded && <span className="font-bold text-white">CRM Pro</span>}
+          {isExpanded && <span className="font-bold">CRM Pro</span>}
           <button
-            className="ml-auto h-6 w-6 rounded-md bg-primary-foreground/10 p-1 text-white transition-colors hover:bg-primary-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary-foreground/30 focus:ring-offset-1"
+            className="ml-auto h-6 w-6 rounded-md bg-primary/10 p-1 text-primary transition-colors hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
             onClick={onToggle}
           >
             {isExpanded ? "<" : ">"}
@@ -72,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/contacts"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/contacts") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/contacts") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/pipeline"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/pipeline") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/pipeline") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/opportunities"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/opportunities") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/opportunities") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/calendar"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/calendar") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/calendar") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/website-management"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/website-management") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/website-management") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -150,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/integrations"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/integrations") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/integrations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -163,7 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/reputation"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/reputation") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/reputation") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -176,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/content-scheduling"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/content-scheduling") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/content-scheduling") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -189,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/chatbot"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/chatbot") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/chatbot") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -202,7 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/conversations"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/conversations") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/conversations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -215,7 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/master-account"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/master-account") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/master-account") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -232,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               to="/settings"
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                isActive("/settings") ? "bg-primary-foreground/20 text-white" : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white",
+                isActive("/settings") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                 !isExpanded && "justify-center"
               )}
             >
@@ -253,7 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle }) => {
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
                 !isExpanded && "justify-center",
-                "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-white"
+                "text-foreground/80 hover:bg-primary/10 hover:text-primary"
               )}
             >
               <HelpCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
