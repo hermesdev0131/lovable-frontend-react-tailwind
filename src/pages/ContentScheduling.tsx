@@ -14,8 +14,19 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { format } from 'date-fns';
 
-// Sample scheduled content data
-const initialScheduledContent = [
+// Define the ScheduledContent interface with specific literal types for status
+interface ScheduledContent {
+  id: number;
+  content: string;
+  date: Date;
+  time: string;
+  platforms: string[];
+  status: "draft" | "scheduled" | "published" | "failed";
+  media: string | null;
+}
+
+// Sample scheduled content data with explicitly typed status values
+const initialScheduledContent: ScheduledContent[] = [
   {
     id: 1,
     content: "Check out our latest product updates! We've added new features to help you manage your business better.",
@@ -45,16 +56,7 @@ const initialScheduledContent = [
   }
 ];
 
-interface ScheduledContent {
-  id: number;
-  content: string;
-  date: Date;
-  time: string;
-  platforms: string[];
-  status: "draft" | "scheduled" | "published" | "failed";
-  media: string | null;
-}
-
+// Define the platformIcons object
 const platformIcons = {
   facebook: <Facebook className="text-blue-600" />,
   instagram: <Instagram className="text-pink-600" />,
@@ -116,7 +118,7 @@ const ContentScheduling = () => {
       date: selectedDate,
       time: selectedTime,
       platforms: selectedPlatforms,
-      status: "scheduled",
+      status: "scheduled", // Using the literal string type here
       media: null
     };
 
