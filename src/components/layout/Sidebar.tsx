@@ -48,12 +48,20 @@ const Sidebar = () => {
     >
       <div className="flex flex-col h-full">
         <div className={cn("p-6 flex items-center", isExpanded ? "justify-between" : "justify-center")}>
-          {isExpanded && (
+          {isExpanded ? (
             <img 
               src={logoImage} 
               alt="Company Logo" 
-              className="max-h-8 object-contain" 
+              className="h-8 w-auto object-contain" 
             />
+          ) : (
+            <div className="h-8 w-8 flex items-center justify-center">
+              <img 
+                src={logoImage} 
+                alt="Company Logo" 
+                className="h-6 w-auto object-contain" 
+              />
+            </div>
           )}
           <button 
             onClick={toggleSidebar} 
@@ -77,6 +85,7 @@ const Sidebar = () => {
             </svg>
           </button>
         </div>
+        
         <nav className="flex-1 py-6">
           <ul className="space-y-1 px-3">
             <li>
@@ -241,4 +250,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
