@@ -96,41 +96,41 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/contacts"
+                  to="/clients"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/contacts") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/clients") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
                   <Users className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Contacts</span>}
+                  {isExpanded && <span>Clients</span>}
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/pipeline"
+                  to="/deals"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/pipeline") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/deals") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
                   <PieChart className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Pipeline</span>}
+                  {isExpanded && <span>Deals</span>}
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/opportunities"
+                  to="/projects"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/opportunities") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/projects") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
                   <Briefcase className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Opportunities</span>}
+                  {isExpanded && <span>Projects</span>}
                 </Link>
               </li>
               <li>
@@ -148,10 +148,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/website-management"
+                  to="/website"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/website-management") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/website") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
@@ -161,10 +161,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/email-marketing"
+                  to="/email"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/email-marketing") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/email") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
@@ -174,23 +174,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/reputation"
+                  to="/social"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/reputation") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/social") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
                   <Star className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Reputation</span>}
+                  {isExpanded && <span>Social</span>}
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/content-scheduling"
+                  to="/content"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/content-scheduling") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/content") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
@@ -200,28 +200,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/chatbot"
+                  to="/webhooks"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/chatbot") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/webhooks") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
                   <Bot className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Chatbot</span>}
+                  {isExpanded && <span>Webhooks</span>}
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/conversations"
+                  to="/notifications"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/conversations") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    isActive("/notifications") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                     !isExpanded && "justify-center"
                   )}
                 >
                   <MessageCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Conversations</span>}
+                  {isExpanded && <span>Notifications</span>}
                 </Link>
               </li>
               
