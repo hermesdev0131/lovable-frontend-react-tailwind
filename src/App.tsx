@@ -73,14 +73,14 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="crm-theme">
-        <MasterAccountProvider> {/* Add the MasterAccountProvider here */}
+        <MasterAccountProvider>
           <BrowserRouter>
             <TooltipProvider>
               <ErrorBoundary>
                 <div className="flex h-screen overflow-hidden">
                   <Sidebar isExpanded={sidebarExpanded} onToggle={handleToggleSidebar} />
-                  <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-64' : 'ml-16'}`}>
-                    <Navbar />
+                  <div className={`flex flex-col flex-1 overflow-x-hidden transition-all duration-300 ${sidebarExpanded ? 'ml-0' : 'ml-0'}`}>
+                    <Navbar onToggleSidebar={handleToggleSidebar} />
                     <main className="flex-1 overflow-y-auto">
                       <Routes>
                         <Route path="/" element={<Index />} />
@@ -108,7 +108,7 @@ const App = () => {
               <Sonner />
             </TooltipProvider>
           </BrowserRouter>
-        </MasterAccountProvider> {/* Close the MasterAccountProvider */}
+        </MasterAccountProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
