@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Check, Copy, ExternalLink, Plus, Trash2, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
 
 const Settings = () => {
+  const { webhooks, addWebhook, removeWebhook, updateWebhook, triggerWebhook } = useMasterAccount();
   const [generalSettings, setGeneralSettings] = useState({
     companyName: "CRM Pro",
     email: "admin@crmpro.com",
@@ -21,6 +24,14 @@ const Settings = () => {
     contactChanges: true,
     weeklyReports: true
   });
+
+  const [newWebhook, setNewWebhook] = useState({
+    name: "",
+    url: "",
+    events: ["client.created"],
+    active: true
+  });
+  const [copied, setCopied] = useState(false);
 
   const handleGeneralSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +53,49 @@ const Settings = () => {
     });
   };
 
+  const handleAddWebhook = () => {
+    if (!newWebhook.name || !newWebhook.url) {
+      toast({
+        title: "Error",
+        description: "Webhook name and URL are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newWebhook.url.includes("make.com")) {
+      toast({
+        title: "Warning",
+        description: "This doesn't look like a Make.com webhook URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    addWebhook(newWebhook);
+    setNewWebhook({
+      name: "",
+      url: "",
+      events: ["client.created"],
+      active: true
+    });
+  };
+
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/api/webhook-test`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Never triggered";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', { 
+      dateStyle: 'medium', 
+      timeStyle: 'short' 
+    }).format(date);
+  };
+
   return (
     <div className="container py-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
@@ -52,6 +106,7 @@ const Settings = () => {
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="integrations">API & Integrations</TabsTrigger>
+          <TabsTrigger value="make">Make.com</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general">
@@ -265,6 +320,188 @@ const Settings = () => {
                     Connect New Service
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="make">
+          <Card>
+            <CardHeader>
+              <CardTitle>Make.com Integration</CardTitle>
+              <CardDescription>
+                Configure webhooks to connect your master account with Make.com scenarios
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Webhook URL</h3>
+                  <Button variant="outline" size="sm" onClick={handleCopyUrl}>
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="bg-muted p-3 rounded-md">
+                  <code className="text-sm font-mono break-all">
+                    {window.location.origin}/api/webhook-test
+                  </code>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Use this URL in your Make.com scenarios that need to send data to your CRM
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-medium mb-4">Your Webhooks</h3>
+                <div className="space-y-4">
+                  {webhooks.length > 0 ? (
+                    webhooks.map(webhook => (
+                      <div key={webhook.id} className="flex items-start p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{webhook.name}</h4>
+                            <div className={`h-2 w-2 rounded-full ${webhook.active ? 'bg-green-500' : 'bg-gray-400'}`} />
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 break-all">{webhook.url}</p>
+                          <div className="flex items-center gap-3 mt-2">
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                              {webhook.events.join(', ')}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              Last triggered: {formatDate(webhook.lastTriggered)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            checked={webhook.active} 
+                            onCheckedChange={(checked) => updateWebhook(webhook.id, { active: checked })}
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => triggerWebhook(webhook.id, { test: true })}
+                          >
+                            <Zap className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => removeWebhook(webhook.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center p-4 border rounded-lg">
+                      <p className="text-muted-foreground">No webhooks configured yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-medium mb-4">Add New Webhook</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="webhook-name">Webhook Name</Label>
+                    <Input
+                      id="webhook-name"
+                      placeholder="e.g., New Client Alert"
+                      value={newWebhook.name}
+                      onChange={(e) => setNewWebhook({...newWebhook, name: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="webhook-url">Make.com Webhook URL</Label>
+                    <Input
+                      id="webhook-url"
+                      placeholder="https://hook.eu1.make.com/..."
+                      value={newWebhook.url}
+                      onChange={(e) => setNewWebhook({...newWebhook, url: e.target.value})}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Paste the webhook URL from your Make.com scenario
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Event Type</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {["client.created", "client.updated", "client.deleted", "client.status.updated"].map(event => (
+                        <Button 
+                          key={event}
+                          variant={newWebhook.events.includes(event) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            if (newWebhook.events.includes(event)) {
+                              setNewWebhook({
+                                ...newWebhook,
+                                events: newWebhook.events.filter(e => e !== event)
+                              });
+                            } else {
+                              setNewWebhook({
+                                ...newWebhook,
+                                events: [...newWebhook.events, event]
+                              });
+                            }
+                          }}
+                        >
+                          {event}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="webhook-active">Active</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Enable this webhook immediately
+                      </p>
+                    </div>
+                    <Switch
+                      id="webhook-active"
+                      checked={newWebhook.active}
+                      onCheckedChange={(checked) => setNewWebhook({...newWebhook, active: checked})}
+                    />
+                  </div>
+                  
+                  <Button onClick={handleAddWebhook} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Webhook
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="bg-muted/30 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">Need help with Make.com?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Learn how to create scenarios in Make.com that integrate with your master account system.
+                </p>
+                <Button variant="outline" size="sm" onClick={() => window.open("https://www.make.com/en/help/scenarios", "_blank")}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Make.com Documentation
+                </Button>
               </div>
             </CardContent>
           </Card>
