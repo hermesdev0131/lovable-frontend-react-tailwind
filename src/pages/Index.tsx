@@ -84,9 +84,15 @@ const Index = () => {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                <span className="text-muted-foreground font-medium">
-                  No contacts added yet
-                </span>
+                {totalContacts === 0 ? (
+                  <span className="text-muted-foreground font-medium">
+                    No contacts added yet
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground font-medium">
+                    {totalContacts} total contacts
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -106,9 +112,15 @@ const Index = () => {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                <span className="text-muted-foreground font-medium">
-                  No active deals
-                </span>
+                {openDeals === 0 ? (
+                  <span className="text-muted-foreground font-medium">
+                    No active deals
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground font-medium">
+                    {openDeals} active deals in progress
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -128,9 +140,15 @@ const Index = () => {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                <span className="text-muted-foreground font-medium">
-                  No value in pipeline yet
-                </span>
+                {totalDealValue === 0 ? (
+                  <span className="text-muted-foreground font-medium">
+                    No value in pipeline yet
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground font-medium">
+                    {formatCurrency(totalDealValue)} total pipeline value
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>

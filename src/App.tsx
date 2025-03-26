@@ -14,8 +14,6 @@ import { useState } from "react"
 import MasterAccount from "./pages/MasterAccount"
 import SettingsPage from "./pages/Settings"
 import Opportunities from "./pages/Opportunities"
-import Pipeline from "./pages/Pipeline"
-import Reputation from "./pages/Reputation"
 import Projects from "./pages/Projects"
 import ContentScheduling from "./pages/ContentScheduling"
 import Clients from "./pages/Clients"
@@ -151,17 +149,6 @@ function App() {
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <Opportunities />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/pipeline"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Pipeline />
                     </Layout>
                   </ProtectedRoute>
                 }
