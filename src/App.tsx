@@ -20,6 +20,7 @@ import Clients from "./pages/Clients"
 import Deals from "./pages/Deals"
 import WebsiteManagement from "./pages/WebsiteManagement"
 import EmailMarketing from "./pages/EmailMarketing"
+import Reputation from "./pages/Reputation"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
