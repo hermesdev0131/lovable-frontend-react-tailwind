@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, DollarSign, Calendar, Users } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, DollarSign, Calendar, Users, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,81 +16,25 @@ import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { cn } from "@/lib/utils";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useToast } from "@/hooks/use-toast";
+import EditDealDialog from '@/components/deals/EditDealDialog';
 
-// Sample deals data
-const deals = [
-  {
-    id: 1,
-    name: "Enterprise SaaS Implementation",
-    clientId: 1,
-    stage: "proposal",
-    value: 75000,
-    currency: "USD",
-    closingDate: "2023-11-30",
-    probability: 70,
-    createdAt: "2023-09-01",
-    assignedTo: "John Smith",
-    description: "Implementation of our Enterprise SaaS solution for Acme Corporation"
-  },
-  {
-    id: 2,
-    name: "Website Redesign Project",
-    clientId: 2,
-    stage: "negotiation",
-    value: 25000,
-    currency: "USD",
-    closingDate: "2023-10-15",
-    probability: 85,
-    createdAt: "2023-08-15",
-    assignedTo: "Sarah Johnson",
-    description: "Complete website redesign for TechStart Inc with focus on conversion optimization"
-  },
-  {
-    id: 3,
-    name: "Marketing Campaign Bundle",
-    clientId: 3,
-    stage: "discovery",
-    value: 12500,
-    currency: "USD",
-    closingDate: "2023-12-01",
-    probability: 40,
-    createdAt: "2023-09-10",
-    assignedTo: "Michael Brown",
-    description: "Series of digital marketing campaigns for Global Services Ltd"
-  },
-  {
-    id: 4,
-    name: "Annual Maintenance Contract",
-    clientId: 1,
-    stage: "closed_won",
-    value: 48000,
-    currency: "USD",
-    closingDate: "2023-09-05",
-    probability: 100,
-    createdAt: "2023-07-20",
-    assignedTo: "John Smith",
-    description: "Yearly maintenance and support contract for Acme Corporation's systems"
-  },
-  {
-    id: 5,
-    name: "Training Services Package",
-    clientId: 2,
-    stage: "closed_lost",
-    value: 15000,
-    currency: "USD",
-    closingDate: "2023-08-30",
-    probability: 0,
-    createdAt: "2023-08-01",
-    assignedTo: "Sarah Johnson",
-    description: "Comprehensive training services for TechStart Inc's new employees"
-  }
-];
+// Empty deals data structure
+const initialDeals: any[] = [];
 
 // Define the stage order for the Kanban board
 const stageOrder = ["discovery", "proposal", "negotiation", "closed_won", "closed_lost"];
 
+// Create stage labels map
+const stageLabels: Record<string, string> = {
+  "discovery": "Discovery",
+  "proposal": "Proposal",
+  "negotiation": "Negotiation",
+  "closed_won": "Closed Won",
+  "closed_lost": "Closed Lost"
+};
+
 // Group deals by their stages
-const getInitialDealsByStage = () => {
+const getInitialDealsByStage = (deals: any[]) => {
   const result: Record<string, typeof deals> = {};
   
   stageOrder.forEach(stage => {
@@ -103,9 +47,12 @@ const getInitialDealsByStage = () => {
 const Deals = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { clients } = useMasterAccount();
-  const [dealsByStage, setDealsByStage] = useState(getInitialDealsByStage());
+  const [deals, setDeals] = useState(initialDeals);
+  const [dealsByStage, setDealsByStage] = useState(getInitialDealsByStage(initialDeals));
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const { toast } = useToast();
+  const [editingDeal, setEditingDeal] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   // All deals flattened for search filtering
   const getAllDeals = () => {
@@ -210,11 +157,110 @@ const Deals = () => {
     // Update state
     setDealsByStage(newDealsByStage);
     
+    // Update the main deals array
+    setDeals(getAllDeals());
+    
     // Show toast notification
     toast({
       title: "Deal Moved",
       description: `${deal.name} moved to ${getStageBadge(destination.droppableId).label} stage`
     });
+  };
+
+  // Handle edit deal
+  const handleEditDeal = (deal: any) => {
+    setEditingDeal(deal);
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle save edited deal
+  const handleSaveEditedDeal = (updatedDeal: any) => {
+    // Update the deal in the dealsByStage
+    const newDealsByStage = {...dealsByStage};
+    
+    // If stage has changed, we need to move the deal
+    if (updatedDeal.stage !== editingDeal.stage) {
+      // Remove from the old stage
+      newDealsByStage[editingDeal.stage] = newDealsByStage[editingDeal.stage].filter(
+        d => d.id !== updatedDeal.id
+      );
+      
+      // Add to the new stage
+      newDealsByStage[updatedDeal.stage] = [
+        ...newDealsByStage[updatedDeal.stage] || [],
+        updatedDeal
+      ];
+    } else {
+      // Update in the same stage
+      newDealsByStage[updatedDeal.stage] = newDealsByStage[updatedDeal.stage].map(
+        d => d.id === updatedDeal.id ? updatedDeal : d
+      );
+    }
+    
+    // Update state
+    setDealsByStage(newDealsByStage);
+    
+    // Update the main deals array
+    setDeals(getAllDeals());
+  };
+
+  // Handle delete deal
+  const handleDeleteDeal = (deal: any) => {
+    // Create new dealsByStage object
+    const newDealsByStage = {...dealsByStage};
+    
+    // Remove the deal from its stage
+    newDealsByStage[deal.stage] = newDealsByStage[deal.stage].filter(
+      d => d.id !== deal.id
+    );
+    
+    // Update state
+    setDealsByStage(newDealsByStage);
+    
+    // Update the main deals array
+    setDeals(getAllDeals());
+    
+    // Show toast notification
+    toast({
+      title: "Deal Deleted",
+      description: `${deal.name} has been deleted`
+    });
+  };
+
+  // Add a new deal
+  const handleAddDeal = () => {
+    const newDeal = {
+      id: Date.now(),
+      name: "New Deal",
+      clientId: clients.length > 0 ? clients[0].id : 1,
+      stage: "discovery",
+      value: 5000,
+      currency: "USD",
+      closingDate: new Date().toISOString().split('T')[0],
+      probability: 50,
+      createdAt: new Date().toISOString(),
+      assignedTo: "John Smith",
+      description: "New deal description"
+    };
+    
+    // Add to dealsByStage
+    const newDealsByStage = {...dealsByStage};
+    newDealsByStage.discovery = [...(newDealsByStage.discovery || []), newDeal];
+    
+    // Update state
+    setDealsByStage(newDealsByStage);
+    
+    // Update the main deals array
+    setDeals([...deals, newDeal]);
+    
+    // Show toast notification
+    toast({
+      title: "Deal Added",
+      description: `${newDeal.name} has been added to the Discovery stage`
+    });
+    
+    // Edit the newly created deal
+    handleEditDeal(newDeal);
   };
 
   return (
@@ -251,7 +297,7 @@ const Deals = () => {
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
-            <Button size="sm" className="flex items-center gap-1">
+            <Button size="sm" className="flex items-center gap-1" onClick={handleAddDeal}>
               <Plus className="h-4 w-4" /> New Deal
             </Button>
           </div>
@@ -272,7 +318,39 @@ const Deals = () => {
                         <h3 className="font-medium">{stageInfo.label}</h3>
                         <p className="text-sm text-muted-foreground">{stageDeals.length} deals</p>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8" 
+                        onClick={() => {
+                          const newDeal = {
+                            id: Date.now(),
+                            name: "New Deal",
+                            clientId: clients.length > 0 ? clients[0].id : 1,
+                            stage: stageId,
+                            value: 5000,
+                            currency: "USD",
+                            closingDate: new Date().toISOString().split('T')[0],
+                            probability: 50,
+                            createdAt: new Date().toISOString(),
+                            assignedTo: "John Smith",
+                            description: "New deal description"
+                          };
+                          
+                          // Add to dealsByStage
+                          const newDealsByStage = {...dealsByStage};
+                          newDealsByStage[stageId] = [...(newDealsByStage[stageId] || []), newDeal];
+                          
+                          // Update state
+                          setDealsByStage(newDealsByStage);
+                          
+                          // Update the main deals array
+                          setDeals([...deals, newDeal]);
+                          
+                          // Edit the newly created deal
+                          handleEditDeal(newDeal);
+                        }}
+                      >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
@@ -321,10 +399,14 @@ const Deals = () => {
                                             </Button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end">
-                                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem>Delete</DropdownMenuItem>
-                                            <DropdownMenuItem>Change Stage</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleEditDeal(deal)}>
+                                              <Edit className="h-4 w-4 mr-2" />
+                                              Edit Deal
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteDeal(deal)}>
+                                              <Trash2 className="h-4 w-4 mr-2" />
+                                              Delete Deal
+                                            </DropdownMenuItem>
                                           </DropdownMenuContent>
                                         </DropdownMenu>
                                       </div>
@@ -422,10 +504,14 @@ const Deals = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                        <DropdownMenuItem>Change Stage</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditDeal(deal)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Deal
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteDeal(deal)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Deal
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -489,12 +575,21 @@ const Deals = () => {
               <div className="col-span-full text-center py-12">
                 <h3 className="text-lg font-medium mb-2">No deals found</h3>
                 <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
-                <Button>Create New Deal</Button>
+                <Button onClick={handleAddDeal}>Create New Deal</Button>
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Edit Deal Dialog */}
+      <EditDealDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        deal={editingDeal}
+        onSave={handleSaveEditedDeal}
+        stages={stageOrder.map(id => ({ id, label: stageLabels[id] }))}
+      />
     </div>
   );
 };
