@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -21,6 +20,7 @@ import Deals from "./pages/Deals"
 import WebsiteManagement from "./pages/WebsiteManagement"
 import EmailMarketing from "./pages/EmailMarketing"
 import Reputation from "./pages/Reputation"
+import Account from "./pages/Account"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -63,10 +63,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Account</h1>
-                        <p>Account management page content will go here.</p>
-                      </div>
+                      <Account />
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -221,8 +218,10 @@ function App() {
                 }
               />
               
-              {/* The 404 route doesn't need to be protected */}
-              <Route path="*" element={<NotFound />} />
+              <Route
+                path="*"
+                element={<NotFound />}
+              />
             </Routes>
           </CustomErrorBoundary>
         </BrowserRouter>
