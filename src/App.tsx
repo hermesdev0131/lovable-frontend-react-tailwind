@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -21,6 +22,7 @@ import WebsiteManagement from "./pages/WebsiteManagement"
 import EmailMarketing from "./pages/EmailMarketing"
 import Reputation from "./pages/Reputation"
 import Account from "./pages/Account"
+import Login from "./pages/Login"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -36,6 +38,8 @@ function App() {
           <CustomErrorBoundary>
             <Toaster />
             <Routes>
+              <Route path="/login" element={<Login />} />
+              
               <Route
                 path="/"
                 element={
