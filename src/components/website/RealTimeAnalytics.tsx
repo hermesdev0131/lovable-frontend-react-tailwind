@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -306,7 +307,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
                   <TableCell>{getRelativeTime(visitor.entryTime)}</TableCell>
                   <TableCell>{formatTime(visitor.timeOnPage)}</TableCell>
                   <TableCell>
-                    <Badge variant={visitor.active ? "success" : "secondary"} className="w-min">
+                    <Badge variant={visitor.active ? "default" : "secondary"} className="w-min">
                       {visitor.active ? "Active" : "Idle"}
                     </Badge>
                   </TableCell>
@@ -344,7 +345,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
                   <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
                   <TableCell>
                     <Badge 
-                      variant={page.loadTime < 1 ? "success" : page.loadTime < 2 ? "default" : "destructive"} 
+                      variant={page.loadTime < 1 ? "default" : page.loadTime < 2 ? "secondary" : "destructive"} 
                       className="w-min"
                     >
                       {page.loadTime < 1 ? "Fast" : page.loadTime < 2 ? "OK" : "Slow"}
