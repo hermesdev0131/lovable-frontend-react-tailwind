@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -259,7 +260,7 @@ const ContentScheduling = () => {
                       <Badge variant="secondary">Pending</Badge>
                     )}
                     {content.status === 'approved' && (
-                      <Badge variant="success">Approved</Badge>
+                      <Badge variant="default">Approved</Badge>
                     )}
                     {content.status === 'rejected' && (
                       <Badge variant="destructive">Rejected</Badge>
