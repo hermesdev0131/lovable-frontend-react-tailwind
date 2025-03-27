@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Clock, Copy, ExternalLink, Info, Link, Plus, Share2 } from 'lucide-react';
-import { Calendar as CalendarIcon } from '@/components/ui/calendar';
+import { ChevronLeft, ChevronRight, Clock, Copy, ExternalLink, Info, Link, Plus, Share2, CalendarIcon, RefreshCw } from 'lucide-react';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import CalendarIntegration from '@/components/calendar/CalendarIntegration';
 
 // Sample events data
 const sampleEvents = [
@@ -67,6 +68,9 @@ const Calendar = () => {
   const [events, setEvents] = useState(sampleEvents);
   const [bookingUrl, setBookingUrl] = useState('');
   const [selectedBookingType, setSelectedBookingType] = useState(bookingTypes[0].id);
+  const [showIntegrationDialog, setShowIntegrationDialog] = useState(false);
+  const [isCalendarConnected, setIsCalendarConnected] = useState(false);
+  const [activeCalendarType, setActiveCalendarType] = useState<string>("");
   const { toast } = useToast();
 
   // Navigation functions
@@ -93,7 +97,6 @@ const Calendar = () => {
 
   // Handle copy booking link
   const copyBookingLink = () => {
-    // In a real app, this would generate a unique link
     const baseUrl = window.location.origin;
     const generatedUrl = `${baseUrl}/booking/${selectedBookingType}`;
     setBookingUrl(generatedUrl);
@@ -110,6 +113,37 @@ const Calendar = () => {
     return bookingTypes.find(type => type.id === id) || bookingTypes[0];
   };
 
+  const handleSyncCalendar = () => {
+    toast({
+      title: "Syncing calendar...",
+      description: "Your events are being synced",
+    });
+    
+    setTimeout(() => {
+      const newEvent = {
+        id: Math.floor(Math.random() * 1000),
+        title: `Synced Event ${Math.floor(Math.random() * 100)}`,
+        start: addDays(new Date(), Math.floor(Math.random() * 7)),
+        end: addDays(new Date(), Math.floor(Math.random() * 7)),
+        type: Object.keys(eventTypes)[Math.floor(Math.random() * Object.keys(eventTypes).length)] as keyof typeof eventTypes,
+      };
+      
+      setEvents([...events, newEvent]);
+      
+      toast({
+        title: "Calendar Synced",
+        description: "Your events have been updated",
+      });
+    }, 1500);
+  };
+
+  const handleCalendarConnect = () => {
+    setIsCalendarConnected(true);
+    setShowIntegrationDialog(false);
+    
+    handleSyncCalendar();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -120,10 +154,20 @@ const Calendar = () => {
                 <TabsTrigger value="month">Month</TabsTrigger>
                 <TabsTrigger value="week">Week</TabsTrigger>
                 <TabsTrigger value="booking">Booking Links</TabsTrigger>
+                <TabsTrigger value="integrations">Integrations</TabsTrigger>
               </TabsList>
             </div>
             
             <div className="flex items-center gap-2">
+              {isCalendarConnected && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSyncCalendar}
+                >
+                  <ChevronRight className="h-4 w-4 mr-1" /> Sync
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={prevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -138,7 +182,6 @@ const Calendar = () => {
           </div>
 
           <TabsContent value="month" className="mt-0">
-            {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1 mb-6">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                 <div key={day} className="text-center py-2 font-medium text-sm">
@@ -201,7 +244,6 @@ const Calendar = () => {
               })}
             </div>
             
-            {/* Selected day details */}
             {selectedDate && (
               <div className="mt-6">
                 <div className="flex justify-between items-center mb-4">
@@ -375,8 +417,190 @@ const Calendar = () => {
               </div>
             </div>
           </TabsContent>
+          
+          <TabsContent value="integrations">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Calendar Integrations</CardTitle>
+                    <CardDescription>
+                      Connect your external calendars to sync events
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {isCalendarConnected ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 p-4 border rounded-md">
+                          <div className="p-2 bg-primary/10 rounded-full">
+                            <CalendarIcon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{activeCalendarType === 'google' ? 'Google Calendar' : 'Outlook Calendar'}</div>
+                            <div className="text-sm text-muted-foreground">Connected • Last synced just now</div>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleSyncCalendar}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-1" /> Sync
+                          </Button>
+                        </div>
+                        
+                        <Alert className="bg-muted/50">
+                          <Info className="h-4 w-4" />
+                          <AlertTitle>Automatic Sync</AlertTitle>
+                          <AlertDescription>
+                            Your calendar will automatically sync every 30 minutes.
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 p-4 border border-dashed rounded-md">
+                          <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-full">
+                            <CalendarIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">Google Calendar</div>
+                            <div className="text-sm text-muted-foreground">Import events from Google Calendar</div>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setActiveCalendarType("google");
+                              setShowIntegrationDialog(true);
+                            }}
+                          >
+                            Connect
+                          </Button>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 p-4 border border-dashed rounded-md">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                            <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">Outlook Calendar</div>
+                            <div className="text-sm text-muted-foreground">Import events from Outlook Calendar</div>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setActiveCalendarType("outlook");
+                              setShowIntegrationDialog(true);
+                            }}
+                          >
+                            Connect
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Integration Settings</CardTitle>
+                    <CardDescription>
+                      Configure how your calendars sync
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="event-visibility">Event Visibility</Label>
+                      <select 
+                        id="event-visibility" 
+                        className="w-full border border-input bg-background px-3 py-2 text-sm rounded-md"
+                        disabled={!isCalendarConnected}
+                      >
+                        <option value="all">All Events</option>
+                        <option value="busy">Busy Times Only</option>
+                        <option value="custom">Custom Filter</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        Control which events from your calendar are imported
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="sync-frequency">Sync Frequency</Label>
+                      <select 
+                        id="sync-frequency" 
+                        className="w-full border border-input bg-background px-3 py-2 text-sm rounded-md"
+                        disabled={!isCalendarConnected}
+                      >
+                        <option value="15">Every 15 minutes</option>
+                        <option value="30">Every 30 minutes</option>
+                        <option value="60">Every hour</option>
+                        <option value="manual">Manual only</option>
+                      </select>
+                    </div>
+                    
+                    <div className="space-y-2 pt-2">
+                      <Label htmlFor="calendar-categories">Calendar Categories</Label>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Badge variant="outline" className="cursor-pointer">
+                          Default ✓
+                        </Badge>
+                        <Badge variant="outline" className="cursor-pointer opacity-50">
+                          Work
+                        </Badge>
+                        <Badge variant="outline" className="cursor-pointer opacity-50">
+                          Personal
+                        </Badge>
+                        <Badge variant="outline" className="cursor-pointer opacity-50">
+                          Family
+                        </Badge>
+                        <Badge variant="outline" className="border-dashed">
+                          + Add
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" disabled={!isCalendarConnected}>Save Settings</Button>
+                  </CardFooter>
+                </Card>
+                
+                <div className="mt-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Need Help?</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Learn how to set up and use calendar integrations effectively.
+                      </p>
+                      <Button variant="link" className="p-0 h-auto mt-1">
+                        <Info className="h-3.5 w-3.5 mr-1" /> View Documentation
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
+      
+      <Dialog open={showIntegrationDialog} onOpenChange={setShowIntegrationDialog}>
+        <DialogContent className="sm:max-w-md">
+          <CalendarIntegration 
+            onSync={() => {
+              setIsCalendarConnected(true);
+              setActiveCalendarType(activeCalendarType);
+              handleCalendarConnect();
+            }} 
+            onClose={() => setShowIntegrationDialog(false)} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
