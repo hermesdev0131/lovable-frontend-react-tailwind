@@ -17,8 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Mail,
-  Lightbulb,
-  Workflow
+  Lightbulb
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
@@ -121,19 +120,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
               </li>
               <li>
                 <Link
-                  to="/projects"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/projects") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <Briefcase className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Projects</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/opportunities"
                   className={cn(
                     "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
@@ -143,19 +129,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                 >
                   <Lightbulb className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                   {isExpanded && <span>Opportunities</span>}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/pipeline"
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive("/pipeline") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
-                    !isExpanded && "justify-center"
-                  )}
-                >
-                  <Workflow className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                  {isExpanded && <span>Pipeline</span>}
                 </Link>
               </li>
               <li>
