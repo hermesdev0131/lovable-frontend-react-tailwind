@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Plus, Search, Filter, Check, X, MoreHorizontal, LightbulbIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Filter, Check, X, MoreHorizontal, LightbulbIcon, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -15,6 +15,18 @@ import {
 import { opportunities, formatCurrency, formatDate, getContactById } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import OpportunityImageUpload from '@/components/opportunities/OpportunityImageUpload';
+import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
+import { STORAGE_KEYS } from '@/components/deals/types';
+
+// Default columns for opportunities
+const DEFAULT_OPPORTUNITY_COLUMNS: Column[] = [
+  { id: 'new', label: 'New' },
+  { id: 'qualified', label: 'Qualified' },
+  { id: 'discovery', label: 'Discovery' },
+  { id: 'proposal', label: 'Proposal' },
+  { id: 'won', label: 'Won' },
+  { id: 'lost', label: 'Lost' }
+];
 
 const Opportunities = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,17 +40,30 @@ const Opportunities = () => {
   });
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const { toast } = useToast();
+  const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
+  const [columns, setColumns] = useState<Column[]>(() => {
+    const savedColumns = localStorage.getItem(STORAGE_KEYS.OPPORTUNITIES_COLUMNS);
+    return savedColumns ? JSON.parse(savedColumns) : DEFAULT_OPPORTUNITY_COLUMNS;
+  });
   
   // Get status badge variant
   const getStatusBadgeVariant = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       'new': 'default',
       'qualified': 'default',
+      'discovery': 'secondary',
+      'proposal': 'secondary',
       'unqualified': 'secondary',
       'won': 'outline',
       'lost': 'destructive'
     };
     return variants[status] || 'secondary';
+  };
+
+  // Get status label
+  const getStatusLabel = (status: string) => {
+    const statusColumn = columns.find(column => column.id === status);
+    return statusColumn ? statusColumn.label : status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   // Extract initials for avatar
@@ -75,6 +100,12 @@ const Opportunities = () => {
     });
   };
 
+  // Handle saving columns from the customizer
+  const handleSaveColumns = (newColumns: Column[]) => {
+    setColumns(newColumns);
+    localStorage.setItem(STORAGE_KEYS.OPPORTUNITIES_COLUMNS, JSON.stringify(newColumns));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -90,6 +121,14 @@ const Opportunities = () => {
             />
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setIsColumnCustomizerOpen(true)}
+            >
+              <Settings className="h-4 w-4" /> Columns
+            </Button>
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
@@ -186,7 +225,7 @@ const Opportunities = () => {
                       <h3 className="text-lg font-medium">{opportunity.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant={getStatusBadgeVariant(opportunity.status)}>
-                          {opportunity.status.charAt(0).toUpperCase() + opportunity.status.slice(1)}
+                          {getStatusLabel(opportunity.status)}
                         </Badge>
                         <span className="text-sm text-muted-foreground">from {opportunity.source}</span>
                       </div>
@@ -250,6 +289,15 @@ const Opportunities = () => {
           )}
         </div>
       </div>
+      
+      {/* Column Customizer Dialog */}
+      <ColumnCustomizer
+        isOpen={isColumnCustomizerOpen}
+        onClose={() => setIsColumnCustomizerOpen(false)}
+        columns={columns}
+        onSave={handleSaveColumns}
+        storageKey={STORAGE_KEYS.OPPORTUNITIES_COLUMNS}
+      />
     </div>
   );
 };

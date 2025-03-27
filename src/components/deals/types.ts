@@ -15,3 +15,21 @@ export interface Stage {
   id: string;
   label: string;
 }
+
+export interface Column {
+  id: string;
+  label: string;
+}
+
+export const DEFAULT_COLUMNS: Column[] = [
+  { id: 'discovery', label: 'Discovery' },
+  { id: 'proposal', label: 'Proposal' },
+  { id: 'negotiation', label: 'Negotiation' },
+  { id: 'closed_won', label: 'Closed Won' },
+  { id: 'closed_lost', label: 'Closed Lost' }
+];
+
+export const STORAGE_KEYS = {
+  DEALS_COLUMNS: 'crm_deals_columns',
+  OPPORTUNITIES_COLUMNS: 'crm_opportunities_columns'
+};

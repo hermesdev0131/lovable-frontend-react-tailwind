@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, DollarSign, Calendar, Users, Edit, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Filter, MoreHorizontal, DollarSign, Calendar, Users, Edit, Trash2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,28 +17,18 @@ import { cn } from "@/lib/utils";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useToast } from "@/hooks/use-toast";
 import EditDealDialog from '@/components/deals/EditDealDialog';
+import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
+import { DEFAULT_COLUMNS, STORAGE_KEYS } from '@/components/deals/types';
 
 // Empty deals data structure
 const initialDeals: any[] = [];
 
-// Define the stage order for the Kanban board
-const stageOrder = ["discovery", "proposal", "negotiation", "closed_won", "closed_lost"];
-
 // Create stage labels map
-const stageLabels: Record<string, string> = {
-  "discovery": "Discovery",
-  "proposal": "Proposal",
-  "negotiation": "Negotiation",
-  "closed_won": "Closed Won",
-  "closed_lost": "Closed Lost"
-};
-
-// Group deals by their stages
-const getInitialDealsByStage = (deals: any[]) => {
+const getInitialDealsByStage = (deals: any[], columns: Column[]) => {
   const result: Record<string, typeof deals> = {};
   
-  stageOrder.forEach(stage => {
-    result[stage] = deals.filter(deal => deal.stage === stage);
+  columns.forEach(column => {
+    result[column.id] = deals.filter(deal => deal.stage === column.id);
   });
   
   return result;
@@ -48,11 +38,21 @@ const Deals = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { clients } = useMasterAccount();
   const [deals, setDeals] = useState(initialDeals);
-  const [dealsByStage, setDealsByStage] = useState(getInitialDealsByStage(initialDeals));
+  const [columns, setColumns] = useState<Column[]>(() => {
+    const savedColumns = localStorage.getItem(STORAGE_KEYS.DEALS_COLUMNS);
+    return savedColumns ? JSON.parse(savedColumns) : DEFAULT_COLUMNS;
+  });
+  const [dealsByStage, setDealsByStage] = useState(getInitialDealsByStage(initialDeals, columns));
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const { toast } = useToast();
   const [editingDeal, setEditingDeal] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
+  
+  // Update dealsByStage when columns change
+  useEffect(() => {
+    setDealsByStage(getInitialDealsByStage(deals, columns));
+  }, [columns, deals]);
   
   // All deals flattened for search filtering
   const getAllDeals = () => {
@@ -80,8 +80,8 @@ const Deals = () => {
     const filteredResult: Record<string, typeof deals> = {};
     const filteredDeals = getFilteredDeals();
     
-    stageOrder.forEach(stage => {
-      filteredResult[stage] = filteredDeals.filter(deal => deal.stage === stage);
+    columns.forEach(column => {
+      filteredResult[column.id] = filteredDeals.filter(deal => deal.stage === column.id);
     });
     
     return filteredResult;
@@ -111,14 +111,21 @@ const Deals = () => {
 
   // Get stage badge variant and label
   const getStageBadge = (stage: string) => {
-    const stages: Record<string, { variant: "default" | "outline" | "secondary" | "destructive", label: string }> = {
-      "discovery": { variant: "secondary", label: "Discovery" },
-      "proposal": { variant: "secondary", label: "Proposal" },
-      "negotiation": { variant: "default", label: "Negotiation" },
-      "closed_won": { variant: "outline", label: "Closed Won" },
-      "closed_lost": { variant: "destructive", label: "Closed Lost" }
+    const stageColumn = columns.find(column => column.id === stage);
+    const label = stageColumn ? stageColumn.label : "Unknown";
+    
+    const variants: Record<string, "default" | "outline" | "secondary" | "destructive"> = {
+      "discovery": "secondary",
+      "proposal": "secondary",
+      "negotiation": "default",
+      "closed_won": "outline",
+      "closed_lost": "destructive"
     };
-    return stages[stage] || { variant: "secondary", label: "Unknown" };
+    
+    return { 
+      variant: variants[stage] || "secondary", 
+      label 
+    };
   };
   
   // Handle drag end
@@ -161,9 +168,10 @@ const Deals = () => {
     setDeals(getAllDeals());
     
     // Show toast notification
+    const destinationColumn = columns.find(col => col.id === destination.droppableId);
     toast({
       title: "Deal Moved",
-      description: `${deal.name} moved to ${getStageBadge(destination.droppableId).label} stage`
+      description: `${deal.name} moved to ${destinationColumn?.label || 'new stage'} stage`
     });
   };
 
@@ -229,11 +237,13 @@ const Deals = () => {
 
   // Add a new deal
   const handleAddDeal = () => {
+    const defaultStage = columns.length > 0 ? columns[0].id : "discovery";
+    
     const newDeal = {
       id: Date.now(),
       name: "New Deal",
       clientId: clients.length > 0 ? clients[0].id : 1,
-      stage: "discovery",
+      stage: defaultStage,
       value: 5000,
       currency: "USD",
       closingDate: new Date().toISOString().split('T')[0],
@@ -245,7 +255,7 @@ const Deals = () => {
     
     // Add to dealsByStage
     const newDealsByStage = {...dealsByStage};
-    newDealsByStage.discovery = [...(newDealsByStage.discovery || []), newDeal];
+    newDealsByStage[defaultStage] = [...(newDealsByStage[defaultStage] || []), newDeal];
     
     // Update state
     setDealsByStage(newDealsByStage);
@@ -254,13 +264,23 @@ const Deals = () => {
     setDeals([...deals, newDeal]);
     
     // Show toast notification
+    const stageColumn = columns.find(col => col.id === defaultStage);
     toast({
       title: "Deal Added",
-      description: `${newDeal.name} has been added to the Discovery stage`
+      description: `${newDeal.name} has been added to the ${stageColumn?.label || 'first'} stage`
     });
     
     // Edit the newly created deal
     handleEditDeal(newDeal);
+  };
+
+  // Handle saving columns from the customizer
+  const handleSaveColumns = (newColumns: Column[]) => {
+    setColumns(newColumns);
+    localStorage.setItem(STORAGE_KEYS.DEALS_COLUMNS, JSON.stringify(newColumns));
+    
+    // Update dealsByStage to include new columns
+    setDealsByStage(getInitialDealsByStage(deals, newColumns));
   };
 
   return (
@@ -294,6 +314,14 @@ const Deals = () => {
             >
               Kanban
             </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setIsColumnCustomizerOpen(true)}
+            >
+              <Settings className="h-4 w-4" /> Columns
+            </Button>
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
@@ -306,16 +334,16 @@ const Deals = () => {
         {viewMode === 'kanban' ? (
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 overflow-x-auto pb-6">
-              {stageOrder.map(stageId => {
+              {columns.map(column => {
                 const filteredDealsByStage = getFilteredDealsByStage();
-                const stageDeals = filteredDealsByStage[stageId] || [];
-                const stageInfo = getStageBadge(stageId);
+                const stageDeals = filteredDealsByStage[column.id] || [];
+                const stageInfo = getStageBadge(column.id);
                 
                 return (
-                  <div key={stageId} className="flex flex-col h-full">
+                  <div key={column.id} className="flex flex-col h-full">
                     <div className="flex items-center justify-between mb-4 bg-muted/30 p-2 rounded-md">
                       <div>
-                        <h3 className="font-medium">{stageInfo.label}</h3>
+                        <h3 className="font-medium">{column.label}</h3>
                         <p className="text-sm text-muted-foreground">{stageDeals.length} deals</p>
                       </div>
                       <Button 
@@ -327,7 +355,7 @@ const Deals = () => {
                             id: Date.now(),
                             name: "New Deal",
                             clientId: clients.length > 0 ? clients[0].id : 1,
-                            stage: stageId,
+                            stage: column.id,
                             value: 5000,
                             currency: "USD",
                             closingDate: new Date().toISOString().split('T')[0],
@@ -339,7 +367,7 @@ const Deals = () => {
                           
                           // Add to dealsByStage
                           const newDealsByStage = {...dealsByStage};
-                          newDealsByStage[stageId] = [...(newDealsByStage[stageId] || []), newDeal];
+                          newDealsByStage[column.id] = [...(newDealsByStage[column.id] || []), newDeal];
                           
                           // Update state
                           setDealsByStage(newDealsByStage);
@@ -355,7 +383,7 @@ const Deals = () => {
                       </Button>
                     </div>
                     
-                    <Droppable droppableId={stageId}>
+                    <Droppable droppableId={column.id}>
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
@@ -588,7 +616,16 @@ const Deals = () => {
         onClose={() => setIsEditDialogOpen(false)}
         deal={editingDeal}
         onSave={handleSaveEditedDeal}
-        stages={stageOrder.map(id => ({ id, label: stageLabels[id] }))}
+        stages={columns.map(column => ({ id: column.id, label: column.label }))}
+      />
+      
+      {/* Column Customizer Dialog */}
+      <ColumnCustomizer
+        isOpen={isColumnCustomizerOpen}
+        onClose={() => setIsColumnCustomizerOpen(false)}
+        columns={columns}
+        onSave={handleSaveColumns}
+        storageKey={STORAGE_KEYS.DEALS_COLUMNS}
       />
     </div>
   );
