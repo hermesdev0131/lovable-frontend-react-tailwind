@@ -18,7 +18,6 @@ import { MoreVertical, Edit, Trash2, CheckCircle, XCircle, Plus, CalendarIcon } 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -403,19 +402,42 @@ const ContentScheduling = () => {
               <CardTitle className="text-xl md:text-2xl">Content Scheduling</CardTitle>
               <CardDescription>Plan and schedule your social media content</CardDescription>
             </div>
-            {isMobile ? (
-              <DrawerTrigger asChild onClick={() => setIsCreateModalOpen(true)}>
-                <Button size="sm" className="flex items-center">
+            
+            {/* Proper Dialog structure for desktop */}
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+              {!isMobile ? (
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" /> Schedule New Content
+                  </Button>
+                </DialogTrigger>
+              ) : (
+                <Button onClick={() => setIsCreateModalOpen(true)} size="sm" className="flex items-center">
                   <Plus className="h-4 w-4 mr-2" /> New Content
                 </Button>
-              </DrawerTrigger>
-            ) : (
-              <DialogTrigger asChild onClick={() => setIsCreateModalOpen(true)}>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" /> Schedule New Content
-                </Button>
-              </DialogTrigger>
-            )}
+              )}
+              
+              {!isMobile && (
+                <DialogContent className="sm:max-w-[525px]">
+                  <DialogHeader>
+                    <DialogTitle>Schedule New Content</DialogTitle>
+                    <DialogDescription>
+                      Create and schedule new content for multiple social media platforms at once.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContentForm />
+                  <DialogFooter>
+                    <Button 
+                      type="submit" 
+                      onClick={handleCreateContent}
+                      disabled={newContent.platforms.length === 0}
+                    >
+                      Schedule Content {newContent.platforms.length > 0 && `(${newContent.platforms.length} platforms)`}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              )}
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -424,11 +446,13 @@ const ContentScheduling = () => {
               {contentList.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">No content scheduled yet</p>
-                  <DrawerTrigger asChild onClick={() => setIsCreateModalOpen(true)} className="mt-4">
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" /> Create Your First Post
-                    </Button>
-                  </DrawerTrigger>
+                  <Button 
+                    size="sm" 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="mt-4"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Create Your First Post
+                  </Button>
                 </div>
               ) : (
                 contentList.map((content, index) => (
@@ -454,11 +478,13 @@ const ContentScheduling = () => {
                   <TableRow>
                     <TableCell colSpan={isInMasterMode ? 6 : 5} className="text-center py-10">
                       <p className="text-muted-foreground">No content scheduled yet</p>
-                      <DialogTrigger asChild onClick={() => setIsCreateModalOpen(true)} className="mt-4">
-                        <Button size="sm">
-                          <Plus className="h-4 w-4 mr-2" /> Create Your First Post
-                        </Button>
-                      </DialogTrigger>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="mt-4"
+                      >
+                        <Plus className="h-4 w-4 mr-2" /> Create Your First Post
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -544,30 +570,6 @@ const ContentScheduling = () => {
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
-      )}
-
-      {/* Desktop: Dialog modal for creating content */}
-      {!isMobile && (
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>Schedule New Content</DialogTitle>
-              <DialogDescription>
-                Create and schedule new content for multiple social media platforms at once.
-              </DialogDescription>
-            </DialogHeader>
-            <ContentForm />
-            <DialogFooter>
-              <Button 
-                type="submit" 
-                onClick={handleCreateContent}
-                disabled={newContent.platforms.length === 0}
-              >
-                Schedule Content {newContent.platforms.length > 0 && `(${newContent.platforms.length} platforms)`}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       )}
     </div>
   );
