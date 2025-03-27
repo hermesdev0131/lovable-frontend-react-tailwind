@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { loginToAccount } = useMasterAccount();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +36,9 @@ export const LoginForm = () => {
       const success = loginToAccount(email, password);
       
       if (success) {
-        navigate('/');
+        // Redirect to the intended destination or to the dashboard
+        const destination = location.state?.from?.pathname || '/dashboard';
+        navigate(destination, { replace: true });
       }
     } catch (error) {
       toast({
