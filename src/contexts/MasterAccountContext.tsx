@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 
-interface Client {
+// Define the structure of a client object
+export type Client = {
   id: number;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   subscription: string;
   status: string;
   users: number;
@@ -13,479 +15,131 @@ interface Client {
   contacts: number;
   lastActivity: string;
   logo: string;
-}
-
-interface Webhook {
-  id: number;
-  name: string;
-  url: string;
-  events: string[];
-  active: boolean;
-  lastTriggered?: string;
-}
-
-interface WebsitePage {
-  id: number;
-  title: string;
-  url: string;
-  status: 'published' | 'draft' | 'scheduled';
-  type: 'landing' | 'blog' | 'product' | 'other';
-  createdAt: string;
-  updatedAt: string;
-  views: number;
-  conversions: number;
-  bounceRate: number;
-}
-
-interface ContentItem {
-  id: number;
-  title: string;
-  content: string;
-  type: 'email' | 'social' | 'blog' | 'other';
-  platform?: string;
-  createdBy: number;
-  createdAt: string;
-  status: 'pending' | 'approved' | 'rejected';
-  scheduledFor?: string;
-  rejectionReason?: string;
-  approvedBy?: number;
-  approvedAt?: string;
-  media?: string | null;
-}
-
-interface Notification {
-  id: number;
-  title: string;
-  message: string;
-  type: 'approval' | 'rejection' | 'system' | 'other';
-  createdAt: string;
-  read: boolean;
-  relatedContentId?: number;
-  forClientId?: number | null;
-}
-
-interface MasterAccountContextType {
-  clients: Client[];
-  currentClientId: number | null;
-  webhooks: Webhook[];
-  websitePages: WebsitePage[];
-  contentItems: ContentItem[];
-  notifications: Notification[];
-  addClient: (client: Omit<Client, 'id'>) => void;
-  removeClient: (id: number) => void;
-  switchToClient: (id: number | null) => void;
-  isInMasterMode: boolean;
-  setIsInMasterMode: (mode: boolean) => void;
-  toggleMasterMode: () => void;
-  loginToAccount: (email: string, password: string) => boolean;
-  addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
-  removeWebhook: (id: number) => void;
-  updateWebhook: (id: number, data: Partial<Webhook>) => void;
-  triggerWebhook: (webhookId: number, data: any) => Promise<void>;
-  addWebsitePage: (page: Omit<WebsitePage, 'id'>) => void;
-  removeWebsitePage: (id: number) => void;
-  updateWebsitePage: (id: number, data: Partial<WebsitePage>) => void;
-  addContentItem: (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => void;
-  updateContentStatus: (id: number, status: 'approved' | 'rejected', reason?: string) => void;
-  getContentItems: (clientId?: number | null, status?: string) => ContentItem[];
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
-  markNotificationAsRead: (id: number) => void;
-  getNotifications: (forClientId?: number | null) => Notification[];
-  getUnreadNotificationsCount: (forClientId?: number | null) => number;
-}
-
-const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
-
-// Local storage keys
-const STORAGE_KEYS = {
-  CLIENTS: 'master_account_clients',
-  CURRENT_CLIENT: 'master_account_current_client',
-  MASTER_MODE: 'master_account_is_master_mode',
-  WEBHOOKS: 'master_account_webhooks',
-  WEBSITE_PAGES: 'master_account_website_pages',
-  CONTENT_ITEMS: 'master_account_content_items',
-  NOTIFICATIONS: 'master_account_notifications'
 };
 
-export const MasterAccountProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize state from localStorage or default values
-  const [clients, setClients] = useState<Client[]>(() => {
-    const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
-    return savedClients ? JSON.parse(savedClients) : [];
-  });
-  
-  const [currentClientId, setCurrentClientId] = useState<number | null>(() => {
-    const savedClientId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLIENT);
-    return savedClientId ? JSON.parse(savedClientId) : null;
-  });
+// Define the context type
+export type MasterAccountContextType = {
+  isInMasterMode: boolean;
+  setIsInMasterMode: (value: boolean) => void; // Add this property
+  currentClientId: number | null;
+  clients: Client[];
+  selectedClient: Client | null;
+  switchToClient: (clientId: number | null) => void;
+  loginToAccount: (email: string, password: string) => boolean;
+  addClient: (client: Omit<Client, 'id'>) => void;
+  removeClient: (id: number) => void;
+};
 
-  const [isInMasterMode, setIsInMasterMode] = useState<boolean>(() => {
-    const savedMode = localStorage.getItem(STORAGE_KEYS.MASTER_MODE);
-    return savedMode ? JSON.parse(savedMode) : true;
-  });
+// Create the context with a default value of null
+const MasterAccountContext = createContext<MasterAccountContextType | null>(null);
 
-  const [webhooks, setWebhooks] = useState<Webhook[]>(() => {
-    const savedWebhooks = localStorage.getItem(STORAGE_KEYS.WEBHOOKS);
-    return savedWebhooks ? JSON.parse(savedWebhooks) : [];
-  });
+// Create a provider component
+export const MasterAccountProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isInMasterMode, setIsInMasterMode] = useState(false);
+  const [currentClientId, setCurrentClientId] = useState<number | null>(null);
+  const [clients, setClients] = useState<Client[]>([
+    {
+      id: 1,
+      name: "Acme Corp",
+      email: "info@acmecorp.com",
+      subscription: "Professional",
+      status: "active",
+      users: 15,
+      deals: 42,
+      contacts: 120,
+      lastActivity: "2024-01-20T14:30:00Z",
+      logo: "/placeholder.svg"
+    },
+    {
+      id: 2,
+      name: "Beta Industries",
+      email: "contact@betaindustries.net",
+      subscription: "Basic",
+      status: "inactive",
+      users: 5,
+      deals: 12,
+      contacts: 65,
+      lastActivity: "2023-12-15T09:00:00Z",
+      logo: "/placeholder.svg"
+    },
+    {
+      id: 3,
+      name: "Gamma Solutions",
+      email: "sales@gammasolutions.org",
+      subscription: "Enterprise",
+      status: "active",
+      users: 50,
+      deals: 150,
+      contacts: 500,
+      lastActivity: "2024-01-28T18:45:00Z",
+      logo: "/placeholder.svg"
+    }
+  ]);
+  const navigate = useNavigate();
 
-  const [websitePages, setWebsitePages] = useState<WebsitePage[]>(() => {
-    const savedPages = localStorage.getItem(STORAGE_KEYS.WEBSITE_PAGES);
-    return savedPages ? JSON.parse(savedPages) : [];
-  });
+  // Find the selected client based on currentClientId
+  const selectedClient = clients.find((client) => client.id === currentClientId) || null;
 
-  const [contentItems, setContentItems] = useState<ContentItem[]>(() => {
-    const savedItems = localStorage.getItem(STORAGE_KEYS.CONTENT_ITEMS);
-    return savedItems ? JSON.parse(savedItems) : [];
-  });
+  // Function to switch to a different client
+  const switchToClient = (clientId: number | null) => {
+    setCurrentClientId(clientId);
+  };
 
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const savedNotifications = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
-    return savedNotifications ? JSON.parse(savedNotifications) : [];
-  });
-
-  // Save to localStorage whenever state changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
-  }, [clients]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_CLIENT, JSON.stringify(currentClientId));
-  }, [currentClientId]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.MASTER_MODE, JSON.stringify(isInMasterMode));
-  }, [isInMasterMode]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.WEBHOOKS, JSON.stringify(webhooks));
-  }, [webhooks]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.WEBSITE_PAGES, JSON.stringify(websitePages));
-  }, [websitePages]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CONTENT_ITEMS, JSON.stringify(contentItems));
-  }, [contentItems]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
-  }, [notifications]);
+  const loginToAccount = (email: string, password: string): boolean => {
+    if (email === "dej@avai.vip" && password === "FilthyRich2025!") {
+      setIsInMasterMode(true);
+      toast({
+        title: "Login Successful",
+        description: "You have logged in as the master account."
+      });
+      return true;
+    } else {
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
 
   const addClient = (client: Omit<Client, 'id'>) => {
-    const newClient = {
-      ...client,
-      id: clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1
-    };
-    
+    const newId = clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1;
+    const newClient: Client = { id: newId, ...client };
     setClients([...clients, newClient]);
   };
 
   const removeClient = (id: number) => {
     setClients(clients.filter(client => client.id !== id));
-    
     if (currentClientId === id) {
       setCurrentClientId(null);
-      setIsInMasterMode(true);
     }
   };
 
-  const switchToClient = (id: number | null) => {
-    setCurrentClientId(id);
-    setIsInMasterMode(id === null);
-  };
-
-  const toggleMasterMode = () => {
-    setIsInMasterMode(!isInMasterMode);
-    if (!isInMasterMode) {
-      setCurrentClientId(null);
-    }
-  };
-
-  const addWebhook = (webhook: Omit<Webhook, 'id'>) => {
-    const newWebhook = {
-      ...webhook,
-      id: webhooks.length > 0 ? Math.max(...webhooks.map(w => w.id)) + 1 : 1
-    };
-    
-    setWebhooks([...webhooks, newWebhook]);
-    toast({
-      title: "Webhook Added",
-      description: `${webhook.name} webhook has been created successfully.`
-    });
-  };
-
-  const removeWebhook = (id: number) => {
-    setWebhooks(webhooks.filter(webhook => webhook.id !== id));
-    toast({
-      title: "Webhook Removed",
-      description: "The webhook has been removed successfully."
-    });
-  };
-
-  const updateWebhook = (id: number, data: Partial<Webhook>) => {
-    setWebhooks(webhooks.map(webhook => 
-      webhook.id === id ? { ...webhook, ...data } : webhook
-    ));
-    toast({
-      title: "Webhook Updated",
-      description: "The webhook has been updated successfully."
-    });
-  };
-
-  const triggerWebhook = async (webhookId: number, data: any) => {
-    const webhook = webhooks.find(w => w.id === webhookId);
-    
-    if (!webhook) {
-      toast({
-        title: "Error",
-        description: "Webhook not found",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!webhook.active) {
-      toast({
-        title: "Error",
-        description: "This webhook is currently inactive",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      await fetch(webhook.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        mode: "no-cors",
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          event: webhook.events[0],
-          data: data
-        })
-      });
-      
-      updateWebhook(webhookId, { lastTriggered: new Date().toISOString() });
-      
-      toast({
-        title: "Webhook Triggered",
-        description: `${webhook.name} webhook was successfully triggered.`
-      });
-    } catch (error) {
-      console.error("Error triggering webhook:", error);
-      toast({
-        title: "Error",
-        description: "Failed to trigger webhook. Please check the URL and try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const addWebsitePage = (page: Omit<WebsitePage, 'id'>) => {
-    const newPage = {
-      ...page,
-      id: websitePages.length > 0 ? Math.max(...websitePages.map(p => p.id)) + 1 : 1
-    };
-    
-    setWebsitePages([...websitePages, newPage]);
-    toast({
-      title: "Page Added",
-      description: `${page.title} has been created successfully.`
-    });
-  };
-
-  const removeWebsitePage = (id: number) => {
-    setWebsitePages(websitePages.filter(page => page.id !== id));
-    toast({
-      title: "Page Removed",
-      description: "The page has been removed successfully."
-    });
-  };
-
-  const updateWebsitePage = (id: number, data: Partial<WebsitePage>) => {
-    setWebsitePages(websitePages.map(page => 
-      page.id === id ? { ...page, ...data, updatedAt: new Date().toISOString() } : page
-    ));
-    toast({
-      title: "Page Updated",
-      description: "The page has been updated successfully."
-    });
-  };
-
-  const addContentItem = (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => {
-    const newItem: ContentItem = {
-      ...item,
-      id: contentItems.length > 0 ? Math.max(...contentItems.map(item => item.id)) + 1 : 1,
-      createdAt: new Date().toISOString(),
-      status: 'pending'
-    };
-    
-    setContentItems([...contentItems, newItem]);
-    
-    if (item.createdBy !== null) {
-      const client = clients.find(c => c.id === item.createdBy);
-      if (client) {
-        addNotification({
-          title: "Content Approval",
-          message: `${client.name} has submitted ${item.type} content for approval`,
-          type: "approval",
-          relatedContentId: newItem.id,
-          forClientId: null
-        });
-      }
-    }
-    
-    toast({
-      title: "Content Created",
-      description: `${item.title} has been created and is pending approval.`
-    });
-  };
-  
-  const updateContentStatus = (id: number, status: 'approved' | 'rejected', reason?: string) => {
-    const contentItem = contentItems.find(item => item.id === id);
-    if (!contentItem) return;
-    
-    const updatedContentItems = contentItems.map(item => 
-      item.id === id ? { 
-        ...item, 
-        status, 
-        rejectionReason: status === 'rejected' ? reason : undefined,
-        approvedBy: status === 'approved' ? currentClientId : undefined,
-        approvedAt: status === 'approved' ? new Date().toISOString() : undefined
-      } : item
-    );
-    
-    setContentItems(updatedContentItems);
-    
-    const client = clients.find(c => c.id === contentItem.createdBy);
-    if (client) {
-      addNotification({
-        title: status === 'approved' ? "Content Approved" : "Content Rejected",
-        message: status === 'approved' 
-          ? `Your ${contentItem.type} "${contentItem.title}" has been approved` 
-          : `Your ${contentItem.type} "${contentItem.title}" has been rejected${reason ? `: ${reason}` : ''}`,
-        type: status === 'approved' ? "approval" : "rejection",
-        relatedContentId: id,
-        forClientId: contentItem.createdBy
-      });
-    }
-    
-    toast({
-      title: status === 'approved' ? "Content Approved" : "Content Rejected",
-      description: `${contentItem.title} has been ${status}.`
-    });
-  };
-  
-  const getContentItems = (clientId?: number | null, status?: string) => {
-    return contentItems.filter(item => {
-      if (clientId !== undefined && item.createdBy !== clientId) return false;
-      if (status && item.status !== status) return false;
-      return true;
-    });
-  };
-  
-  const addNotification = (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1,
-      createdAt: new Date().toISOString(),
-      read: false
-    };
-    
-    setNotifications([newNotification, ...notifications]);
-  };
-  
-  const markNotificationAsRead = (id: number) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === id ? { ...notification, read: true } : notification
-    ));
-  };
-  
-  const getNotifications = (forClientId?: number | null) => {
-    return notifications.filter(notification => {
-      if (forClientId !== undefined && notification.forClientId !== forClientId) return false;
-      return true;
-    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  };
-  
-  const getUnreadNotificationsCount = (forClientId?: number | null) => {
-    return getNotifications(forClientId).filter(notification => !notification.read).length;
-  };
-
-  const loginToAccount = (email: string, password: string): boolean => {
-    if (email === "dej@avai.vip" && password === "FilthyRich2025!\\") {
-      setCurrentClientId(null);
-      setIsInMasterMode(true);
-      toast({
-        title: "Logged In",
-        description: "Successfully logged in to master account."
-      });
-      return true;
-    }
-    
-    const client = clients.find(client => client.email === email && client.password === password);
-    if (client) {
-      setCurrentClientId(client.id);
-      setIsInMasterMode(false);
-      toast({
-        title: "Logged In",
-        description: `Successfully logged in to ${client.name} account.`
-      });
-      return true;
-    }
-    
-    toast({
-      title: "Login Failed",
-      description: "Invalid email or password. Please try again.",
-      variant: "destructive"
-    });
-    return false;
+  // Provide the context value
+  const contextValue: MasterAccountContextType = {
+    isInMasterMode,
+    setIsInMasterMode,
+    currentClientId,
+    clients,
+    selectedClient,
+    switchToClient,
+    loginToAccount,
+    addClient,
+    removeClient,
   };
 
   return (
-    <MasterAccountContext.Provider 
-      value={{ 
-        clients, 
-        currentClientId, 
-        webhooks,
-        websitePages,
-        contentItems,
-        notifications,
-        addClient, 
-        removeClient, 
-        switchToClient,
-        isInMasterMode,
-        setIsInMasterMode,
-        toggleMasterMode,
-        loginToAccount,
-        addWebhook,
-        removeWebhook,
-        updateWebhook,
-        triggerWebhook,
-        addWebsitePage,
-        removeWebsitePage,
-        updateWebsitePage,
-        addContentItem,
-        updateContentStatus,
-        getContentItems,
-        addNotification,
-        markNotificationAsRead,
-        getNotifications,
-        getUnreadNotificationsCount
-      }}
-    >
+    <MasterAccountContext.Provider value={contextValue}>
       {children}
     </MasterAccountContext.Provider>
   );
 };
 
+// Create a hook to use the context
 export const useMasterAccount = () => {
   const context = useContext(MasterAccountContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useMasterAccount must be used within a MasterAccountProvider');
   }
   return context;

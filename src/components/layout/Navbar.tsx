@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { ClientSwitcher } from '@/components/master-account/ClientSwitcher';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { NotificationsPopover } from '@/components/notifications/NotificationsPopover';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +19,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Toggle } from '@/components/ui/toggle';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
@@ -27,26 +27,35 @@ interface NavbarProps {
 }
 
 const Navbar = ({ onToggleSidebar }: NavbarProps) => {
-  const { theme, setTheme } = useTheme();
   const { isInMasterMode, switchToClient, setIsInMasterMode } = useMasterAccount();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
-  const handleLogout = () => {
-    // Clear client selection
-    switchToClient(null);
+  const handleLogout = async () => {
+    // Sign out from Supabase if authenticated
+    if (user) {
+      await signOut();
+    } else {
+      // Clear client selection for legacy master account
+      switchToClient(null);
+      
+      // Ensure master mode is disabled to trigger login screen
+      setIsInMasterMode(false);
+      
+      // Show logout confirmation
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out."
+      });
+    }
     
-    // Ensure master mode is disabled to trigger login screen
-    setIsInMasterMode(false);
-    
-    // Navigate to login page
-    navigate('/login');
-    
-    // Show logout confirmation
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out."
-    });
+    // Navigate to auth page
+    navigate('/auth');
   };
+  
+  // Get user display information
+  const userEmail = user?.email || (isInMasterMode ? 'Master Account' : 'Client Account');
+  const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
   
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -91,7 +100,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                 </span>
                 <Avatar className="h-10 w-10 border border-primary/20">
                   <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt="User" />
-                  <AvatarFallback className="bg-primary/10 text-lg font-bold">U</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-lg font-bold">{userInitial}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -103,7 +112,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                 <div className="flex flex-col space-y-1">
                   <p className="text-base font-medium">My Account</p>
                   <p className="text-sm text-muted-foreground">
-                    {isInMasterMode ? 'Master Account' : 'Client Account'}
+                    {userEmail}
                   </p>
                 </div>
               </DropdownMenuLabel>

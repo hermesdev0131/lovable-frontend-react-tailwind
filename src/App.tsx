@@ -22,6 +22,8 @@ import EmailMarketing from "./pages/EmailMarketing"
 import Reputation from "./pages/Reputation"
 import Account from "./pages/Account"
 import LoginPage from "./pages/Login"
+import AuthPage from "./pages/Auth"
+import { AuthProvider } from "./contexts/AuthContext"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -32,203 +34,206 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="ui-theme">
-      <MasterAccountProvider>
-        <BrowserRouter>
-          <CustomErrorBoundary>
-            <Toaster />
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Index />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/calendar"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Calendar />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/account"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Account />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+      <AuthProvider>
+        <MasterAccountProvider>
+          <BrowserRouter>
+            <CustomErrorBoundary>
+              <Toaster />
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Index />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/calendar"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Calendar />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/account"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Account />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/campaigns"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Campaigns</h1>
-                        <p>Campaign management page content will go here.</p>
-                      </div>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/campaigns"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <div className="container mx-auto py-6">
+                          <h1 className="text-3xl font-bold mb-6">Campaigns</h1>
+                          <p>Campaign management page content will go here.</p>
+                        </div>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/clients"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Clients />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/clients"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Clients />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/content"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <ContentScheduling />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/content"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <ContentScheduling />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/deals"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Deals />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/deals"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Deals />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/email"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <EmailMarketing />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/email"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <EmailMarketing />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/integrations"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div className="container mx-auto py-6">
-                        <h1 className="text-3xl font-bold mb-6">Integrations</h1>
-                        <p>Integration management page content will go here.</p>
-                      </div>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/integrations"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <div className="container mx-auto py-6">
+                          <h1 className="text-3xl font-bold mb-6">Integrations</h1>
+                          <p>Integration management page content will go here.</p>
+                        </div>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/opportunities"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Opportunities />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/opportunities"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Opportunities />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/projects"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Projects />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/projects"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Projects />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/reputation"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <Reputation />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/reputation"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <Reputation />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <SettingsPage />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <SettingsPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/tasks"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <div>Tasks</div>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/tasks"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <div>Tasks</div>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/website"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <WebsiteManagement />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="/master-account"
-                element={
-                  <ProtectedRoute>
-                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                      <MasterAccount />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              <Route
-                path="*"
-                element={<NotFound />}
-              />
-            </Routes>
-          </CustomErrorBoundary>
-        </BrowserRouter>
-      </MasterAccountProvider>
+                <Route
+                  path="/website"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <WebsiteManagement />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/master-account"
+                  element={
+                    <ProtectedRoute>
+                      <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                        <MasterAccount />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="*"
+                  element={<NotFound />}
+                />
+              </Routes>
+            </CustomErrorBoundary>
+          </BrowserRouter>
+        </MasterAccountProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
