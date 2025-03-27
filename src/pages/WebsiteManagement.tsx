@@ -9,9 +9,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { BarChart, PieChart, LayoutGrid, Globe, Monitor, Smartphone, Tablet, Edit, Settings, LinkIcon } from 'lucide-react';
+import { BarChart, PieChart, LayoutGrid, Globe, Monitor, Smartphone, Tablet, Edit, Settings, LinkIcon, Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import RealTimeAnalytics from '@/components/website/RealTimeAnalytics';
 
 interface PageFormValues {
   title: string;
@@ -25,6 +26,8 @@ const WebsiteManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
+  const [selectedPage, setSelectedPage] = useState<number | null>(null);
+  const [isTracking, setIsTracking] = useState(false);
   
   // Calculate page stats
   const totalPages = websitePages.length;
@@ -121,6 +124,18 @@ const WebsiteManagement = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+  
+  const startTracking = (pageId: number) => {
+    setSelectedPage(pageId);
+    
+    if (!isTracking) {
+      setIsTracking(true);
+      toast({
+        title: "Real-time tracking activated",
+        description: "Now monitoring website traffic and performance metrics",
+      });
+    }
   };
   
   return (
@@ -301,6 +316,9 @@ const WebsiteManagement = () => {
         <TabsList>
           <TabsTrigger value="all">All Pages</TabsTrigger>
           <TabsTrigger value="landing">Landing Pages</TabsTrigger>
+          <TabsTrigger value="realtime" className="flex items-center gap-1">
+            <Activity className="h-4 w-4" /> Real-Time Tracking
+          </TabsTrigger>
           <TabsTrigger value="insights">Insights</TabsTrigger>
           <TabsTrigger value="devices">Device Breakdown</TabsTrigger>
         </TabsList>
@@ -357,6 +375,14 @@ const WebsiteManagement = () => {
                             onClick={() => deletePage(page.id)}
                           >
                             <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => startTracking(page.id)}
+                            className="ml-2"
+                          >
+                            <Activity className="h-3 w-3 mr-1" /> Track
                           </Button>
                         </div>
                       </TableCell>
@@ -449,6 +475,35 @@ const WebsiteManagement = () => {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="realtime" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <div>
+                  <CardTitle className="flex items-center">
+                    <Activity className="h-5 w-5 mr-2 text-primary" />
+                    Real-Time Website Tracking
+                  </CardTitle>
+                  <CardDescription>
+                    Live monitoring of website visitors and performance metrics
+                  </CardDescription>
+                </div>
+                <div className="space-x-2">
+                  <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+                    Live
+                  </Badge>
+                  <Badge variant="outline">
+                    Refreshing every 5s
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <RealTimeAnalytics websiteId={selectedPage} />
             </CardContent>
           </Card>
         </TabsContent>
