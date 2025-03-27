@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -76,7 +75,7 @@ interface MasterAccountContextType {
   removeClient: (id: number) => void;
   switchToClient: (id: number | null) => void;
   isInMasterMode: boolean;
-  setIsInMasterMode: (mode: boolean) => void; // Add this line to fix the TypeScript error
+  setIsInMasterMode: (mode: boolean) => void;
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
   addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
@@ -460,6 +459,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         removeClient, 
         switchToClient,
         isInMasterMode,
+        setIsInMasterMode,
         toggleMasterMode,
         loginToAccount,
         addWebhook,
