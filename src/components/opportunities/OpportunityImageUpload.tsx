@@ -7,11 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 interface OpportunityImageUploadProps {
   uploadedImage: string | null;
   setUploadedImage: (image: string | null) => void;
+  label?: string;
 }
 
 const OpportunityImageUpload = ({
   uploadedImage,
-  setUploadedImage
+  setUploadedImage,
+  label = "Add Image"
 }: OpportunityImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -70,7 +72,7 @@ const OpportunityImageUpload = ({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium mb-1">Add Image</label>
+      <label className="block text-sm font-medium mb-1">{label}</label>
       <div className="flex flex-col space-y-2">
         <input
           type="file"

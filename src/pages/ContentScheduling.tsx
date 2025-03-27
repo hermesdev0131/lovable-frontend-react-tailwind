@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Facebook, Instagram, Linkedin, Twitter, Plus, Clock, Send, Filter, Check, X, ThumbsUp, ThumbsDown, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import OpportunityImageUpload from '@/components/opportunities/OpportunityImageUpload';
 
 interface ScheduledContent {
   id: number;
@@ -50,6 +52,7 @@ const ContentScheduling = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   
   const { 
     addContentItem,
@@ -107,7 +110,8 @@ const ContentScheduling = () => {
       scheduledFor: new Date(selectedDate.setHours(
         parseInt(selectedTime.split(':')[0]), 
         parseInt(selectedTime.split(':')[1])
-      )).toISOString()
+      )).toISOString(),
+      media: uploadedImage
     });
     
     const newPost: ScheduledContent = {
@@ -117,7 +121,7 @@ const ContentScheduling = () => {
       time: selectedTime,
       platforms: selectedPlatforms,
       status: "pending",
-      media: null
+      media: uploadedImage
     };
 
     setScheduledContent([...scheduledContent, newPost]);
@@ -126,6 +130,7 @@ const ContentScheduling = () => {
     setSelectedDate(new Date());
     setSelectedTime("12:00");
     setSelectedPlatforms([]);
+    setUploadedImage(null);
     setIsCreating(false);
 
     toast({
@@ -230,6 +235,12 @@ const ContentScheduling = () => {
                 className="min-h-[100px]"
               />
             </div>
+            
+            <OpportunityImageUpload 
+              uploadedImage={uploadedImage} 
+              setUploadedImage={setUploadedImage} 
+              label="Add Image to Post"
+            />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -368,6 +379,15 @@ const ContentScheduling = () => {
                             <p className="text-sm font-medium">{content.content}</p>
                             {getStatusBadge(content.status)}
                           </div>
+                          {content.media && (
+                            <div className="mt-2">
+                              <img 
+                                src={content.media} 
+                                alt="Post media" 
+                                className="max-h-[150px] rounded-md object-cover"
+                              />
+                            </div>
+                          )}
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             <span>{format(content.date, "PPP")} at {content.time}</span>
@@ -404,6 +424,15 @@ const ContentScheduling = () => {
                       <div className="flex justify-between">
                         <div className="space-y-2 flex-1">
                           <p className="text-sm font-medium">{content.content}</p>
+                          {content.media && (
+                            <div className="mt-2">
+                              <img 
+                                src={content.media} 
+                                alt="Post media" 
+                                className="max-h-[150px] rounded-md object-cover"
+                              />
+                            </div>
+                          )}
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             <span>{format(content.date, "PPP")} at {content.time}</span>
@@ -441,6 +470,16 @@ const ContentScheduling = () => {
                           <p className="text-sm text-muted-foreground whitespace-pre-line">
                             {item.content}
                           </p>
+                          
+                          {item.media && (
+                            <div className="mt-2">
+                              <img 
+                                src={item.media} 
+                                alt="Post media" 
+                                className="max-h-[150px] rounded-md object-cover"
+                              />
+                            </div>
+                          )}
                           
                           {item.status === 'rejected' && item.rejectionReason && (
                             <div className="mt-2 p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-md text-sm">
