@@ -18,12 +18,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MoreVertical, Edit, Trash2, CheckCircle, XCircle, Upload } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+
+const PLATFORMS = [
+  { id: "facebook", name: "Facebook", icon: Facebook },
+  { id: "twitter", name: "Twitter", icon: Twitter },
+  { id: "instagram", name: "Instagram", icon: Instagram },
+  { id: "linkedin", name: "LinkedIn", icon: Linkedin },
+];
 
 const ContentScheduling = () => {
   const [newContent, setNewContent] = useState({
     title: "",
     content: "",
-    platform: "Facebook",
+    platforms: [] as string[],
     scheduledFor: new Date(),
     media: null as string | null,
   });
@@ -43,10 +53,6 @@ const ContentScheduling = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setNewContent({ ...newContent, [e.target.name]: e.target.value });
-  };
-
-  const handleSelectChange = (value: string) => {
-    setNewContent({ ...newContent, platform: value });
   };
 
   const handleDateChange = (date: Date | undefined) => {
@@ -70,33 +76,61 @@ const ContentScheduling = () => {
     }
   };
 
+  const togglePlatform = (platform: string) => {
+    setNewContent(prev => {
+      const platforms = [...prev.platforms];
+      
+      if (platforms.includes(platform)) {
+        return { 
+          ...prev, 
+          platforms: platforms.filter(p => p !== platform) 
+        };
+      } else {
+        return { 
+          ...prev, 
+          platforms: [...platforms, platform] 
+        };
+      }
+    });
+  };
+
   const handleCreateContent = () => {
-    if (!newContent.title || !newContent.content || !newContent.platform || !newContent.scheduledFor) {
+    if (!newContent.title || !newContent.content || newContent.platforms.length === 0 || !newContent.scheduledFor) {
       toast({
         title: "Validation Error",
-        description: "Please fill all required fields",
+        description: "Please fill all required fields and select at least one platform",
         variant: "destructive"
       });
       return;
     }
     
-    addContentItem({
-      title: newContent.title,
-      content: newContent.content,
-      type: "social",
-      platform: newContent.platform,
-      createdBy: currentClientId || 0,
-      scheduledFor: newContent.scheduledFor.toISOString(),
-      media: newContent.media,
-      clientId: currentClientId,
+    // Create a content item for each selected platform
+    newContent.platforms.forEach(platform => {
+      addContentItem({
+        title: newContent.title,
+        content: newContent.content,
+        type: "social",
+        platform: platform,
+        createdBy: currentClientId || 0,
+        scheduledFor: newContent.scheduledFor.toISOString(),
+        media: newContent.media,
+        clientId: currentClientId,
+      });
     });
     
-    setNewContent({ title: "", content: "", platform: "Facebook", scheduledFor: new Date(), media: null });
+    setNewContent({ 
+      title: "", 
+      content: "", 
+      platforms: [], 
+      scheduledFor: new Date(), 
+      media: null 
+    });
     setContentList(getContentItems(currentClientId));
     setIsCreateModalOpen(false);
+    
     toast({
       title: "Content Scheduled",
-      description: `${newContent.title} has been scheduled successfully.`
+      description: `${newContent.title} has been scheduled for ${newContent.platforms.length} platform${newContent.platforms.length > 1 ? 's' : ''}.`
     });
   };
   
@@ -115,6 +149,15 @@ const ContentScheduling = () => {
     return client ? client.name : "Unknown Client";
   };
 
+  const renderPlatformIcon = (platform: string) => {
+    const platformInfo = PLATFORMS.find(p => p.id.toLowerCase() === platform.toLowerCase());
+    if (platformInfo) {
+      const Icon = platformInfo.icon;
+      return <Icon className="h-4 w-4 mr-2" />;
+    }
+    return null;
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <Card>
@@ -128,11 +171,11 @@ const ContentScheduling = () => {
               <DialogTrigger asChild>
                 <Button>Schedule New Content</Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
                   <DialogTitle>Schedule New Content</DialogTitle>
                   <DialogDescription>
-                    Create and schedule a new piece of content for your social media platforms.
+                    Create and schedule new content for multiple social media platforms at once.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -163,21 +206,35 @@ const ContentScheduling = () => {
                       className="col-span-3"
                     />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="platform" className="text-right">
-                      Platform
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">
+                      Platforms
                     </Label>
-                    <Select onValueChange={handleSelectChange} defaultValue={newContent.platform}>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select platform" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Facebook">Facebook</SelectItem>
-                        <SelectItem value="Twitter">Twitter</SelectItem>
-                        <SelectItem value="Instagram">Instagram</SelectItem>
-                        <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="col-span-3 space-y-3">
+                      <div className="flex flex-col space-y-2">
+                        {PLATFORMS.map((platform) => (
+                          <div key={platform.id} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`platform-${platform.id}`} 
+                              checked={newContent.platforms.includes(platform.id)}
+                              onCheckedChange={() => togglePlatform(platform.id)}
+                            />
+                            <label
+                              htmlFor={`platform-${platform.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
+                            >
+                              {React.createElement(platform.icon, { className: "h-4 w-4 mr-2" })}
+                              {platform.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      {newContent.platforms.length === 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Please select at least one platform.
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="scheduledFor" className="text-right">
@@ -231,7 +288,13 @@ const ContentScheduling = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" onClick={handleCreateContent}>Schedule Content</Button>
+                  <Button 
+                    type="submit" 
+                    onClick={handleCreateContent}
+                    disabled={newContent.platforms.length === 0}
+                  >
+                    Schedule Content {newContent.platforms.length > 0 && `(${newContent.platforms.length} platforms)`}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -253,7 +316,12 @@ const ContentScheduling = () => {
               {contentList.map((content) => (
                 <TableRow key={content.id}>
                   <TableCell className="font-medium">{content.title}</TableCell>
-                  <TableCell>{content.platform}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {renderPlatformIcon(content.platform)}
+                      {content.platform}
+                    </div>
+                  </TableCell>
                   <TableCell>{format(new Date(content.scheduledFor || ''), "PPP")}</TableCell>
                   <TableCell>
                     {content.status === 'pending' && (
