@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Facebook, Instagram, Linkedin, Twitter, Plus, Clock, Send, Filter, Check, X, ThumbsUp, ThumbsDown, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import OpportunityImageUpload from '@/components/opportunities/OpportunityImageUpload';
+import { ContentItem } from '@/types/content';
 
 interface ScheduledContent {
   id: number;
@@ -62,9 +62,8 @@ const ContentScheduling = () => {
     currentClientId 
   } = useMasterAccount();
   
-  const socialContentItems = getContentItems(undefined, undefined)
-    .filter(item => item.type === 'social');
-
+  const socialContentItems = getContentItems(undefined);
+  
   const handlePlatformToggle = (platform: string) => {
     if (selectedPlatforms.includes(platform)) {
       setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
