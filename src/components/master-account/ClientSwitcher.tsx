@@ -16,7 +16,11 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
-export const ClientSwitcher = () => {
+interface ClientSwitcherProps {
+  triggerClassName?: string;
+}
+
+export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) => {
   const { clients, currentClientId, switchToClient, isInMasterMode } = useMasterAccount();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -57,7 +61,7 @@ export const ClientSwitcher = () => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button variant="outline" className={cn("flex items-center gap-2", triggerClassName)}>
           {isInMasterMode ? (
             <>
               <Building2 className="h-4 w-4" />
@@ -130,3 +134,8 @@ export const ClientSwitcher = () => {
     </DropdownMenu>
   );
 };
+
+// Helper function to conditionally add classes
+function cn(...classes: any) {
+  return classes.filter(Boolean).join(' ');
+}
