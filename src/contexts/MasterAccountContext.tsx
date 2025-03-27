@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -54,6 +53,7 @@ interface ContentItem {
   approvedAt?: string;
   media?: string | null;
   clientId: number | null;
+  skipApproval?: boolean;
 }
 
 interface Notification {
@@ -98,7 +98,6 @@ interface MasterAccountContextType {
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
 
-// Local storage keys
 const STORAGE_KEYS = {
   CLIENTS: 'master_account_clients',
   CURRENT_CLIENT: 'master_account_current_client',
@@ -110,7 +109,6 @@ const STORAGE_KEYS = {
 };
 
 export const MasterAccountProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize state from localStorage or default values
   const [clients, setClients] = useState<Client[]>(() => {
     const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
     return savedClients ? JSON.parse(savedClients) : [];
@@ -146,7 +144,6 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     return savedNotifications ? JSON.parse(savedNotifications) : [];
   });
 
-  // Save to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
   }, [clients]);
@@ -187,7 +184,6 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   const removeClient = (id: number) => {
     setClients(clients.filter(client => client.id !== id));
     
-    // Remove all data associated with this client
     setWebsitePages(websitePages.filter(page => page.clientId !== id));
     setContentItems(contentItems.filter(item => item.clientId !== id && item.createdBy !== id));
     
@@ -295,7 +291,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     const newPage = {
       ...page,
       id: websitePages.length > 0 ? Math.max(...websitePages.map(p => p.id)) + 1 : 1,
-      clientId: isInMasterMode ? null : currentClientId, // Associate with current client if not in master mode
+      clientId: isInMasterMode ? null : currentClientId,
     };
     
     setWebsitePages([...websitePages, newPage]);
@@ -306,7 +302,6 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   };
 
   const removeWebsitePage = (id: number) => {
-    // Only allow removal if the page belongs to the current client or if in master mode
     const pageToRemove = websitePages.find(page => page.id === id);
     if (!pageToRemove) return;
     
@@ -327,7 +322,6 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   };
 
   const updateWebsitePage = (id: number, data: Partial<WebsitePage>) => {
-    // Only allow updates if the page belongs to the current client or if in master mode
     const pageToUpdate = websitePages.find(page => page.id === id);
     if (!pageToUpdate) return;
     
@@ -354,13 +348,13 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       ...item,
       id: contentItems.length > 0 ? Math.max(...contentItems.map(item => item.id)) + 1 : 1,
       createdAt: new Date().toISOString(),
-      status: 'pending',
-      clientId: isInMasterMode ? null : currentClientId, // Associate with current client if not in master mode
+      status: item.skipApproval ? 'approved' : 'pending',
+      clientId: isInMasterMode ? null : currentClientId,
     };
     
     setContentItems([...contentItems, newItem]);
     
-    if (item.createdBy !== null) {
+    if (!item.skipApproval && item.createdBy !== null) {
       const client = clients.find(c => c.id === item.createdBy);
       if (client) {
         addNotification({
@@ -375,15 +369,16 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     
     toast({
       title: "Content Created",
-      description: `${item.title} has been created and is pending approval.`
+      description: item.skipApproval 
+        ? `${item.title} has been created and automatically approved.` 
+        : `${item.title} has been created and is pending approval.`
     });
   };
-  
+
   const updateContentStatus = (id: number, status: 'approved' | 'rejected', reason?: string) => {
     const contentItem = contentItems.find(item => item.id === id);
     if (!contentItem) return;
     
-    // Only allow updates if the content belongs to the current client or if in master mode
     if (!isInMasterMode && contentItem.clientId !== currentClientId && contentItem.createdBy !== currentClientId) {
       toast({
         title: "Permission Denied",
@@ -423,24 +418,21 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       description: `${contentItem.title} has been ${status}.`
     });
   };
-  
+
   const getContentItems = (clientId?: number | null, status?: string) => {
     return contentItems.filter(item => {
-      // If clientId is specified, filter by that client
       if (clientId !== undefined) {
         if (item.clientId !== clientId && item.createdBy !== clientId) return false;
       } else if (!isInMasterMode && currentClientId !== null) {
-        // If we're in client mode, only show items for this client
         if (item.clientId !== currentClientId && item.createdBy !== currentClientId) return false;
       }
       
-      // If status is specified, filter by that status
       if (status && item.status !== status) return false;
       
       return true;
     });
   };
-  
+
   const addNotification = (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
     const newNotification: Notification = {
       ...notification,
@@ -451,33 +443,30 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     
     setNotifications([newNotification, ...notifications]);
   };
-  
+
   const markNotificationAsRead = (id: number) => {
     setNotifications(notifications.map(notification => 
       notification.id === id ? { ...notification, read: true } : notification
     ));
   };
-  
+
   const getNotifications = (forClientId?: number | null) => {
     return notifications.filter(notification => {
-      // If forClientId is specified, filter by that client
       if (forClientId !== undefined) {
         if (notification.forClientId !== forClientId) return false;
       } else if (!isInMasterMode && currentClientId !== null) {
-        // If we're in client mode, only show notifications for this client
         if (notification.forClientId !== currentClientId && notification.forClientId !== null) return false;
       }
       
       return true;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   };
-  
+
   const getUnreadNotificationsCount = (forClientId?: number | null) => {
     return getNotifications(forClientId).filter(notification => !notification.read).length;
   };
 
   const loginToAccount = (email: string, password: string): boolean => {
-    // Check if the email is one of the master account emails
     if ((email === "dej@avai.vip" || email === "baba@avai.vip") && password === "FilthyRich2025!\\") {
       setCurrentClientId(null);
       setIsInMasterMode(true);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,6 +35,7 @@ const ContentScheduling = () => {
     platforms: [] as string[],
     scheduledFor: new Date(),
     media: null as string | null,
+    skipApproval: false,
   });
   
   const [contentList, setContentList] = useState([]);
@@ -104,7 +104,6 @@ const ContentScheduling = () => {
       return;
     }
     
-    // Create a content item for each selected platform
     newContent.platforms.forEach(platform => {
       addContentItem({
         title: newContent.title,
@@ -115,6 +114,7 @@ const ContentScheduling = () => {
         scheduledFor: newContent.scheduledFor.toISOString(),
         media: newContent.media,
         clientId: currentClientId,
+        skipApproval: newContent.skipApproval,
       });
     });
     
@@ -123,7 +123,8 @@ const ContentScheduling = () => {
       content: "", 
       platforms: [], 
       scheduledFor: new Date(), 
-      media: null 
+      media: null,
+      skipApproval: false
     });
     setContentList(getContentItems(currentClientId));
     setIsCreateModalOpen(false);
@@ -286,6 +287,26 @@ const ContentScheduling = () => {
                       </div>
                     )}
                   </div>
+                  
+                  {isInMasterMode && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <div className="col-start-2 col-span-3 flex items-center space-x-2">
+                        <Checkbox
+                          id="skipApproval"
+                          checked={newContent.skipApproval}
+                          onCheckedChange={(checked) => 
+                            setNewContent({ ...newContent, skipApproval: !!checked })
+                          }
+                        />
+                        <label
+                          htmlFor="skipApproval"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Skip approval process (content will be automatically approved)
+                        </label>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button 
