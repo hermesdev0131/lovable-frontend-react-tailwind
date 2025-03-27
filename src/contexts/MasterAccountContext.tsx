@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -35,6 +36,7 @@ interface WebsitePage {
   views: number;
   conversions: number;
   bounceRate: number;
+  clientId: number | null;
 }
 
 interface ContentItem {
@@ -51,6 +53,7 @@ interface ContentItem {
   approvedBy?: number;
   approvedAt?: string;
   media?: string | null;
+  clientId: number | null;
 }
 
 interface Notification {
@@ -184,6 +187,10 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   const removeClient = (id: number) => {
     setClients(clients.filter(client => client.id !== id));
     
+    // Remove all data associated with this client
+    setWebsitePages(websitePages.filter(page => page.clientId !== id));
+    setContentItems(contentItems.filter(item => item.clientId !== id && item.createdBy !== id));
+    
     if (currentClientId === id) {
       setCurrentClientId(null);
       setIsInMasterMode(true);
@@ -287,7 +294,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   const addWebsitePage = (page: Omit<WebsitePage, 'id'>) => {
     const newPage = {
       ...page,
-      id: websitePages.length > 0 ? Math.max(...websitePages.map(p => p.id)) + 1 : 1
+      id: websitePages.length > 0 ? Math.max(...websitePages.map(p => p.id)) + 1 : 1,
+      clientId: isInMasterMode ? null : currentClientId, // Associate with current client if not in master mode
     };
     
     setWebsitePages([...websitePages, newPage]);
@@ -298,6 +306,19 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   };
 
   const removeWebsitePage = (id: number) => {
+    // Only allow removal if the page belongs to the current client or if in master mode
+    const pageToRemove = websitePages.find(page => page.id === id);
+    if (!pageToRemove) return;
+    
+    if (!isInMasterMode && pageToRemove.clientId !== currentClientId) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to remove this page.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setWebsitePages(websitePages.filter(page => page.id !== id));
     toast({
       title: "Page Removed",
@@ -306,6 +327,19 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   };
 
   const updateWebsitePage = (id: number, data: Partial<WebsitePage>) => {
+    // Only allow updates if the page belongs to the current client or if in master mode
+    const pageToUpdate = websitePages.find(page => page.id === id);
+    if (!pageToUpdate) return;
+    
+    if (!isInMasterMode && pageToUpdate.clientId !== currentClientId) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to update this page.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setWebsitePages(websitePages.map(page => 
       page.id === id ? { ...page, ...data, updatedAt: new Date().toISOString() } : page
     ));
@@ -320,7 +354,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
       ...item,
       id: contentItems.length > 0 ? Math.max(...contentItems.map(item => item.id)) + 1 : 1,
       createdAt: new Date().toISOString(),
-      status: 'pending'
+      status: 'pending',
+      clientId: isInMasterMode ? null : currentClientId, // Associate with current client if not in master mode
     };
     
     setContentItems([...contentItems, newItem]);
@@ -347,6 +382,16 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   const updateContentStatus = (id: number, status: 'approved' | 'rejected', reason?: string) => {
     const contentItem = contentItems.find(item => item.id === id);
     if (!contentItem) return;
+    
+    // Only allow updates if the content belongs to the current client or if in master mode
+    if (!isInMasterMode && contentItem.clientId !== currentClientId && contentItem.createdBy !== currentClientId) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to update this content.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const updatedContentItems = contentItems.map(item => 
       item.id === id ? { 
@@ -381,8 +426,17 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   
   const getContentItems = (clientId?: number | null, status?: string) => {
     return contentItems.filter(item => {
-      if (clientId !== undefined && item.createdBy !== clientId) return false;
+      // If clientId is specified, filter by that client
+      if (clientId !== undefined) {
+        if (item.clientId !== clientId && item.createdBy !== clientId) return false;
+      } else if (!isInMasterMode && currentClientId !== null) {
+        // If we're in client mode, only show items for this client
+        if (item.clientId !== currentClientId && item.createdBy !== currentClientId) return false;
+      }
+      
+      // If status is specified, filter by that status
       if (status && item.status !== status) return false;
+      
       return true;
     });
   };
@@ -406,7 +460,14 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   
   const getNotifications = (forClientId?: number | null) => {
     return notifications.filter(notification => {
-      if (forClientId !== undefined && notification.forClientId !== forClientId) return false;
+      // If forClientId is specified, filter by that client
+      if (forClientId !== undefined) {
+        if (notification.forClientId !== forClientId) return false;
+      } else if (!isInMasterMode && currentClientId !== null) {
+        // If we're in client mode, only show notifications for this client
+        if (notification.forClientId !== currentClientId && notification.forClientId !== null) return false;
+      }
+      
       return true;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   };

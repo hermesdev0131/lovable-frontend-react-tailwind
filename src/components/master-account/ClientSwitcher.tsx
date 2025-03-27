@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, ChevronDown, Users } from 'lucide-react';
+import { Building2, ChevronDown, Users, ShieldCheck, LogOut } from 'lucide-react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 export const ClientSwitcher = () => {
   const { clients, currentClientId, switchToClient, isInMasterMode } = useMasterAccount();
@@ -43,6 +44,15 @@ export const ClientSwitcher = () => {
       description: `You are now viewing ${clients.find(c => c.id === clientId)?.name}`
     });
   };
+
+  const handleLogout = () => {
+    switchToClient(null);
+    navigate('/');
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully"
+    });
+  };
   
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -52,6 +62,9 @@ export const ClientSwitcher = () => {
             <>
               <Building2 className="h-4 w-4" />
               <span className="font-medium">Master Account</span>
+              <Badge variant="outline" className="ml-1 bg-amber-100 text-amber-800 hover:bg-amber-100">
+                <ShieldCheck className="h-3 w-3 mr-1" /> Admin
+              </Badge>
             </>
           ) : currentClient ? (
             <>
@@ -60,6 +73,9 @@ export const ClientSwitcher = () => {
                 <AvatarFallback>{currentClient.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <span className="font-medium max-w-[150px] truncate">{currentClient.name}</span>
+              <Badge variant="outline" className="ml-1 bg-green-100 text-green-800 hover:bg-green-100">
+                Client
+              </Badge>
             </>
           ) : (
             <span>Select Account</span>
@@ -101,6 +117,14 @@ export const ClientSwitcher = () => {
         >
           <Users className="h-4 w-4" />
           <span>Manage Clients</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
