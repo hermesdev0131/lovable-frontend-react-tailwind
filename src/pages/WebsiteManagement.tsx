@@ -4,7 +4,7 @@ import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DialogTrigger } from '@/components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { useForm } from 'react-hook-form';
 import { Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -143,17 +143,17 @@ const WebsiteManagement = () => {
     <div className="container mx-auto py-8 px-4 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Website & Landing Pages</h1>
-        <AddPageDialog 
-          isOpen={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          form={addForm}
-          onSubmit={handleAddPage}
-        />
-        <DialogTrigger asChild onClick={() => setIsAddDialogOpen(true)}>
-          <Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <AddPageDialog 
+            isOpen={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            form={addForm}
+            onSubmit={handleAddPage}
+          />
+          <Button onClick={() => setIsAddDialogOpen(true)}>
             Add New Page
           </Button>
-        </DialogTrigger>
+        </Dialog>
       </div>
       
       <WebsiteStats 
