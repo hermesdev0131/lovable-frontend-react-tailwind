@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ThumbsDown, MessageSquare, Bell, BarChart2, Filter, RefreshCw, AlertCircle, CheckCircle, ArrowRight, Upload, Link as LinkIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,8 +16,8 @@ import { YextIntegration, ReviewFilter } from '@/types/website';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Sample data - would typically come from API
 const ratingData = Array.from({ length: 30 }, (_, i) => ({
   date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split('T')[0],
   average: (3.5 + Math.sin(i / 3) + Math.random() * 0.5).toFixed(1),
@@ -110,7 +109,6 @@ const Reputation = () => {
   const negativeReviews = reviewsData.filter(review => review.rating <= 2).length;
   const pendingResponses = reviewsData.filter(review => !review.replied).length;
 
-  // Simulate a sync with Yext
   const syncWithYext = () => {
     setShowSyncDialog(true);
     setSyncProgress(0);
@@ -340,7 +338,7 @@ const Reputation = () => {
                 <CardDescription>Average rating over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px]">
+                <div className="w-full h-[300px]">
                   <ChartContainer
                     config={{
                       average: { label: "Average Rating" },
@@ -350,7 +348,7 @@ const Reputation = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart
                         data={ratingData}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
                       >
                         <defs>
                           <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
@@ -366,7 +364,7 @@ const Reputation = () => {
                           }}
                         />
                         <YAxis domain={[0, 5]} />
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
                         <Tooltip content={<ChartTooltipContent />} />
                         <Area 
                           type="monotone" 
@@ -822,7 +820,6 @@ const Reputation = () => {
         </Tabs>
       </div>
 
-      {/* Sync Progress Dialog */}
       <Dialog open={showSyncDialog} onOpenChange={setShowSyncDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
