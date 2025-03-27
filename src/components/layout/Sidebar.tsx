@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Mail,
-  Lightbulb
+  Lightbulb,
+  Star
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useTheme } from '../theme/ThemeProvider';
@@ -181,6 +182,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                 >
                   <BookOpen className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
                   {isExpanded && <span>Content</span>}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/reputation"
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive("/reputation") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                    !isExpanded && "justify-center"
+                  )}
+                >
+                  <Star className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
+                  {isExpanded && <span>Reputation</span>}
                 </Link>
               </li>
               
