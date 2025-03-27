@@ -1,62 +1,48 @@
 
-import { Moon, Sun, MoonStar } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { MoonStar, Sun } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
-import { Toggle } from "@/components/ui/toggle";
+import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  variant?: "button" | "dropdown";
+}
+
+export function ThemeToggle({ variant = "button" }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  if (variant === "dropdown") {
+    return (
+      <div 
+        className="flex w-full items-center cursor-pointer"
+        onClick={toggleTheme}
+      >
+        {theme === "dark" ? (
+          <>
+            <Sun className="mr-2 h-5 w-5" />
+            <span>Light Mode</span>
+          </>
+        ) : (
+          <>
+            <MoonStar className="mr-2 h-5 w-5" />
+            <span>Dark Mode</span>
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Toggle
-          pressed={theme === 'dark'}
-          onPressedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="border-2 border-primary/50 p-0.5 rounded-full h-10 w-10 flex items-center justify-center shadow-lg bg-background"
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? 
-            <Sun className="h-5 w-5 text-yellow-400" /> : 
-            <MoonStar className="h-5 w-5 text-primary" />
-          }
-        </Toggle>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-background border-2 border-primary/20 rounded-xl shadow-xl">
-        <DropdownMenuItem onClick={() => setTheme("light")} className={theme === "light" ? "bg-accent font-medium" : ""}>
-          <Sun className="h-4 w-4 mr-2" />
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")} className={theme === "dark" ? "bg-accent font-medium" : ""}>
-          <Moon className="h-4 w-4 mr-2" />
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className={theme === "system" ? "bg-accent font-medium" : ""}>
-          <svg
-            className="h-4 w-4 mr-2"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
-          </svg>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button variant="ghost" size="icon" onClick={toggleTheme}>
+      {theme === "dark" ? (
+        <Sun className="h-5 w-5" />
+      ) : (
+        <MoonStar className="h-5 w-5" />
+      )}
+    </Button>
   );
 }

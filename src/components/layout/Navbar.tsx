@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { MoonStar, Sun, Menu, User, LogOut, Search } from 'lucide-react';
-import { useTheme } from '@/components/theme/ThemeProvider';
+import { Menu, User, LogOut, Search, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ClientSwitcher } from '@/components/master-account/ClientSwitcher';
@@ -18,18 +17,19 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Toggle } from '@/components/ui/toggle';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
 }
 
 const Navbar = ({ onToggleSidebar }: NavbarProps) => {
-  const { theme, setTheme } = useTheme();
   const { isInMasterMode, switchToClient, toggleMasterMode } = useMasterAccount();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const handleLogout = () => {
     // Clear client selection
@@ -49,47 +49,91 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   };
   
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b bg-background/95 px-3 md:px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="lg:hidden">
         <Menu className="h-5 w-5" />
       </Button>
       
-      {/* Search bar */}
-      <div className="relative max-w-md flex-1">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="w-full bg-background pl-8 md:w-[300px] lg:w-[400px] border-gray-800 focus-visible:ring-gray-700"
-          />
+      {/* Desktop Search bar */}
+      {!isMobile && (
+        <div className="relative max-w-md flex-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="w-full bg-background pl-8 md:w-[300px] lg:w-[400px] border-gray-800 focus-visible:ring-gray-700"
+            />
+          </div>
         </div>
-      </div>
+      )}
       
-      <div className="flex flex-1 items-center justify-end">
-        <nav className="flex items-center gap-4">
-          <NotificationsPopover />
-          <Separator orientation="vertical" className="h-6" />
-          <ClientSwitcher />
-          <Separator orientation="vertical" className="h-6" />
+      <div className="flex flex-1 items-center justify-end gap-2">
+        <nav className="flex items-center gap-2 md:gap-4">
+          {/* Mobile search button */}
+          {isMobile && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Search className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="pt-10">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search..."
+                    className="w-full bg-background pl-8"
+                    autoFocus
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
           
-          {/* Theme toggle */}
-          <ThemeToggle />
+          {/* Notifications */}
+          {isMobile ? (
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Bell className="h-5 w-5" />
+            </Button>
+          ) : (
+            <NotificationsPopover />
+          )}
           
-          <Separator orientation="vertical" className="h-6" />
+          {!isMobile && <Separator orientation="vertical" className="h-6" />}
           
-          {/* User dropdown menu with very prominent styling */}
+          {/* Client Switcher (desktop only) */}
+          {!isMobile && (
+            <>
+              <ClientSwitcher />
+              <Separator orientation="vertical" className="h-6" />
+            </>
+          )}
+          
+          {/* Theme toggle (desktop only) */}
+          {!isMobile && (
+            <>
+              <ThemeToggle />
+              <Separator orientation="vertical" className="h-6" />
+            </>
+          )}
+          
+          {/* User dropdown menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="rounded-full h-12 w-12 flex items-center justify-center border-2 border-primary hover:bg-accent hover:text-accent-foreground ml-1 relative shadow-md"
+                className={cn(
+                  "rounded-full flex items-center justify-center border-2 border-primary hover:bg-accent hover:text-accent-foreground relative shadow-md",
+                  isMobile ? "h-9 w-9" : "h-12 w-12 ml-1"
+                )}
               >
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                 </span>
-                <Avatar className="h-10 w-10 border border-primary/20">
+                <Avatar className={cn("border border-primary/20", isMobile ? "h-7 w-7" : "h-10 w-10")}>
                   <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt="User" />
                   <AvatarFallback className="bg-primary/10 text-lg font-bold">U</AvatarFallback>
                 </Avatar>
@@ -108,6 +152,20 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-primary/20" />
+              
+              {/* Mobile-only items */}
+              {isMobile && (
+                <>
+                  <DropdownMenuItem className="py-2.5 text-base">
+                    <ClientSwitcher triggerClassName="w-full justify-start" />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="py-2.5 text-base">
+                    <ThemeToggle variant="dropdown" />
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-primary/20" />
+                </>
+              )}
+              
               <DropdownMenuItem 
                 className="cursor-pointer flex items-center py-2.5 text-base" 
                 onClick={() => navigate('/account')}
@@ -151,3 +209,8 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
 };
 
 export default Navbar;
+
+// Helper function to conditionally add classes
+function cn(...classes: any) {
+  return classes.filter(Boolean).join(' ');
+}
