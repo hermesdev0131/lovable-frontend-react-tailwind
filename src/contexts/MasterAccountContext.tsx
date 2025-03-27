@@ -477,7 +477,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   };
 
   const loginToAccount = (email: string, password: string): boolean => {
-    if (email === "dej@avai.vip" && password === "FilthyRich2025!\\") {
+    // Check if the email is one of the master account emails
+    if ((email === "dej@avai.vip" || email === "baba@avai.vip") && password === "FilthyRich2025!\\") {
       setCurrentClientId(null);
       setIsInMasterMode(true);
       toast({

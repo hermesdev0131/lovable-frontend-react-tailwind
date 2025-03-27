@@ -1,658 +1,303 @@
-
-import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Facebook, Instagram, Linkedin, Twitter, Plus, Clock, Send, Filter, Check, X, ThumbsUp, ThumbsDown, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from '@/hooks/use-toast';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
-import OpportunityImageUpload from '@/components/opportunities/OpportunityImageUpload';
-
-interface ScheduledContent {
-  id: number;
-  content: string;
-  date: Date;
-  time: string;
-  platforms: string[];
-  status: "draft" | "scheduled" | "published" | "failed" | "pending" | "approved" | "rejected";
-  media: string | null;
-  rejectionReason?: string;
-}
-
-const initialScheduledContent: ScheduledContent[] = [];
-
-const platformIcons = {
-  facebook: <Facebook className="text-blue-600" />,
-  instagram: <Instagram className="text-pink-600" />,
-  linkedin: <Linkedin className="text-blue-700" />,
-  twitter: <Twitter className="text-blue-400" />,
-  google: <Check className="text-green-600" />
-};
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MoreVertical, Edit, Trash2, CheckCircle, XCircle, Upload } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const ContentScheduling = () => {
-  const [scheduledContent, setScheduledContent] = useState<ScheduledContent[]>(initialScheduledContent);
-  const [newContent, setNewContent] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTime, setSelectedTime] = useState("12:00");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState("upcoming");
-  const [isCreating, setIsCreating] = useState(false);
-  const [filter, setFilter] = useState("all");
-  const { toast } = useToast();
-  const [rejectReason, setRejectReason] = useState('');
-  const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  
-  const { 
-    addContentItem,
-    getContentItems,
-    updateContentStatus,
-    isInMasterMode, 
-    currentClientId 
-  } = useMasterAccount();
-  
-  const socialContentItems = getContentItems(undefined, undefined)
-    .filter(item => item.type === 'social');
-
-  const handlePlatformToggle = (platform: string) => {
-    if (selectedPlatforms.includes(platform)) {
-      setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-    } else {
-      setSelectedPlatforms([...selectedPlatforms, platform]);
-    }
-  };
-
-  const handleScheduleContent = () => {
-    if (!newContent.trim()) {
-      toast({
-        title: "Content required",
-        description: "Please add some content to schedule",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (selectedPlatforms.length === 0) {
-      toast({
-        title: "Platform required",
-        description: "Please select at least one platform",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedDate) {
-      toast({
-        title: "Date required",
-        description: "Please select a date",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addContentItem({
-      title: `Social Post - ${selectedPlatforms.join(', ')}`,
-      content: newContent,
-      type: 'social',
-      platform: selectedPlatforms.join(','),
-      createdBy: currentClientId || 0,
-      scheduledFor: new Date(selectedDate.setHours(
-        parseInt(selectedTime.split(':')[0]), 
-        parseInt(selectedTime.split(':')[1])
-      )).toISOString(),
-      media: uploadedImage
-    });
-    
-    const newPost: ScheduledContent = {
-      id: Date.now(),
-      content: newContent,
-      date: selectedDate,
-      time: selectedTime,
-      platforms: selectedPlatforms,
-      status: "pending",
-      media: uploadedImage
-    };
-
-    setScheduledContent([...scheduledContent, newPost]);
-    
-    setNewContent("");
-    setSelectedDate(new Date());
-    setSelectedTime("12:00");
-    setSelectedPlatforms([]);
-    setUploadedImage(null);
-    setIsCreating(false);
-
-    toast({
-      title: "Content submitted",
-      description: "Your content has been submitted for approval",
-    });
-  };
-
-  const handleDelete = (id: number) => {
-    setScheduledContent(scheduledContent.filter(content => content.id !== id));
-    toast({
-      title: "Content removed",
-      description: "The scheduled content has been removed",
-    });
-  };
-  
-  const handleApprove = (contentId: number) => {
-    updateContentStatus(contentId, 'approved');
-    
-    setScheduledContent(scheduledContent.map(content => 
-      content.id === contentId ? { ...content, status: "approved" } : content
-    ));
-  };
-  
-  const openRejectDialog = (contentId: number) => {
-    setSelectedContentId(contentId);
-    setRejectReason('');
-    setIsRejectDialogOpen(true);
-  };
-  
-  const handleReject = () => {
-    if (selectedContentId) {
-      updateContentStatus(selectedContentId, 'rejected', rejectReason);
-      
-      setScheduledContent(scheduledContent.map(content => 
-        content.id === selectedContentId ? { 
-          ...content, 
-          status: "rejected",
-          rejectionReason: rejectReason
-        } : content
-      ));
-      
-      setIsRejectDialogOpen(false);
-      setSelectedContentId(null);
-    }
-  };
-
-  const filteredContent = scheduledContent.filter(content => {
-    if (filter === "all") return true;
-    return content.platforms.includes(filter);
-  }).filter(content => {
-    if (activeTab === "upcoming") {
-      return content.status === "scheduled" || content.status === "pending" || content.status === "approved";
-    } else if (activeTab === "published") {
-      return content.status === "published";
-    } else if (activeTab === "approval") {
-      return content.status === "pending" || content.status === "rejected";
-    }
-    return true;
+  const [newContent, setNewContent] = useState({
+    title: "",
+    content: "",
+    platform: "Facebook",
+    scheduledFor: new Date(),
+    media: null as string | null,
   });
   
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Pending</Badge>;
-      case 'approved':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Rejected</Badge>;
-      case 'scheduled':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Scheduled</Badge>;
-      case 'published':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Published</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const [contentList, setContentList] = useState([]);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  const { addContentItem, getContentItems, updateContentStatus, clients, currentClientId, isInMasterMode } = useMasterAccount();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Fetch content items on component mount and whenever currentClientId changes
+    const items = getContentItems(currentClientId);
+    setContentList(items);
+  }, [currentClientId, getContentItems]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setNewContent({ ...newContent, [e.target.name]: e.target.value });
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewContent({ ...newContent, platform: value });
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setNewContent({ ...newContent, scheduledFor: date });
+      setIsDatePickerOpen(false); // Close the Popover after date selection
     }
+  };
+  
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      
+      // Convert the file to a base64 string
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setNewContent({ ...newContent, media: base64String });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCreateContent = () => {
+    if (!newContent.title || !newContent.content || !newContent.platform || !newContent.scheduledFor) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    addContentItem({
+      title: newContent.title,
+      content: newContent.content,
+      type: "social",
+      platform: newContent.platform,
+      createdBy: currentClientId || 0,
+      scheduledFor: newContent.scheduledFor,
+      media: newContent.media,
+      clientId: currentClientId,
+    });
+    
+    setNewContent({ title: "", content: "", platform: "Facebook", scheduledFor: new Date(), media: null });
+    setContentList(getContentItems(currentClientId)); // Refresh content list
+    setIsCreateModalOpen(false);
+    toast({
+      title: "Content Scheduled",
+      description: `${newContent.title} has been scheduled successfully.`
+    });
+  };
+  
+  const handleApproveContent = (id: number) => {
+    updateContentStatus(id, 'approved');
+    setContentList(getContentItems(currentClientId)); // Refresh content list
+  };
+  
+  const handleRejectContent = (id: number) => {
+    updateContentStatus(id, 'rejected', "Inappropriate content");
+    setContentList(getContentItems(currentClientId)); // Refresh content list
+  };
+  
+  const getClientName = (clientId: number) => {
+    const client = clients.find(c => c.id === clientId);
+    return client ? client.name : "Unknown Client";
   };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Content Scheduling</h1>
-        <Button onClick={() => setIsCreating(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Create Post
-        </Button>
-      </div>
-
-      {isCreating && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Create New Post</CardTitle>
-            <CardDescription>Schedule content across multiple platforms</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="content">Post Content</Label>
-              <Textarea
-                id="content"
-                placeholder="What would you like to share?"
-                value={newContent}
-                onChange={(e) => setNewContent(e.target.value)}
-                className="min-h-[100px]"
-              />
-            </div>
-            
-            <OpportunityImageUpload 
-              uploadedImage={uploadedImage} 
-              setUploadedImage={setUploadedImage} 
-              label="Add Image to Post"
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Select Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div>
-                <Label htmlFor="time">Select Time</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="mb-2 block">Select Platforms</Label>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant={selectedPlatforms.includes('facebook') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handlePlatformToggle('facebook')}
-                  className="flex items-center gap-2"
-                >
-                  <Facebook className="h-4 w-4" />
-                  Facebook
-                </Button>
-                <Button
-                  variant={selectedPlatforms.includes('instagram') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handlePlatformToggle('instagram')}
-                  className="flex items-center gap-2"
-                >
-                  <Instagram className="h-4 w-4" />
-                  Instagram
-                </Button>
-                <Button
-                  variant={selectedPlatforms.includes('linkedin') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handlePlatformToggle('linkedin')}
-                  className="flex items-center gap-2"
-                >
-                  <Linkedin className="h-4 w-4" />
-                  LinkedIn
-                </Button>
-                <Button
-                  variant={selectedPlatforms.includes('twitter') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handlePlatformToggle('twitter')}
-                  className="flex items-center gap-2"
-                >
-                  <Twitter className="h-4 w-4" />
-                  Twitter
-                </Button>
-                <Button
-                  variant={selectedPlatforms.includes('google') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handlePlatformToggle('google')}
-                  className="flex items-center gap-2"
-                >
-                  <Check className="h-4 w-4" />
-                  Google My Business
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
-            <Button onClick={handleScheduleContent}>Submit for Approval</Button>
-          </CardFooter>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle>Content Management</CardTitle>
-            <div className="flex items-center gap-2">
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Platforms</SelectItem>
-                  <SelectItem value="facebook">Facebook</SelectItem>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="linkedin">LinkedIn</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
-                  <SelectItem value="google">Google My Business</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              <TabsTrigger value="published">Published</TabsTrigger>
-              <TabsTrigger value="approval">Approval Queue</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upcoming" className="space-y-4">
-              {filteredContent.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
-                  No upcoming scheduled content
-                </div>
-              ) : (
-                filteredContent.map((content) => (
-                  <Card key={content.id} className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium">{content.content}</p>
-                            {getStatusBadge(content.status)}
-                          </div>
-                          {content.media && (
-                            <div className="mt-2">
-                              <img 
-                                src={content.media} 
-                                alt="Post media" 
-                                className="max-h-[150px] rounded-md object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>{format(content.date, "PPP")} at {content.time}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {content.platforms.map((platform) => (
-                              <div key={platform} className="tooltip" data-tip={platform}>
-                                {platformIcons[platform]}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(content.id)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-            
-            <TabsContent value="published" className="space-y-4">
-              {filteredContent.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
-                  No published content
-                </div>
-              ) : (
-                filteredContent.map((content) => (
-                  <Card key={content.id} className="overflow-hidden border-l-4 border-l-green-500">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between">
-                        <div className="space-y-2 flex-1">
-                          <p className="text-sm font-medium">{content.content}</p>
-                          {content.media && (
-                            <div className="mt-2">
-                              <img 
-                                src={content.media} 
-                                alt="Post media" 
-                                className="max-h-[150px] rounded-md object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>{format(content.date, "PPP")} at {content.time}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {content.platforms.map((platform) => (
-                              <div key={platform} className="tooltip" data-tip={platform}>
-                                {platformIcons[platform]}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-            
-            <TabsContent value="approval" className="space-y-4">
-              {socialContentItems.filter(item => item.status === 'pending' || item.status === 'rejected').length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
-                  No content waiting for approval
-                </div>
-              ) : (
-                socialContentItems.filter(item => item.status === 'pending' || item.status === 'rejected').map((item) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between">
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-medium">{item.title}</h3>
-                            {getStatusBadge(item.status)}
-                          </div>
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">
-                            {item.content}
-                          </p>
-                          
-                          {item.media && (
-                            <div className="mt-2">
-                              <img 
-                                src={item.media} 
-                                alt="Post media" 
-                                className="max-h-[150px] rounded-md object-cover"
-                              />
-                            </div>
-                          )}
-                          
-                          {item.status === 'rejected' && item.rejectionReason && (
-                            <div className="mt-2 p-3 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-md text-sm">
-                              <div className="font-medium flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4" />
-                                Rejection Reason:
-                              </div>
-                              <p>{item.rejectionReason}</p>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
-                            <Clock className="h-3 w-3" />
-                            <span>Created: {format(new Date(item.createdAt), "PPP")}</span>
-                            
-                            {item.scheduledFor && (
-                              <>
-                                <span className="mx-2">•</span>
-                                <CalendarIcon className="h-3 w-3" />
-                                <span>Scheduled: {format(new Date(item.scheduledFor), "PPP")}</span>
-                              </>
-                            )}
-                          </div>
-                          
-                          {item.platform && (
-                            <div className="flex items-center gap-2 mt-2">
-                              {item.platform.split(',').map((platform) => (
-                                <div key={platform} className="tooltip" data-tip={platform}>
-                                  {platformIcons[platform.trim()]}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        
-                        {item.status === 'pending' && isInMasterMode && (
-                          <div className="flex items-start gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
-                              onClick={() => handleApprove(item.id)}
-                            >
-                              <ThumbsUp className="h-4 w-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="text-red-600 border-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                              onClick={() => openRejectDialog(item.id)}
-                            >
-                              <ThumbsDown className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject Content</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting this content.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Textarea
-              placeholder="Enter rejection reason..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleReject}
-              disabled={!rejectReason.trim()}
-            >
-              Reject Content
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <Card>
         <CardHeader>
-          <CardTitle>Platform Connections</CardTitle>
-          <CardDescription>Manage your social media platform connections</CardDescription>
+          <CardTitle>Content Scheduling</CardTitle>
+          <CardDescription>Plan and schedule your social media content</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <Facebook className="h-5 w-5 text-blue-600 mr-2" />
-              <div>
-                <p className="font-medium">Facebook</p>
-                <p className="text-sm text-muted-foreground">Connect your Facebook page</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-green-600">Connected</span>
-              <Switch id="facebook-toggle" defaultChecked />
-            </div>
+        <CardContent>
+          <div className="mb-4">
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+              <DialogTrigger asChild>
+                <Button>Schedule New Content</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Schedule New Content</DialogTitle>
+                  <DialogDescription>
+                    Create and schedule a new piece of content for your social media platforms.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="title" className="text-right">
+                      Title
+                    </Label>
+                    <Input 
+                      type="text" 
+                      id="title" 
+                      name="title" 
+                      placeholder="Enter content title"
+                      value={newContent.title} 
+                      onChange={handleInputChange} 
+                      className="col-span-3" 
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="content" className="text-right">
+                      Content
+                    </Label>
+                    <Textarea
+                      id="content"
+                      name="content"
+                      placeholder="Enter content here"
+                      value={newContent.content}
+                      onChange={handleInputChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="platform" className="text-right">
+                      Platform
+                    </Label>
+                    <Select onValueChange={handleSelectChange} defaultValue={newContent.platform}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Facebook">Facebook</SelectItem>
+                        <SelectItem value="Twitter">Twitter</SelectItem>
+                        <SelectItem value="Instagram">Instagram</SelectItem>
+                        <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="scheduledFor" className="text-right">
+                      Schedule For
+                    </Label>
+                    <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "col-span-3 justify-start text-left font-normal",
+                            !newContent.scheduledFor && "text-muted-foreground"
+                          )}
+                        >
+                          {newContent.scheduledFor ? (
+                            format(newContent.scheduledFor, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="center" side="bottom">
+                        <Calendar
+                          mode="single"
+                          selected={newContent.scheduledFor}
+                          onSelect={handleDateChange}
+                          disabled={(date) =>
+                            date < new Date()
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="media" className="text-right">
+                      Media
+                    </Label>
+                    <Input
+                      type="file"
+                      id="media"
+                      name="media"
+                      onChange={handleFileSelect}
+                      className="col-span-3"
+                    />
+                    {selectedFile && (
+                      <div className="col-span-4 mt-2">
+                        <p>Selected File: {selectedFile.name}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" onClick={handleCreateContent}>Schedule Content</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <Instagram className="h-5 w-5 text-pink-600 mr-2" />
-              <div>
-                <p className="font-medium">Instagram</p>
-                <p className="text-sm text-muted-foreground">Connect your Instagram profile</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-green-600">Connected</span>
-              <Switch id="instagram-toggle" defaultChecked />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <Linkedin className="h-5 w-5 text-blue-700 mr-2" />
-              <div>
-                <p className="font-medium">LinkedIn</p>
-                <p className="text-sm text-muted-foreground">Connect your LinkedIn page</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-green-600">Connected</span>
-              <Switch id="linkedin-toggle" defaultChecked />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <Twitter className="h-5 w-5 text-blue-400 mr-2" />
-              <div>
-                <p className="font-medium">Twitter</p>
-                <p className="text-sm text-muted-foreground">Connect your Twitter account</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-yellow-600">Reconnect needed</span>
-              <Switch id="twitter-toggle" />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <Check className="h-5 w-5 text-green-600 mr-2" />
-              <div>
-                <p className="font-medium">Google My Business</p>
-                <p className="text-sm text-muted-foreground">Connect your Google My Business account</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-green-600">Connected</span>
-              <Switch id="google-toggle" defaultChecked />
-            </div>
-          </div>
+          
+          <Table>
+            <TableCaption>A list of your scheduled content.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Platform</TableHead>
+                <TableHead>Schedule Date</TableHead>
+                <TableHead>Status</TableHead>
+                {isInMasterMode && <TableHead>Client</TableHead>}
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {contentList.map((content) => (
+                <TableRow key={content.id}>
+                  <TableCell className="font-medium">{content.title}</TableCell>
+                  <TableCell>{content.platform}</TableCell>
+                  <TableCell>{format(new Date(content.scheduledFor || ''), "PPP")}</TableCell>
+                  <TableCell>
+                    {content.status === 'pending' && (
+                      <Badge variant="secondary">Pending</Badge>
+                    )}
+                    {content.status === 'approved' && (
+                      <Badge variant="success">Approved</Badge>
+                    )}
+                    {content.status === 'rejected' && (
+                      <Badge variant="destructive">Rejected</Badge>
+                    )}
+                  </TableCell>
+                  {isInMasterMode && <TableCell>{getClientName(content.createdBy)}</TableCell>}
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem disabled={content.status !== 'pending'} onClick={() => handleApproveContent(content.id)}>
+                          <CheckCircle className="h-4 w-4 mr-2" /> Approve
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={content.status !== 'pending'} onClick={() => handleRejectContent(content.id)}>
+                          <XCircle className="h-4 w-4 mr-2" /> Reject
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Edit className="h-4 w-4 mr-2" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Trash2 className="h-4 w-4 mr-2" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

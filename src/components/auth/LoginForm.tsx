@@ -43,7 +43,7 @@ export const LoginForm = () => {
               <Input 
                 id="email" 
                 type="email" 
-                placeholder="dej@avai.vip"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -57,7 +57,7 @@ export const LoginForm = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Default master account: dej@avai.vip / FilthyRich2025!\
+                Master accounts: dej@avai.vip or baba@avai.vip / FilthyRich2025!\
               </p>
             </div>
           </CardContent>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MoonStar, Sun, Menu, User, LogOut, Search } from 'lucide-react';
 import { useTheme } from '@/components/theme/ThemeProvider';
@@ -28,7 +27,7 @@ interface NavbarProps {
 
 const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
-  const { isInMasterMode, switchToClient, setIsInMasterMode } = useMasterAccount();
+  const { isInMasterMode, switchToClient, toggleMasterMode } = useMasterAccount();
   const navigate = useNavigate();
   
   const handleLogout = () => {
@@ -36,7 +35,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
     switchToClient(null);
     
     // Ensure master mode is disabled to trigger login screen
-    setIsInMasterMode(false);
+    toggleMasterMode(false);
     
     // Navigate to root/login page
     navigate('/');

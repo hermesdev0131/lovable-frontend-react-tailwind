@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,7 +65,12 @@ const WebsiteManagement = () => {
       updatedAt: new Date().toISOString(),
       views: 0,
       conversions: 0,
-      bounceRate: 0
+      bounceRate: 0,
+      title: newPage.title,
+      url: newPage.url,
+      status: newPage.status as 'published' | 'draft' | 'scheduled',
+      type: newPage.type as 'landing' | 'blog' | 'product' | 'other',
+      clientId: currentClientId,
     };
     
     addWebsitePage(newPage);
