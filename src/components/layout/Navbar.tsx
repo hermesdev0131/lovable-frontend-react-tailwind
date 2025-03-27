@@ -38,8 +38,8 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
     // Ensure master mode is disabled to trigger login screen
     setIsInMasterMode(false);
     
-    // Navigate to root/login page
-    navigate('/');
+    // Navigate to login page
+    navigate('/login');
     
     // Show logout confirmation
     toast({

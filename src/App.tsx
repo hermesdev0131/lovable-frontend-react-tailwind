@@ -21,6 +21,7 @@ import WebsiteManagement from "./pages/WebsiteManagement"
 import EmailMarketing from "./pages/EmailMarketing"
 import Reputation from "./pages/Reputation"
 import Account from "./pages/Account"
+import LoginPage from "./pages/Login"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -36,6 +37,8 @@ function App() {
           <CustomErrorBoundary>
             <Toaster />
             <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              
               <Route
                 path="/"
                 element={

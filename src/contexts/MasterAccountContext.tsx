@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -75,6 +76,7 @@ interface MasterAccountContextType {
   removeClient: (id: number) => void;
   switchToClient: (id: number | null) => void;
   isInMasterMode: boolean;
+  setIsInMasterMode: (mode: boolean) => void; // Add this line to fix the TypeScript error
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
   addWebhook: (webhook: Omit<Webhook, 'id'>) => void;

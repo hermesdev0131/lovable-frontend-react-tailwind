@@ -15,7 +15,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const isAuthenticated = isInMasterMode || currentClientId !== null;
   
   if (!isAuthenticated) {
-    return <LoginForm />;
+    return <Navigate to="/login" />;
   }
   
   return <>{children}</>;
