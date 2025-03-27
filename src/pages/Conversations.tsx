@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Bot, MessageCircle, Phone, MessageSquare, Filter, Search, Calendar, Download } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,64 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Mock data for conversations
-const mockConversations = [
-  {
-    id: '1',
-    channel: 'voice',
-    contact: 'John Smith',
-    phoneNumber: '+1 (555) 123-4567',
-    date: '2023-06-15T14:30:00',
-    duration: '3:45',
-    status: 'completed',
-    bot: 'Sales Assistant',
-    summary: 'Discussed product pricing and features. Customer interested in premium package.'
-  },
-  {
-    id: '2',
-    channel: 'sms',
-    contact: 'Sarah Johnson',
-    phoneNumber: '+1 (555) 987-6543',
-    date: '2023-06-14T10:15:00',
-    duration: 'N/A',
-    status: 'completed',
-    bot: 'Support Bot',
-    summary: 'Answered questions about account setup. Provided link to documentation.'
-  },
-  {
-    id: '3',
-    channel: 'voice',
-    contact: 'Michael Brown',
-    phoneNumber: '+1 (555) 456-7890',
-    date: '2023-06-13T16:45:00',
-    duration: '5:12',
-    status: 'completed',
-    bot: 'Appointment Scheduler',
-    summary: 'Scheduled consultation for next Tuesday at 2pm. Sent calendar invite.'
-  },
-  {
-    id: '4',
-    channel: 'sms',
-    contact: 'Emily Davis',
-    phoneNumber: '+1 (555) 789-0123',
-    date: '2023-06-12T09:30:00',
-    duration: 'N/A',
-    status: 'failed',
-    bot: 'Follow-up Bot',
-    summary: 'Attempted to send follow-up on recent purchase. Message failed to deliver.'
-  },
-  {
-    id: '5',
-    channel: 'voice',
-    contact: 'Robert Wilson',
-    phoneNumber: '+1 (555) 321-6547',
-    date: '2023-06-11T13:20:00',
-    duration: '2:38',
-    status: 'completed',
-    bot: 'Sales Assistant',
-    summary: 'Customer inquired about enterprise plans. Sent information via email.'
-  }
-];
+const mockConversations: {
+  id: string;
+  channel: 'voice' | 'sms';
+  contact: string;
+  phoneNumber: string;
+  date: string;
+  duration: string;
+  status: 'completed' | 'failed';
+  bot: string;
+  summary: string;
+}[] = [];
 
 const Conversations = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,7 +63,6 @@ const Conversations = () => {
     setFilteredConversations(filtered);
   };
   
-  // Get unique bot names for filter
   const botOptions = Array.from(new Set(mockConversations.map(convo => convo.bot)));
   
   return (
@@ -235,7 +186,7 @@ const Conversations = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} className="h-24 text-center">
-                        No conversations found matching your filters.
+                        No conversations found.
                       </TableCell>
                     </TableRow>
                   )}
@@ -259,8 +210,8 @@ const Conversations = () => {
                   <CardTitle className="text-base">Total Conversations</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">156</div>
-                  <p className="text-xs text-muted-foreground">+23% from last month</p>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">No data available</p>
                 </CardContent>
               </Card>
               
@@ -269,8 +220,8 @@ const Conversations = () => {
                   <CardTitle className="text-base">Success Rate</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">94.2%</div>
-                  <p className="text-xs text-muted-foreground">+1.5% from last month</p>
+                  <div className="text-2xl font-bold">0%</div>
+                  <p className="text-xs text-muted-foreground">No data available</p>
                 </CardContent>
               </Card>
               
@@ -279,8 +230,8 @@ const Conversations = () => {
                   <CardTitle className="text-base">Avg. Call Duration</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">3:12</div>
-                  <p className="text-xs text-muted-foreground">-0:18 from last month</p>
+                  <div className="text-2xl font-bold">0:00</div>
+                  <p className="text-xs text-muted-foreground">No data available</p>
                 </CardContent>
               </Card>
             </div>
@@ -291,9 +242,9 @@ const Conversations = () => {
               <CardContent className="pt-6">
                 <div className="text-center py-12">
                   <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-3" />
-                  <h3 className="text-lg font-medium mb-2">Select a conversation</h3>
+                  <h3 className="text-lg font-medium mb-2">No conversations available</h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    Click on any conversation from the table above to view its complete transcript and details.
+                    Conversations will appear here once you start using AI assistants with your contacts.
                   </p>
                 </div>
               </CardContent>
@@ -308,13 +259,13 @@ const Conversations = () => {
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <label htmlFor="vapi" className="text-sm font-medium">Vapi API Key</label>
-                  <Input id="vapi" type="password" value="••••••••••••••••••••••" />
+                  <Input id="vapi" type="password" placeholder="Enter your Vapi API key" />
                   <p className="text-xs text-muted-foreground">Used for voice call tracking and management</p>
                 </div>
                 
                 <div className="grid gap-2">
                   <label htmlFor="sendblue" className="text-sm font-medium">SendBlue API Key</label>
-                  <Input id="sendblue" type="password" value="••••••••••••••••••••••" />
+                  <Input id="sendblue" type="password" placeholder="Enter your SendBlue API key" />
                   <p className="text-xs text-muted-foreground">Used for SMS message tracking</p>
                 </div>
                 

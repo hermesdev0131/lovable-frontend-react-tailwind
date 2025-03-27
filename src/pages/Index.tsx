@@ -13,7 +13,12 @@ import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [recentActivity, setRecentActivity] = useState<{
+    id: number;
+    action: string;
+    time: string;
+    name: string;
+  }[]>([]);
   
   const totalContacts = contacts.length;
   const totalDeals = deals.length;

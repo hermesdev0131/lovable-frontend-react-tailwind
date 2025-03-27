@@ -38,15 +38,12 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const { toast } = useToast();
   
-  // Simulate real-time data
+  // Empty data simulation
   useEffect(() => {
-    // Initial data
-    generateInitialData();
-    
-    // Simulate real-time updates
+    // Simulate connection issues occasionally
     const interval = setInterval(() => {
       if (Math.random() > 0.1) {
-        updateRealTimeData();
+        setIsConnected(true);
       } else {
         // Occasionally simulate connection issues
         setIsConnected(false);
@@ -63,117 +60,12 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
             title: "Connected",
             description: "Analytics connection restored",
           });
-          updateRealTimeData();
         }, 3000);
       }
-    }, 5000);
+    }, 10000);
     
     return () => clearInterval(interval);
   }, []);
-  
-  const generateInitialData = () => {
-    // Generate realistic visitor data
-    const visitors: VisitorData[] = [];
-    const pages = ['/home', '/about', '/products', '/contact', '/blog', '/pricing'];
-    const locations = ['United States', 'Germany', 'United Kingdom', 'Canada', 'Australia', 'France'];
-    const devices = ['Desktop', 'Mobile', 'Tablet'];
-    const browsers = ['Chrome', 'Safari', 'Firefox', 'Edge'];
-    
-    for (let i = 0; i < 15; i++) {
-      const entryTime = new Date();
-      entryTime.setMinutes(entryTime.getMinutes() - Math.floor(Math.random() * 60));
-      
-      visitors.push({
-        id: i + 1,
-        page: pages[Math.floor(Math.random() * pages.length)],
-        location: locations[Math.floor(Math.random() * locations.length)],
-        device: devices[Math.floor(Math.random() * devices.length)],
-        browser: browsers[Math.floor(Math.random() * browsers.length)],
-        entryTime,
-        timeOnPage: Math.floor(Math.random() * 600),
-        active: Math.random() > 0.3,
-      });
-    }
-    
-    setVisitorData(visitors);
-    setActiveVisitors(visitors.filter(v => v.active).length);
-    setPagesPerMinute(Math.floor(Math.random() * 12) + 3);
-    setConversionRate(Math.random() * 5 + 1);
-    
-    // Generate page performance data
-    const performance: PagePerformance[] = pages.map(page => ({
-      page,
-      loadTime: Math.random() * 2 + 0.5,
-      visitors: Math.floor(Math.random() * 30),
-      bounceRate: Math.random() * 70 + 10,
-    }));
-    
-    setPagePerformance(performance);
-  };
-  
-  const updateRealTimeData = () => {
-    // Update existing visitor data
-    const updatedVisitors = visitorData.map(visitor => {
-      // Update time on page
-      const timeIncrement = Math.floor(Math.random() * 30);
-      const active = Math.random() > 0.2;
-      
-      return {
-        ...visitor,
-        timeOnPage: visitor.timeOnPage + (active ? timeIncrement : 0),
-        active,
-      };
-    });
-    
-    // Occasionally add new visitors
-    if (Math.random() > 0.5) {
-      const pages = ['/home', '/about', '/products', '/contact', '/blog', '/pricing'];
-      const locations = ['United States', 'Germany', 'United Kingdom', 'Canada', 'Australia', 'France'];
-      const devices = ['Desktop', 'Mobile', 'Tablet'];
-      const browsers = ['Chrome', 'Safari', 'Firefox', 'Edge'];
-      
-      updatedVisitors.push({
-        id: Date.now(),
-        page: pages[Math.floor(Math.random() * pages.length)],
-        location: locations[Math.floor(Math.random() * locations.length)],
-        device: devices[Math.floor(Math.random() * devices.length)],
-        browser: browsers[Math.floor(Math.random() * browsers.length)],
-        entryTime: new Date(),
-        timeOnPage: 0,
-        active: true,
-      });
-      
-      // Keep the list at a reasonable size
-      if (updatedVisitors.length > 20) {
-        updatedVisitors.shift();
-      }
-    }
-    
-    setVisitorData(updatedVisitors);
-    setActiveVisitors(updatedVisitors.filter(v => v.active).length);
-    
-    // Update pages per minute with some fluctuation
-    setPagesPerMinute(prev => {
-      const change = Math.random() * 4 - 2;
-      const newValue = prev + change;
-      return Math.max(1, Math.min(20, newValue));
-    });
-    
-    // Update conversion rate with some fluctuation
-    setConversionRate(prev => {
-      const change = Math.random() * 0.8 - 0.4;
-      const newValue = prev + change;
-      return Math.max(0.5, Math.min(8, newValue));
-    });
-    
-    // Update page performance
-    setPagePerformance(prev => prev.map(page => ({
-      ...page,
-      loadTime: Math.max(0.5, Math.min(3, page.loadTime + (Math.random() * 0.4 - 0.2))),
-      visitors: Math.max(0, page.visitors + Math.floor(Math.random() * 3 - 1)),
-      bounceRate: Math.max(5, Math.min(95, page.bounceRate + (Math.random() * 5 - 2.5))),
-    })));
-  };
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -238,15 +130,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
               </div>
             </div>
             <div className="flex items-center mt-4 text-xs">
-              <div className={`flex items-center ${Math.random() > 0.5 ? 'text-green-500' : 'text-red-500'}`}>
-                {Math.random() > 0.5 ? (
-                  <ArrowUp className="h-3 w-3 mr-1" />
-                ) : (
-                  <ArrowDown className="h-3 w-3 mr-1" />
-                )}
-                {(Math.random() * 20).toFixed(1)}%
-              </div>
-              <span className="text-muted-foreground ml-2">vs. last hour</span>
+              <span className="text-muted-foreground">No data available</span>
             </div>
           </CardContent>
         </Card>
@@ -263,15 +147,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
               </div>
             </div>
             <div className="flex items-center mt-4 text-xs">
-              <div className={`flex items-center ${Math.random() > 0.5 ? 'text-green-500' : 'text-red-500'}`}>
-                {Math.random() > 0.5 ? (
-                  <ArrowUp className="h-3 w-3 mr-1" />
-                ) : (
-                  <ArrowDown className="h-3 w-3 mr-1" />
-                )}
-                {(Math.random() * 10).toFixed(1)}%
-              </div>
-              <span className="text-muted-foreground ml-2">vs. last hour</span>
+              <span className="text-muted-foreground">No data available</span>
             </div>
           </CardContent>
         </Card>
@@ -298,21 +174,33 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visitorData.map((visitor) => (
-                <TableRow key={visitor.id}>
-                  <TableCell className="font-medium">{visitor.page}</TableCell>
-                  <TableCell>{visitor.location}</TableCell>
-                  <TableCell>{visitor.device}</TableCell>
-                  <TableCell>{visitor.browser}</TableCell>
-                  <TableCell>{getRelativeTime(visitor.entryTime)}</TableCell>
-                  <TableCell>{formatTime(visitor.timeOnPage)}</TableCell>
-                  <TableCell>
-                    <Badge variant={visitor.active ? "default" : "secondary"} className="w-min">
-                      {visitor.active ? "Active" : "Idle"}
-                    </Badge>
+              {visitorData.length > 0 ? (
+                visitorData.map((visitor) => (
+                  <TableRow key={visitor.id}>
+                    <TableCell className="font-medium">{visitor.page}</TableCell>
+                    <TableCell>{visitor.location}</TableCell>
+                    <TableCell>{visitor.device}</TableCell>
+                    <TableCell>{visitor.browser}</TableCell>
+                    <TableCell>{getRelativeTime(visitor.entryTime)}</TableCell>
+                    <TableCell>{formatTime(visitor.timeOnPage)}</TableCell>
+                    <TableCell>
+                      <Badge variant={visitor.active ? "default" : "secondary"} className="w-min">
+                        {visitor.active ? "Active" : "Idle"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Eye className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                      <p className="text-muted-foreground">No visitors currently on your site</p>
+                      <p className="text-xs text-muted-foreground mt-1">Real-time visitor data will appear here</p>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -337,22 +225,34 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pagePerformance.map((page, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{page.page}</TableCell>
-                  <TableCell>{page.loadTime.toFixed(1)}s</TableCell>
-                  <TableCell>{page.visitors}</TableCell>
-                  <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={page.loadTime < 1 ? "default" : page.loadTime < 2 ? "secondary" : "destructive"} 
-                      className="w-min"
-                    >
-                      {page.loadTime < 1 ? "Fast" : page.loadTime < 2 ? "OK" : "Slow"}
-                    </Badge>
+              {pagePerformance.length > 0 ? (
+                pagePerformance.map((page, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{page.page}</TableCell>
+                    <TableCell>{page.loadTime.toFixed(1)}s</TableCell>
+                    <TableCell>{page.visitors}</TableCell>
+                    <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={page.loadTime < 1 ? "default" : page.loadTime < 2 ? "secondary" : "destructive"} 
+                        className="w-min"
+                      >
+                        {page.loadTime < 1 ? "Fast" : page.loadTime < 2 ? "OK" : "Slow"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Activity className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                      <p className="text-muted-foreground">No page performance data yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Performance metrics will appear here as visitors browse your site</p>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -14,39 +14,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CalendarIntegration from '@/components/calendar/CalendarIntegration';
 
-// Sample events data
-const sampleEvents = [
-  {
-    id: 1,
-    title: 'Client Meeting: ABC Corp',
-    start: new Date(new Date().setHours(10, 0, 0, 0)),
-    end: new Date(new Date().setHours(11, 0, 0, 0)),
-    type: 'meeting',
-  },
-  {
-    id: 2,
-    title: 'Product Demo',
-    start: new Date(new Date().setHours(14, 0, 0, 0)),
-    end: new Date(new Date().setHours(15, 30, 0, 0)),
-    type: 'demo',
-  },
-  {
-    id: 3,
-    title: 'Contract Review',
-    start: addDays(new Date(), 1),
-    end: addDays(new Date(), 1),
-    type: 'followup',
-  },
-  {
-    id: 4,
-    title: 'Team Sync',
-    start: addDays(new Date(), 2),
-    end: addDays(new Date(), 2),
-    type: 'internal',
-  },
-];
+const sampleEvents: {
+  id: number;
+  title: string;
+  start: Date;
+  end: Date;
+  type: string;
+}[] = [];
 
-// Event types with colors
 const eventTypes = {
   meeting: { label: 'Meeting', color: 'bg-blue-500' },
   demo: { label: 'Demo', color: 'bg-green-500' },
@@ -54,7 +29,6 @@ const eventTypes = {
   internal: { label: 'Internal', color: 'bg-purple-500' },
 };
 
-// Booking types
 const bookingTypes = [
   { id: 'sales-call', name: 'Sales Call', duration: 30 },
   { id: 'product-demo', name: 'Product Demo', duration: 60 },
@@ -73,29 +47,24 @@ const Calendar = () => {
   const [activeCalendarType, setActiveCalendarType] = useState<string>("");
   const { toast } = useToast();
 
-  // Navigation functions
   const prevMonth = () => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   const nextMonth = () => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   const goToToday = () => setCurrentDate(new Date());
 
-  // Calculate dates for the calendar
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const startDate = startOfWeek(monthStart);
   const endDate = addDays(endOfMonth(monthEnd), 6);
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
   
-  // Get events for a specific date
   const getEventsForDate = (date: Date) => {
     return events.filter(event => isSameDay(event.start, date));
   };
 
-  // Format time from date
   const formatEventTime = (date: Date) => {
     return format(date, 'h:mm a');
   };
 
-  // Handle copy booking link
   const copyBookingLink = () => {
     const baseUrl = window.location.origin;
     const generatedUrl = `${baseUrl}/booking/${selectedBookingType}`;
@@ -108,7 +77,6 @@ const Calendar = () => {
     });
   };
 
-  // Get booking type details
   const getBookingTypeDetails = (id: string) => {
     return bookingTypes.find(type => type.id === id) || bookingTypes[0];
   };
@@ -120,16 +88,6 @@ const Calendar = () => {
     });
     
     setTimeout(() => {
-      const newEvent = {
-        id: Math.floor(Math.random() * 1000),
-        title: `Synced Event ${Math.floor(Math.random() * 100)}`,
-        start: addDays(new Date(), Math.floor(Math.random() * 7)),
-        end: addDays(new Date(), Math.floor(Math.random() * 7)),
-        type: Object.keys(eventTypes)[Math.floor(Math.random() * Object.keys(eventTypes).length)] as keyof typeof eventTypes,
-      };
-      
-      setEvents([...events, newEvent]);
-      
       toast({
         title: "Calendar Synced",
         description: "Your events have been updated",
