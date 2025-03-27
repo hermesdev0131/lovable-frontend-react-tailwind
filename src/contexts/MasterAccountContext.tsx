@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 
 // Define the structure of a client object
@@ -17,6 +17,48 @@ export type Client = {
   logo: string;
 };
 
+// Notification type
+export type Notification = {
+  id: number;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
+  createdAt: string;
+};
+
+// Website page type
+export type WebsitePage = {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Webhook type
+export type Webhook = {
+  id: number;
+  name: string;
+  url: string;
+  events: string[];
+  active: boolean;
+};
+
+// Content item type
+export type ContentItem = {
+  id: number;
+  title: string;
+  content: string;
+  type: string;
+  status: string;
+  scheduledFor?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // Define the context type
 export type MasterAccountContextType = {
   isInMasterMode: boolean;
@@ -28,6 +70,29 @@ export type MasterAccountContextType = {
   loginToAccount: (email: string, password: string) => boolean;
   addClient: (client: Omit<Client, 'id'>) => void;
   removeClient: (id: number) => void;
+  
+  // Notification related functions
+  getNotifications: (clientId: number | null) => Notification[];
+  getUnreadNotificationsCount: (clientId: number | null) => number;
+  markNotificationAsRead: (id: number) => void;
+  
+  // Website management related functions
+  websitePages: WebsitePage[];
+  addWebsitePage: (page: Omit<WebsitePage, 'id'>) => void;
+  removeWebsitePage: (id: number) => void;
+  updateWebsitePage: (id: number, page: Partial<WebsitePage>) => void;
+  
+  // Webhook related functions
+  webhooks: Webhook[];
+  addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
+  removeWebhook: (id: number) => void;
+  updateWebhook: (id: number, webhook: Partial<Webhook>) => void;
+  triggerWebhook: (id: number) => void;
+  
+  // Content related functions
+  getContentItems: (type?: string) => ContentItem[];
+  addContentItem: (item: Omit<ContentItem, 'id'>) => void;
+  updateContentStatus: (id: number, status: string) => void;
 };
 
 // Create the context with a default value of null 
@@ -76,12 +141,80 @@ export const MasterAccountProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   ]);
 
+  // Notifications state
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: 1,
+      title: "New lead assigned",
+      message: "A new lead has been assigned to your account",
+      type: "info",
+      read: false,
+      createdAt: "2024-01-28T10:30:00Z"
+    },
+    {
+      id: 2,
+      title: "Campaign approved",
+      message: "Your campaign has been approved and is now live",
+      type: "approval",
+      read: true,
+      createdAt: "2024-01-27T15:45:00Z"
+    }
+  ]);
+
+  // Website pages state
+  const [websitePages, setWebsitePages] = useState<WebsitePage[]>([
+    {
+      id: 1,
+      title: "Home",
+      slug: "home",
+      content: "<h1>Welcome to our website</h1>",
+      status: "published",
+      createdAt: "2024-01-15T09:00:00Z",
+      updatedAt: "2024-01-15T09:00:00Z"
+    }
+  ]);
+
+  // Webhooks state
+  const [webhooks, setWebhooks] = useState<Webhook[]>([
+    {
+      id: 1,
+      name: "New Lead Notification",
+      url: "https://example.com/webhook",
+      events: ["lead.created", "lead.updated"],
+      active: true
+    }
+  ]);
+
+  // Content items state
+  const [contentItems, setContentItems] = useState<ContentItem[]>([
+    {
+      id: 1,
+      title: "Welcome to our blog",
+      content: "This is our first blog post",
+      type: "blog",
+      status: "published",
+      createdAt: "2024-01-20T12:00:00Z",
+      updatedAt: "2024-01-20T12:00:00Z"
+    },
+    {
+      id: 2,
+      title: "Monthly Newsletter",
+      content: "Here's what's new this month",
+      type: "email",
+      status: "draft",
+      scheduledFor: "2024-02-01T09:00:00Z",
+      createdAt: "2024-01-25T14:30:00Z",
+      updatedAt: "2024-01-25T14:30:00Z"
+    }
+  ]);
+
   // Find the selected client based on currentClientId
   const selectedClient = clients.find((client) => client.id === currentClientId) || null;
 
   // Function to switch to a different client
   const switchToClient = (clientId: number | null) => {
     setCurrentClientId(clientId);
+    // Note: Navigation is now handled in the components that call this function
   };
 
   const loginToAccount = (email: string, password: string): boolean => {
@@ -115,6 +248,98 @@ export const MasterAccountProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // Notification functions
+  const getNotifications = (clientId: number | null) => {
+    // In a real app, you would filter notifications based on clientId
+    return notifications;
+  };
+
+  const getUnreadNotificationsCount = (clientId: number | null) => {
+    // In a real app, you would filter notifications based on clientId
+    return notifications.filter(n => !n.read).length;
+  };
+
+  const markNotificationAsRead = (id: number) => {
+    setNotifications(
+      notifications.map(n => 
+        n.id === id ? { ...n, read: true } : n
+      )
+    );
+  };
+
+  // Website management functions
+  const addWebsitePage = (page: Omit<WebsitePage, 'id'>) => {
+    const newId = websitePages.length > 0 ? Math.max(...websitePages.map(p => p.id)) + 1 : 1;
+    const newPage: WebsitePage = { id: newId, ...page };
+    setWebsitePages([...websitePages, newPage]);
+  };
+
+  const removeWebsitePage = (id: number) => {
+    setWebsitePages(websitePages.filter(page => page.id !== id));
+  };
+
+  const updateWebsitePage = (id: number, page: Partial<WebsitePage>) => {
+    setWebsitePages(
+      websitePages.map(p => 
+        p.id === id ? { ...p, ...page, updatedAt: new Date().toISOString() } : p
+      )
+    );
+  };
+
+  // Webhook functions
+  const addWebhook = (webhook: Omit<Webhook, 'id'>) => {
+    const newId = webhooks.length > 0 ? Math.max(...webhooks.map(w => w.id)) + 1 : 1;
+    const newWebhook: Webhook = { id: newId, ...webhook };
+    setWebhooks([...webhooks, newWebhook]);
+  };
+
+  const removeWebhook = (id: number) => {
+    setWebhooks(webhooks.filter(webhook => webhook.id !== id));
+  };
+
+  const updateWebhook = (id: number, webhook: Partial<Webhook>) => {
+    setWebhooks(
+      webhooks.map(w => 
+        w.id === id ? { ...w, ...webhook } : w
+      )
+    );
+  };
+
+  const triggerWebhook = (id: number) => {
+    // In a real app, this would actually trigger the webhook
+    toast({
+      title: "Webhook Triggered",
+      description: `Webhook ID ${id} has been triggered`
+    });
+  };
+
+  // Content functions
+  const getContentItems = (type?: string) => {
+    if (type) {
+      return contentItems.filter(item => item.type === type);
+    }
+    return contentItems;
+  };
+
+  const addContentItem = (item: Omit<ContentItem, 'id'>) => {
+    const newId = contentItems.length > 0 ? Math.max(...contentItems.map(c => c.id)) + 1 : 1;
+    const newItem: ContentItem = { 
+      id: newId, 
+      ...item, 
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    setContentItems([...contentItems, newItem]);
+  };
+
+  const updateContentStatus = (id: number, status: string) => {
+    setContentItems(
+      contentItems.map(item => 
+        item.id === id ? { ...item, status, updatedAt: new Date().toISOString() } : item
+      )
+    );
+  };
+
   // Provide the context value
   const contextValue: MasterAccountContextType = {
     isInMasterMode,
@@ -126,6 +351,21 @@ export const MasterAccountProvider: React.FC<{ children: React.ReactNode }> = ({
     loginToAccount,
     addClient,
     removeClient,
+    getNotifications,
+    getUnreadNotificationsCount,
+    markNotificationAsRead,
+    websitePages,
+    addWebsitePage,
+    removeWebsitePage,
+    updateWebsitePage,
+    webhooks,
+    addWebhook,
+    removeWebhook,
+    updateWebhook,
+    triggerWebhook,
+    getContentItems,
+    addContentItem,
+    updateContentStatus
   };
 
   return (
