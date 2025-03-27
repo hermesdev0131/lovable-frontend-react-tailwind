@@ -21,7 +21,7 @@ interface PageFormValues {
 }
 
 const WebsiteManagement = () => {
-  const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage } = useMasterAccount();
+  const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage, currentClientId } = useMasterAccount();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
@@ -66,10 +66,6 @@ const WebsiteManagement = () => {
       views: 0,
       conversions: 0,
       bounceRate: 0,
-      title: newPage.title,
-      url: newPage.url,
-      status: newPage.status as 'published' | 'draft' | 'scheduled',
-      type: newPage.type as 'landing' | 'blog' | 'product' | 'other',
       clientId: currentClientId,
     };
     

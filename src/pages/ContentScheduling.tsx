@@ -36,7 +36,6 @@ const ContentScheduling = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Fetch content items on component mount and whenever currentClientId changes
     const items = getContentItems(currentClientId);
     setContentList(items);
   }, [currentClientId, getContentItems]);
@@ -52,7 +51,7 @@ const ContentScheduling = () => {
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
       setNewContent({ ...newContent, scheduledFor: date });
-      setIsDatePickerOpen(false); // Close the Popover after date selection
+      setIsDatePickerOpen(false);
     }
   };
   
@@ -61,7 +60,6 @@ const ContentScheduling = () => {
     if (file) {
       setSelectedFile(file);
       
-      // Convert the file to a base64 string
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
@@ -87,13 +85,13 @@ const ContentScheduling = () => {
       type: "social",
       platform: newContent.platform,
       createdBy: currentClientId || 0,
-      scheduledFor: newContent.scheduledFor,
+      scheduledFor: newContent.scheduledFor.toISOString(),
       media: newContent.media,
       clientId: currentClientId,
     });
     
     setNewContent({ title: "", content: "", platform: "Facebook", scheduledFor: new Date(), media: null });
-    setContentList(getContentItems(currentClientId)); // Refresh content list
+    setContentList(getContentItems(currentClientId));
     setIsCreateModalOpen(false);
     toast({
       title: "Content Scheduled",
@@ -103,12 +101,12 @@ const ContentScheduling = () => {
   
   const handleApproveContent = (id: number) => {
     updateContentStatus(id, 'approved');
-    setContentList(getContentItems(currentClientId)); // Refresh content list
+    setContentList(getContentItems(currentClientId));
   };
   
   const handleRejectContent = (id: number) => {
     updateContentStatus(id, 'rejected', "Inappropriate content");
-    setContentList(getContentItems(currentClientId)); // Refresh content list
+    setContentList(getContentItems(currentClientId));
   };
   
   const getClientName = (clientId: number) => {
