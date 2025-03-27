@@ -13,9 +13,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { opportunities, formatCurrency, formatDate, getContactById } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import OpportunityImageUpload from '@/components/opportunities/OpportunityImageUpload';
 
 const Opportunities = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateCard, setShowCreateCard] = useState(false);
+  const [newOpportunity, setNewOpportunity] = useState({
+    name: '',
+    description: '',
+    potentialValue: 0,
+    status: 'new',
+    source: 'website',
+  });
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const { toast } = useToast();
   
   // Get status badge variant
   const getStatusBadgeVariant = (status: string) => {
@@ -45,6 +57,24 @@ const Opportunities = () => {
     return `${contact.firstName} ${contact.lastName}`;
   };
 
+  // Handle form input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewOpportunity({ ...newOpportunity, [name]: value });
+  };
+
+  // Handle add opportunity
+  const handleAddOpportunity = () => {
+    // Add form validation and submission logic here
+    setShowCreateCard(false);
+    setUploadedImage(null);
+    
+    toast({
+      title: "Opportunity created",
+      description: "New opportunity has been added successfully",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -63,11 +93,69 @@ const Opportunities = () => {
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
-            <Button size="sm" className="flex items-center gap-1">
+            <Button 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setShowCreateCard(true)}
+            >
               <Plus className="h-4 w-4" /> Add Opportunity
             </Button>
           </div>
         </div>
+        
+        {showCreateCard && (
+          <Card className="mb-6 animate-scale-in">
+            <CardHeader>
+              <CardTitle>Create New Opportunity</CardTitle>
+              <CardDescription>Add the details of your new opportunity</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium mb-1">Name *</label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={newOpportunity.name}
+                    onChange={handleInputChange}
+                    placeholder="Opportunity name"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={newOpportunity.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe the opportunity"
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px]"
+                  />
+                </div>
+                
+                <OpportunityImageUpload 
+                  uploadedImage={uploadedImage}
+                  setUploadedImage={setUploadedImage}
+                />
+                
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowCreateCard(false);
+                      setUploadedImage(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddOpportunity}>Create Opportunity</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {opportunities.length === 0 ? (
@@ -79,7 +167,7 @@ const Opportunities = () => {
                   <CardDescription className="mb-6">
                     Create your first opportunity to start tracking potential deals.
                   </CardDescription>
-                  <Button>
+                  <Button onClick={() => setShowCreateCard(true)}>
                     <Plus className="mr-2 h-4 w-4" /> Create New Opportunity
                   </Button>
                 </CardContent>
