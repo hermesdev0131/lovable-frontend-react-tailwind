@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 
 interface Client {
@@ -96,15 +95,82 @@ interface MasterAccountContextType {
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
 
+// Local storage keys
+const STORAGE_KEYS = {
+  CLIENTS: 'master_account_clients',
+  CURRENT_CLIENT: 'master_account_current_client',
+  MASTER_MODE: 'master_account_is_master_mode',
+  WEBHOOKS: 'master_account_webhooks',
+  WEBSITE_PAGES: 'master_account_website_pages',
+  CONTENT_ITEMS: 'master_account_content_items',
+  NOTIFICATIONS: 'master_account_notifications'
+};
+
 export const MasterAccountProvider = ({ children }: { children: ReactNode }) => {
-  const [clients, setClients] = useState<Client[]>([]);
+  // Initialize state from localStorage or default values
+  const [clients, setClients] = useState<Client[]>(() => {
+    const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
+    return savedClients ? JSON.parse(savedClients) : [];
+  });
   
-  const [currentClientId, setCurrentClientId] = useState<number | null>(null);
-  const [isInMasterMode, setIsInMasterMode] = useState<boolean>(true);
-  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
-  const [websitePages, setWebsitePages] = useState<WebsitePage[]>([]);
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [currentClientId, setCurrentClientId] = useState<number | null>(() => {
+    const savedClientId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLIENT);
+    return savedClientId ? JSON.parse(savedClientId) : null;
+  });
+
+  const [isInMasterMode, setIsInMasterMode] = useState<boolean>(() => {
+    const savedMode = localStorage.getItem(STORAGE_KEYS.MASTER_MODE);
+    return savedMode ? JSON.parse(savedMode) : true;
+  });
+
+  const [webhooks, setWebhooks] = useState<Webhook[]>(() => {
+    const savedWebhooks = localStorage.getItem(STORAGE_KEYS.WEBHOOKS);
+    return savedWebhooks ? JSON.parse(savedWebhooks) : [];
+  });
+
+  const [websitePages, setWebsitePages] = useState<WebsitePage[]>(() => {
+    const savedPages = localStorage.getItem(STORAGE_KEYS.WEBSITE_PAGES);
+    return savedPages ? JSON.parse(savedPages) : [];
+  });
+
+  const [contentItems, setContentItems] = useState<ContentItem[]>(() => {
+    const savedItems = localStorage.getItem(STORAGE_KEYS.CONTENT_ITEMS);
+    return savedItems ? JSON.parse(savedItems) : [];
+  });
+
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    const savedNotifications = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
+    return savedNotifications ? JSON.parse(savedNotifications) : [];
+  });
+
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
+  }, [clients]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_CLIENT, JSON.stringify(currentClientId));
+  }, [currentClientId]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.MASTER_MODE, JSON.stringify(isInMasterMode));
+  }, [isInMasterMode]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.WEBHOOKS, JSON.stringify(webhooks));
+  }, [webhooks]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.WEBSITE_PAGES, JSON.stringify(websitePages));
+  }, [websitePages]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CONTENT_ITEMS, JSON.stringify(contentItems));
+  }, [contentItems]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+  }, [notifications]);
 
   const addClient = (client: Omit<Client, 'id'>) => {
     const newClient = {
