@@ -18,7 +18,7 @@ import { toast } from '@/hooks/use-toast';
 export const ClientSwitcher = () => {
   const { clients, currentClientId, switchToClient, isInMasterMode } = useMasterAccount();
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate(); // This is safe here because ClientSwitcher is used within Router context
+  const navigate = useNavigate();
   
   const currentClient = currentClientId !== null 
     ? clients.find(c => c.id === currentClientId) 

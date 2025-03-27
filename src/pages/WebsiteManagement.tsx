@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,6 @@ import { useForm } from 'react-hook-form';
 import { BarChart, PieChart, LayoutGrid, Globe, Monitor, Smartphone, Tablet, Edit, Settings, LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { WebsitePage } from '@/types/content';
 
 interface PageFormValues {
   title: string;
@@ -27,17 +27,19 @@ const WebsiteManagement = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
   
+  // Calculate page stats
   const totalPages = websitePages.length;
   const publishedPages = websitePages.filter(page => page.status === 'published').length;
-  const totalViews = websitePages.reduce((sum, page) => sum + (page.views || 0), 0);
-  const totalConversions = websitePages.reduce((sum, page) => sum + (page.conversions || 0), 0);
+  const totalViews = websitePages.reduce((sum, page) => sum + page.views, 0);
+  const totalConversions = websitePages.reduce((sum, page) => sum + page.conversions, 0);
   const avgBounceRate = websitePages.length > 0 
-    ? websitePages.reduce((sum, page) => sum + (page.bounceRate || 0), 0) / websitePages.length 
+    ? websitePages.reduce((sum, page) => sum + page.bounceRate, 0) / websitePages.length 
     : 0;
   
+  // Landing pages specifically
   const landingPages = websitePages.filter(page => page.type === 'landing');
-  const landingPageViews = landingPages.reduce((sum, page) => sum + (page.views || 0), 0);
-  const landingPageConversions = landingPages.reduce((sum, page) => sum + (page.conversions || 0), 0);
+  const landingPageViews = landingPages.reduce((sum, page) => sum + page.views, 0);
+  const landingPageConversions = landingPages.reduce((sum, page) => sum + page.conversions, 0);
   
   const addForm = useForm<PageFormValues>({
     defaultValues: {
@@ -59,12 +61,7 @@ const WebsiteManagement = () => {
   
   const handleAddPage = (data: PageFormValues) => {
     const newPage = {
-      title: data.title,
-      url: data.url,
-      slug: data.url.replace(/^\//, ''),
-      content: '',
-      status: data.status,
-      type: data.type,
+      ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       views: 0,
@@ -82,9 +79,9 @@ const WebsiteManagement = () => {
     if (page) {
       editForm.reset({
         title: page.title,
-        url: page.url || '',
-        status: page.status as 'published' | 'draft' | 'scheduled',
-        type: page.type as 'landing' | 'blog' | 'product' | 'other'
+        url: page.url,
+        status: page.status,
+        type: page.type
       });
       setEditingPageId(pageId);
       setIsEditDialogOpen(true);
@@ -334,17 +331,17 @@ const WebsiteManagement = () => {
                       <TableCell>
                         <div className="flex items-center">
                           <LinkIcon className="h-4 w-4 mr-1 text-gray-500" />
-                          {page.url || ''}
+                          {page.url}
                         </div>
                       </TableCell>
-                      <TableCell>{page.type ? (page.type.charAt(0).toUpperCase() + page.type.slice(1)) : 'Other'}</TableCell>
+                      <TableCell>{page.type.charAt(0).toUpperCase() + page.type.slice(1)}</TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(page.status) as any}>
                           {page.status.charAt(0).toUpperCase() + page.status.slice(1)}
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(page.updatedAt)}</TableCell>
-                      <TableCell>{(page.views || 0).toLocaleString()}</TableCell>
+                      <TableCell>{page.views.toLocaleString()}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button 
@@ -424,12 +421,12 @@ const WebsiteManagement = () => {
                           {page.status.charAt(0).toUpperCase() + page.status.slice(1)}
                         </Badge>
                       </TableCell>
-                      <TableCell>{(page.views || 0).toLocaleString()}</TableCell>
-                      <TableCell>{(page.conversions || 0).toLocaleString()}</TableCell>
+                      <TableCell>{page.views.toLocaleString()}</TableCell>
+                      <TableCell>{page.conversions.toLocaleString()}</TableCell>
                       <TableCell>
-                        {page.views > 0 ? (((page.conversions || 0) / page.views) * 100).toFixed(1) : 0}%
+                        {page.views > 0 ? ((page.conversions / page.views) * 100).toFixed(1) : 0}%
                       </TableCell>
-                      <TableCell>{(page.bounceRate || 0).toFixed(1)}%</TableCell>
+                      <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button 
@@ -492,9 +489,9 @@ const WebsiteManagement = () => {
                       .map((page) => (
                         <TableRow key={page.id}>
                           <TableCell className="font-medium">{page.title}</TableCell>
-                          <TableCell>{(page.views || 0).toLocaleString()}</TableCell>
-                          <TableCell>{(page.conversions || 0).toLocaleString()}</TableCell>
-                          <TableCell>{(page.bounceRate || 0).toFixed(1)}%</TableCell>
+                          <TableCell>{page.views.toLocaleString()}</TableCell>
+                          <TableCell>{page.conversions.toLocaleString()}</TableCell>
+                          <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
                           <TableCell>2m 34s</TableCell>
                         </TableRow>
                       ))}

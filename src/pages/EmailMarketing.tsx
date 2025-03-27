@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,7 +31,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
-import { ContentItem } from '@/types/content';
 
 const EmailMarketing = () => {
   const [selectedTab, setSelectedTab] = useState('campaigns');
@@ -59,7 +57,8 @@ const EmailMarketing = () => {
     updateContentStatus 
   } = useMasterAccount();
   
-  const emailContentItems = getContentItems()
+  const clientId = isInMasterMode ? null : currentClientId;
+  const emailContentItems = getContentItems(undefined, undefined)
     .filter(item => item.type === 'email');
   
   const getStatusBadge = (status: string) => {
@@ -89,7 +88,7 @@ const EmailMarketing = () => {
       title: newEmail.title,
       content: `Subject: ${newEmail.subject}\n\n${newEmail.content}`,
       type: 'email',
-      status: 'pending',
+      createdBy: currentClientId || 0,
       scheduledFor: new Date(Date.now() + 86400000).toISOString() // Schedule for tomorrow
     });
     
