@@ -1,5 +1,5 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 
 // Define the structure of a client object
@@ -20,7 +20,7 @@ export type Client = {
 // Define the context type
 export type MasterAccountContextType = {
   isInMasterMode: boolean;
-  setIsInMasterMode: (value: boolean) => void; // Add this property
+  setIsInMasterMode: (value: boolean) => void;
   currentClientId: number | null;
   clients: Client[];
   selectedClient: Client | null;
@@ -30,7 +30,7 @@ export type MasterAccountContextType = {
   removeClient: (id: number) => void;
 };
 
-// Create the context with a default value of null
+// Create the context with a default value of null 
 const MasterAccountContext = createContext<MasterAccountContextType | null>(null);
 
 // Create a provider component
@@ -75,7 +75,6 @@ export const MasterAccountProvider: React.FC<{ children: React.ReactNode }> = ({
       logo: "/placeholder.svg"
     }
   ]);
-  const navigate = useNavigate();
 
   // Find the selected client based on currentClientId
   const selectedClient = clients.find((client) => client.id === currentClientId) || null;

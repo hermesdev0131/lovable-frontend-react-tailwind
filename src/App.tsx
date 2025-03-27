@@ -1,10 +1,10 @@
+
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
 import Calendar from "@/pages/Calendar"
 import Index from "@/pages/Index"
 import NotFound from "@/pages/NotFound"
-import { MasterAccountProvider } from "@/contexts/MasterAccountContext"
 import { Toaster } from "@/components/ui/toaster"
 import Layout from "@/components/layout/Sidebar"
 import { ProtectedRoute } from "./components/auth/ProtectedRoute"
@@ -24,6 +24,7 @@ import Account from "./pages/Account"
 import LoginPage from "./pages/Login"
 import AuthPage from "./pages/Auth"
 import { AuthProvider } from "./contexts/AuthContext"
+import { MasterAccountProvider } from "@/contexts/MasterAccountContext"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -34,9 +35,9 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="ui-theme">
-      <AuthProvider>
-        <MasterAccountProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <MasterAccountProvider>
             <CustomErrorBoundary>
               <Toaster />
               <Routes>
@@ -231,9 +232,9 @@ function App() {
                 />
               </Routes>
             </CustomErrorBoundary>
-          </BrowserRouter>
-        </MasterAccountProvider>
-      </AuthProvider>
+          </MasterAccountProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
