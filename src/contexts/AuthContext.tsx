@@ -50,15 +50,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
+      // Note: We're not using emailRedirectTo for now as it seems to be causing issues
       const { error } = await supabase.auth.signUp({ 
         email, 
-        password,
-        options: {
-          emailRedirectTo: window.location.origin + '/auth'
-        }
+        password
       });
       
       if (error) {
+        console.error("SignUp error:", error);
         toast({
           title: "Registration failed",
           description: error.message,
