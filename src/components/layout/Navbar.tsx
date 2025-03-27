@@ -28,12 +28,15 @@ interface NavbarProps {
 
 const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
-  const { isInMasterMode, switchToClient } = useMasterAccount();
+  const { isInMasterMode, switchToClient, setIsInMasterMode } = useMasterAccount();
   const navigate = useNavigate();
   
   const handleLogout = () => {
-    // Clear any client selection
+    // Clear client selection
     switchToClient(null);
+    
+    // Ensure master mode is disabled to trigger login screen
+    setIsInMasterMode(false);
     
     // Navigate to root/login page
     navigate('/');
