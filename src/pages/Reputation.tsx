@@ -337,46 +337,51 @@ const Reputation = () => {
                 <CardTitle>Rating Trend</CardTitle>
                 <CardDescription>Average rating over time</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="w-full h-[300px]">
-                  <ChartContainer
-                    config={{
-                      average: { label: "Average Rating" },
-                      volume: { label: "Review Volume" },
-                    }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={ratingData}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
-                      >
-                        <defs>
-                          <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
-                          </linearGradient>
-                        </defs>
-                        <XAxis 
-                          dataKey="date" 
-                          tickFormatter={(date) => {
-                            const d = new Date(date);
-                            return `${d.getMonth() + 1}/${d.getDate()}`;
-                          }}
-                        />
-                        <YAxis domain={[0, 5]} />
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
-                        <Tooltip content={<ChartTooltipContent />} />
-                        <Area 
-                          type="monotone" 
-                          dataKey="average" 
-                          stroke="#8884d8" 
-                          fillOpacity={1} 
-                          fill="url(#colorAvg)" 
-                          strokeWidth={2}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+              <CardContent className="px-0 pb-0">
+                <div style={{ height: "320px", width: "100%", overflow: "hidden" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={ratingData}
+                      margin={{ top: 10, right: 30, left: 30, bottom: 30 }}
+                    >
+                      <defs>
+                        <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(date) => {
+                          const d = new Date(date);
+                          return `${d.getMonth() + 1}/${d.getDate()}`;
+                        }}
+                        padding={{ left: 10, right: 10 }}
+                      />
+                      <YAxis domain={[0, 5]} />
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <Tooltip content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="custom-tooltip bg-background border p-2 rounded shadow-md">
+                              <p className="label">{`Date: ${payload[0].payload.date}`}</p>
+                              <p className="rating">{`Rating: ${payload[0].value}`}</p>
+                              <p className="volume">{`Reviews: ${payload[0].payload.volume}`}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="average" 
+                        stroke="#8884d8" 
+                        fillOpacity={1} 
+                        fill="url(#colorAvg)" 
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
