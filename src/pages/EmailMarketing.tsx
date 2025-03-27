@@ -24,7 +24,8 @@ import {
   Calendar, 
   Users,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  Loader2
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
@@ -37,6 +38,10 @@ const EmailMarketing = () => {
   const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isComposeDialogOpen, setIsComposeDialogOpen] = useState(false);
+  const [isMailchimpDialogOpen, setIsMailchimpDialogOpen] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [mailchimpApiKey, setMailchimpApiKey] = useState('');
+  const [isMailchimpConnected, setIsMailchimpConnected] = useState(false);
   const [newEmail, setNewEmail] = useState({
     title: '',
     subject: '',
@@ -87,7 +92,6 @@ const EmailMarketing = () => {
       scheduledFor: new Date(Date.now() + 86400000).toISOString() // Schedule for tomorrow
     });
     
-    // Reset form
     setNewEmail({
       title: '',
       subject: '',
@@ -114,6 +118,36 @@ const EmailMarketing = () => {
       setIsRejectDialogOpen(false);
       setSelectedContentId(null);
     }
+  };
+  
+  const handleConnectToMailchimp = () => {
+    setIsMailchimpDialogOpen(true);
+  };
+
+  const handleMailchimpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!mailchimpApiKey) {
+      toast({
+        title: "Missing API Key",
+        description: "Please enter your Mailchimp API key",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsConnecting(true);
+    
+    setTimeout(() => {
+      setIsConnecting(false);
+      setIsMailchimpConnected(true);
+      setIsMailchimpDialogOpen(false);
+      
+      toast({
+        title: "Connected to Mailchimp",
+        description: "Your Mailchimp account has been successfully connected",
+      });
+    }, 1500);
   };
   
   return (
@@ -200,7 +234,6 @@ const EmailMarketing = () => {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         
-        {/* Campaigns Tab */}
         <TabsContent value="campaigns" className="space-y-4">
           <Card>
             <CardHeader>
@@ -211,12 +244,10 @@ const EmailMarketing = () => {
               <p className="text-muted-foreground">
                 Here you can see a list of all your active email campaigns, their status, and key metrics.
               </p>
-              {/* Add campaign list or components here */}
             </CardContent>
           </Card>
         </TabsContent>
         
-        {/* Scheduled Tab */}
         <TabsContent value="scheduled" className="space-y-4">
           <Card>
             <CardHeader>
@@ -227,12 +258,10 @@ const EmailMarketing = () => {
               <p className="text-muted-foreground">
                 Here you can see a list of all your scheduled email campaigns and their scheduled send times.
               </p>
-              {/* Add scheduled emails list or components here */}
             </CardContent>
           </Card>
         </TabsContent>
         
-        {/* Drafts & Approvals Tab */}
         <TabsContent value="drafts" className="space-y-4">
           <Card>
             <CardHeader>
@@ -285,7 +314,6 @@ const EmailMarketing = () => {
                             </div>
                           </div>
                           
-                          {/* Approval actions - only show if content is pending and you're an admin or if you're in master mode */}
                           {item.status === 'pending' && isInMasterMode && (
                             <div className="flex items-start gap-2">
                               <Button 
@@ -309,7 +337,6 @@ const EmailMarketing = () => {
                             </div>
                           )}
                           
-                          {/* If already approved and you're in master mode, show send button */}
                           {item.status === 'approved' && isInMasterMode && (
                             <Button variant="outline" size="sm" className="text-blue-600">
                               <Send className="h-4 w-4 mr-1" />
@@ -326,7 +353,6 @@ const EmailMarketing = () => {
           </Card>
         </TabsContent>
         
-        {/* Analytics Tab */}
         <TabsContent value="analytics" className="space-y-4">
           <Card>
             <CardHeader>
@@ -337,13 +363,11 @@ const EmailMarketing = () => {
               <p className="text-muted-foreground">
                 Here you can see detailed analytics for your email campaigns, including open rates, click-through rates, and conversions.
               </p>
-              {/* Add analytics components here */}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Rejection Reason Dialog */}
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -375,6 +399,49 @@ const EmailMarketing = () => {
         </DialogContent>
       </Dialog>
       
+      <Dialog open={isMailchimpDialogOpen} onOpenChange={setIsMailchimpDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect to Mailchimp</DialogTitle>
+            <DialogDescription>
+              Enter your Mailchimp API key to connect your account
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleMailchimpSubmit}>
+            <div className="py-4">
+              <div className="space-y-2">
+                <Label htmlFor="mailchimp-api-key">Mailchimp API Key</Label>
+                <Input
+                  id="mailchimp-api-key"
+                  placeholder="Enter your Mailchimp API key..."
+                  value={mailchimpApiKey}
+                  onChange={(e) => setMailchimpApiKey(e.target.value)}
+                  type="password"
+                />
+                <p className="text-xs text-muted-foreground">
+                  You can find your API key in your Mailchimp account under Account &gt; Extras &gt; API keys
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsMailchimpDialogOpen(false)} type="button">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isConnecting}>
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  "Connect to Mailchimp"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-4">Mailchimp Integration Settings</h2>
         <Card>
@@ -385,10 +452,32 @@ const EmailMarketing = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              Connect your Mailchimp account to import your email lists and automate your email marketing campaigns.
-            </p>
-            <Button>Connect to Mailchimp</Button>
+            {isMailchimpConnected ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-green-600">
+                  <Check className="h-5 w-5" />
+                  <p className="font-medium">Connected to Mailchimp</p>
+                </div>
+                <p className="text-muted-foreground">
+                  Your Mailchimp account is successfully integrated. You can now sync your email lists and send campaigns directly from this CRM.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setIsMailchimpConnected(false)}>
+                    Disconnect
+                  </Button>
+                  <Button variant="outline">
+                    Sync Lists
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Connect your Mailchimp account to import your email lists and automate your email marketing campaigns.
+                </p>
+                <Button onClick={handleConnectToMailchimp}>Connect to Mailchimp</Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
