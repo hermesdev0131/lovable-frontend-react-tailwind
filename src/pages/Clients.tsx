@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, Users } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,10 +13,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 const Clients = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { clients } = useMasterAccount();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newClient, setNewClient] = useState({
+    name: "",
+    email: "",
+    password: "",
+    subscription: "Basic"
+  });
+  
+  const { clients, addClient } = useMasterAccount();
+  const { toast } = useToast();
   
   // Filter clients based on search query
   const filteredClients = clients.filter(client => {
@@ -30,6 +43,49 @@ const Clients = () => {
   // Get status badge variant
   const getStatusBadgeVariant = (status: string) => {
     return status === 'active' ? 'outline' : 'secondary';
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewClient({ ...newClient, [e.target.name]: e.target.value });
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewClient({ ...newClient, subscription: value });
+  };
+  
+  const resetForm = () => {
+    setNewClient({ name: "", email: "", password: "", subscription: "Basic" });
+  };
+
+  const handleAddClient = () => {
+    if (!newClient.name || !newClient.email || !newClient.password) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    addClient({
+      name: newClient.name,
+      email: newClient.email,
+      password: newClient.password,
+      subscription: newClient.subscription,
+      status: "active",
+      users: 0,
+      deals: 0,
+      contacts: 0,
+      lastActivity: new Date().toISOString(),
+      logo: "/placeholder.svg"
+    });
+    
+    resetForm();
+    setShowAddDialog(false);
+    toast({
+      title: "Client Added",
+      description: `${newClient.name} has been added successfully.`
+    });
   };
 
   return (
@@ -50,7 +106,11 @@ const Clients = () => {
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
-            <Button size="sm" className="flex items-center gap-1">
+            <Button 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setShowAddDialog(true)}
+            >
               <Plus className="h-4 w-4" /> Add Client
             </Button>
           </div>
@@ -64,7 +124,7 @@ const Clients = () => {
               <CardDescription className="mb-6">
                 Add your first client to start managing your accounts.
               </CardDescription>
-              <Button>
+              <Button onClick={() => setShowAddDialog(true)}>
                 <Plus className="mr-2 h-4 w-4" /> Add Client
               </Button>
             </CardContent>
@@ -139,6 +199,89 @@ const Clients = () => {
           </div>
         )}
       </div>
+
+      {/* Add Client Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Client</DialogTitle>
+            <DialogDescription>
+              Create a new client account in the system
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="client-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="client-name"
+                name="name"
+                placeholder="Enter client name"
+                value={newClient.name}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="client-email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="client-email"
+                name="email"
+                type="email"
+                placeholder="Enter email address"
+                value={newClient.email}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="client-password" className="text-right">
+                Password
+              </Label>
+              <Input
+                id="client-password"
+                name="password"
+                type="password"
+                placeholder="Create a password"
+                value={newClient.password}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Subscription</Label>
+              <Select 
+                onValueChange={handleSelectChange} 
+                defaultValue={newClient.subscription}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select subscription plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Basic">Basic</SelectItem>
+                  <SelectItem value="Professional">Professional</SelectItem>
+                  <SelectItem value="Enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                resetForm();
+                setShowAddDialog(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddClient}>Add Client</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
