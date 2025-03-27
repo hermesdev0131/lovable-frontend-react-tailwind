@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -50,6 +51,7 @@ interface ContentItem {
   rejectionReason?: string;
   approvedBy?: number;
   approvedAt?: string;
+  media?: string | null;
 }
 
 interface Notification {
