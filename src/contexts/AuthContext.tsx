@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
@@ -35,7 +36,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (data.session) {
           const { user } = data.session;
           if (user) {
-            const profileData = { name: user.user_metadata?.name, role: 'user' };
+            const profileData = { 
+              name: user.user_metadata?.name, 
+              role: (user.user_metadata?.role as 'admin' | 'user') || 'user'
+            };
 
             const authUser: User = {
               id: user.id,
@@ -59,7 +63,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (event === 'SIGNED_IN' && session) {
           const user = session.user;
           
-          const profileData = { name: user.user_metadata?.name, role: 'user' };
+          const profileData = { 
+            name: user.user_metadata?.name, 
+            role: (user.user_metadata?.role as 'admin' | 'user') || 'user'
+          };
           
           const authUser: User = {
             id: user.id,

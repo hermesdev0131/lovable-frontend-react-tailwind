@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Default values for development mode
@@ -26,18 +27,18 @@ const createDemoClient = () => {
     mockClient.auth = {
       ...originalAuth,
       // Mock sign in
-      signInWithPassword: async ({ email, password }) => {
-        console.log('DEMO MODE: Sign in attempt for', email);
+      signInWithPassword: async (credentials) => {
+        console.log('DEMO MODE: Sign in attempt for', credentials.email);
         
         // Very basic demo authentication
-        if (demoUsers.has(email) && demoUsers.get(email).password === password) {
-          const user = demoUsers.get(email);
+        if (demoUsers.has(credentials.email) && demoUsers.get(credentials.email).password === credentials.password) {
+          const user = demoUsers.get(credentials.email);
           return {
             data: {
               user: {
                 id: `demo_${Date.now()}`,
-                email,
-                user_metadata: { name: user.name || email.split('@')[0] }
+                email: credentials.email,
+                user_metadata: { name: user.name || credentials.email.split('@')[0] }
               },
               session: { access_token: 'demo_token' }
             },
@@ -52,15 +53,24 @@ const createDemoClient = () => {
       },
       
       // Mock sign up
-      signUp: async ({ email, password, options }) => {
-        console.log('DEMO MODE: Sign up for', email);
-        demoUsers.set(email, { password, name: options?.data?.name });
+      signUp: async (credentials) => {
+        console.log('DEMO MODE: Sign up for', credentials.email);
+        const metadata = credentials.options?.data as Record<string, unknown> | undefined;
+        const name = metadata?.name as string | undefined;
+        
+        demoUsers.set(credentials.email, { 
+          password: credentials.password,
+          name: name || credentials.email.split('@')[0]
+        });
+        
         return {
           data: {
             user: {
               id: `demo_${Date.now()}`,
-              email,
-              user_metadata: { name: options?.data?.name || email.split('@')[0] }
+              email: credentials.email,
+              user_metadata: { 
+                name: name || credentials.email.split('@')[0] 
+              }
             },
             session: null
           },
@@ -79,7 +89,7 @@ const createDemoClient = () => {
       },
       
       // Mock update user (for password reset)
-      updateUser: async ({ password }) => {
+      updateUser: async (attributes) => {
         console.log('DEMO MODE: Password updated');
         return { data: { user: null }, error: null };
       },
