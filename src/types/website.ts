@@ -13,29 +13,23 @@ export interface ReviewFilter {
   keyword?: string;
 }
 
+// Added missing types that are referenced by other components
 export interface WebsitePage {
   id: string;
   title: string;
   slug: string;
-  url: string;
-  status: 'published' | 'draft' | 'scheduled';
-  type: 'landing' | 'content' | 'blog' | 'product' | 'other';
+  status: 'published' | 'draft';
+  type: 'landing' | 'content' | 'blog' | 'other';
   visits: number;
-  views: number;
-  conversions: number;
-  bounceRate: number;
-  updatedAt: string;
   lastUpdated: string;
   createdAt: string;
-  clientId: string | null;
 }
 
 export interface PageFormValues {
   title: string;
   slug: string;
-  url: string;
-  type: 'landing' | 'content' | 'blog' | 'product' | 'other';
+  type: 'landing' | 'content' | 'blog' | 'other';
   template?: string;
   content?: string;
-  status: 'published' | 'draft' | 'scheduled';
+  status: 'published' | 'draft';
 }

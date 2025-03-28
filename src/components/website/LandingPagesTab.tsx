@@ -11,8 +11,8 @@ interface LandingPagesTabProps {
   landingPages: WebsitePage[];
   landingPageViews: number;
   landingPageConversions: number;
-  openEditDialog: (pageId: string) => void;
-  deletePage: (pageId: string) => void;
+  openEditDialog: (pageId: number) => void;
+  deletePage: (pageId: number) => void;
   getStatusBadgeVariant: (status: string) => string;
 }
 

@@ -10,7 +10,7 @@ import { Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 // Import website types
-import { PageFormValues, WebsitePage } from '@/types/website';
+import { PageFormValues } from '@/types/website';
 
 // Import refactored components
 import WebsiteStats from '@/components/website/WebsiteStats';
@@ -23,32 +23,31 @@ import AddPageDialog from '@/components/website/AddPageDialog';
 import EditPageDialog from '@/components/website/EditPageDialog';
 
 const WebsiteManagement = () => {
-  const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage } = useMasterAccount();
+  const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage, currentClientId } = useMasterAccount();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingPageId, setEditingPageId] = useState<string | null>(null);
-  const [selectedPage, setSelectedPage] = useState<string | null>(null);
+  const [editingPageId, setEditingPageId] = useState<number | null>(null);
+  const [selectedPage, setSelectedPage] = useState<number | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   
   // Calculate page stats
   const totalPages = websitePages.length;
   const publishedPages = websitePages.filter(page => page.status === 'published').length;
   const totalViews = websitePages.reduce((sum, page) => sum + page.views, 0);
-  const totalConversions = websitePages.reduce((sum, page) => sum + (page.conversions || 0), 0);
+  const totalConversions = websitePages.reduce((sum, page) => sum + page.conversions, 0);
   const avgBounceRate = websitePages.length > 0 
-    ? websitePages.reduce((sum, page) => sum + (page.bounceRate || 0), 0) / websitePages.length 
+    ? websitePages.reduce((sum, page) => sum + page.bounceRate, 0) / websitePages.length 
     : 0;
   
   // Landing pages specifically
   const landingPages = websitePages.filter(page => page.type === 'landing');
   const landingPageViews = landingPages.reduce((sum, page) => sum + page.views, 0);
-  const landingPageConversions = landingPages.reduce((sum, page) => sum + (page.conversions || 0), 0);
+  const landingPageConversions = landingPages.reduce((sum, page) => sum + page.conversions, 0);
   
   const addForm = useForm<PageFormValues>({
     defaultValues: {
       title: '',
       url: '',
-      slug: '',
       status: 'draft',
       type: 'landing'
     }
@@ -58,39 +57,33 @@ const WebsiteManagement = () => {
     defaultValues: {
       title: '',
       url: '',
-      slug: '',
       status: 'published',
       type: 'landing'
     }
   });
   
   const handleAddPage = (data: PageFormValues) => {
-    // Convert the form data to a WebsitePage object that matches the context's expected format
-    const pageData: Omit<WebsitePage, "id"> = {
+    const newPage = {
       ...data,
-      visits: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       views: 0,
       conversions: 0,
       bounceRate: 0,
-      updatedAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      clientId: null
+      clientId: currentClientId,
     };
     
-    addWebsitePage(pageData);
-    
+    addWebsitePage(newPage);
     addForm.reset();
     setIsAddDialogOpen(false);
   };
   
-  const openEditDialog = (pageId: string) => {
+  const openEditDialog = (pageId: number) => {
     const page = websitePages.find(p => p.id === pageId);
     if (page) {
       editForm.reset({
         title: page.title,
         url: page.url,
-        slug: page.slug,
         status: page.status,
         type: page.type
       });
@@ -101,18 +94,13 @@ const WebsiteManagement = () => {
   
   const handleEditPage = (data: PageFormValues) => {
     if (editingPageId) {
-      const updateData = {
-        ...data,
-        updatedAt: new Date().toISOString(),
-      };
-      
-      updateWebsitePage(editingPageId, updateData);
+      updateWebsitePage(editingPageId, data);
       setIsEditDialogOpen(false);
       setEditingPageId(null);
     }
   };
   
-  const deletePage = (pageId: string) => {
+  const deletePage = (pageId: number) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
       removeWebsitePage(pageId);
     }
@@ -139,7 +127,7 @@ const WebsiteManagement = () => {
     });
   };
   
-  const startTracking = (pageId: string) => {
+  const startTracking = (pageId: number) => {
     setSelectedPage(pageId);
     
     if (!isTracking) {
@@ -214,9 +202,7 @@ const WebsiteManagement = () => {
         </TabsContent>
         
         <TabsContent value="insights" className="mt-4">
-          <InsightsTab 
-            websitePages={websitePages}
-          />
+          <InsightsTab websitePages={websitePages} />
         </TabsContent>
         
         <TabsContent value="devices" className="mt-4">
