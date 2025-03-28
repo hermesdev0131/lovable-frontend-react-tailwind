@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
 interface RealTimeAnalyticsProps {
-  websiteId?: number | null;
+  websiteId?: string | null;
 }
 
 interface VisitorData {
@@ -38,14 +37,11 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const { toast } = useToast();
   
-  // Empty data simulation
   useEffect(() => {
-    // Simulate connection issues occasionally
     const interval = setInterval(() => {
       if (Math.random() > 0.1) {
         setIsConnected(true);
       } else {
-        // Occasionally simulate connection issues
         setIsConnected(false);
         toast({
           title: "Connection Issue",
@@ -53,7 +49,6 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
           variant: "destructive",
         });
         
-        // Simulate reconnection
         setTimeout(() => {
           setIsConnected(true);
           toast({
