@@ -164,7 +164,7 @@ const MasterAccount = () => {
       <div className="mb-6">
         <Dialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="primary">
+            <Button variant="default">
               <Plus className="h-4 w-4 mr-2" />
               Add New Client
             </Button>
@@ -265,8 +265,8 @@ const MasterAccount = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" variant="default" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Adding..." : "Add Client"}
+                <Button type="submit" variant="default" className="w-full" disabled={addClientForm.formState.isSubmitting}>
+                  {addClientForm.formState.isSubmitting ? "Adding..." : "Add Client"}
                 </Button>
               </form>
             </Form>
