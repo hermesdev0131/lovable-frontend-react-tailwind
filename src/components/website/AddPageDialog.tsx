@@ -90,6 +90,7 @@ const AddPageDialog = ({ isOpen, onOpenChange, form, onSubmit }: AddPageDialogPr
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="landing">Landing Page</SelectItem>
+                        <SelectItem value="content">Content Page</SelectItem>
                         <SelectItem value="blog">Blog</SelectItem>
                         <SelectItem value="product">Product</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
