@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Plus, Filter, MoreHorizontal, Users, X, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,13 +24,12 @@ const Clients = () => {
     name: "",
     email: "",
     password: "",
-    subscription: "Basic"
+    subscription: "Basic" as const
   });
   
   const { clients, addClient } = useMasterAccount();
   const { toast } = useToast();
   
-  // Filter clients based on search query
   const filteredClients = clients.filter(client => {
     const name = client.name.toLowerCase();
     const email = client.email.toLowerCase();
@@ -40,7 +38,6 @@ const Clients = () => {
     return name.includes(query) || email.includes(query);
   });
 
-  // Get status badge variant
   const getStatusBadgeVariant = (status: string) => {
     return status === 'active' ? 'outline' : 'secondary';
   };
@@ -49,7 +46,7 @@ const Clients = () => {
     setNewClient({ ...newClient, [e.target.name]: e.target.value });
   };
 
-  const handleSelectChange = (value: string) => {
+  const handleSelectChange = (value: 'Basic' | 'Professional' | 'Enterprise') => {
     setNewClient({ ...newClient, subscription: value });
   };
   
@@ -233,7 +230,6 @@ const Clients = () => {
         )}
       </div>
 
-      {/* Add Client Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -296,7 +292,7 @@ const Clients = () => {
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Subscription</Label>
               <Select 
-                onValueChange={handleSelectChange} 
+                onValueChange={handleSelectChange as (value: string) => void} 
                 defaultValue={newClient.subscription}
               >
                 <SelectTrigger className="col-span-3">

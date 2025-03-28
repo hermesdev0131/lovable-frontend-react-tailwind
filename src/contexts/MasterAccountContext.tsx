@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -28,6 +27,7 @@ interface Webhook {
   events: string[];
   active: boolean;
   createdAt?: string;
+  lastTriggered?: string; // Added this property to fix the error in Settings.tsx
 }
 
 // Content Item Type Definition
@@ -36,7 +36,7 @@ export interface ContentItem {
   title: string;
   content: string;
   type: 'post' | 'email' | 'blog' | 'social';
-  status?: 'draft' | 'scheduled' | 'published';
+  status: 'draft' | 'scheduled' | 'published'; // Ensure it's a union type
   createdBy: number | string;
   scheduledFor?: string;
   clientId: string | null;
@@ -46,7 +46,7 @@ export interface ContentItem {
 export interface WebsitePage {
   id: number;
   title: string;
-  url?: string;
+  url: string; // Make this required to fix the error in WebsiteManagement.tsx
   status: 'published' | 'draft' | 'scheduled';
   type: 'landing' | 'blog' | 'product' | 'other';
   views: number;
@@ -74,7 +74,7 @@ interface MasterAccountContextType {
   currentClientId: string | null;
   isInMasterMode: boolean;
   setCurrentClient: (clientId: string | null) => void;
-  switchToClient: (clientId: number | null) => void; // Added for ClientSwitcher
+  switchToClient: (clientId: string | null) => void; // Changed parameter type to string | null
   toggleMasterMode: () => void;
   addClient: (client: Omit<Client, "id">) => void;
   updateClient: (client: Client) => void;
@@ -92,7 +92,7 @@ interface MasterAccountContextType {
   // Content management
   addContentItem: (item: Omit<ContentItem, "id">) => void;
   getContentItems: (clientId: string | null, type?: string) => ContentItem[];
-  updateContentStatus: (itemId: number, status: string) => void;
+  updateContentStatus: (itemId: number, status: 'draft' | 'scheduled' | 'published') => void; // Fix type here
   
   // Website pages management
   websitePages: WebsitePage[];
@@ -248,14 +248,11 @@ export const MasterAccountProvider: React.FC<{ children: ReactNode }> = ({ child
   };
 
   // Function for ClientSwitcher component
-  const switchToClient = (clientId: number | null) => {
-    if (clientId === null) {
-      setCurrentClientId(null);
-    } else {
-      // Convert number to string if needed
-      setCurrentClientId(String(clientId));
-      
-      const client = clients.find(c => c.id === String(clientId));
+  const switchToClient = (clientId: string | null) => {
+    setCurrentClientId(clientId);
+    
+    if (clientId) {
+      const client = clients.find(c => c.id === clientId);
       if (client) {
         toast({
           title: "Client Changed",
@@ -393,7 +390,7 @@ export const MasterAccountProvider: React.FC<{ children: ReactNode }> = ({ child
 
   // Content management functions
   const addContentItem = (itemData: Omit<ContentItem, "id">) => {
-    const newItem = {
+    const newItem: ContentItem = {
       ...itemData,
       id: Date.now(),
       status: itemData.status || 'draft'
@@ -420,7 +417,7 @@ export const MasterAccountProvider: React.FC<{ children: ReactNode }> = ({ child
     });
   };
 
-  const updateContentStatus = (itemId: number, status: string) => {
+  const updateContentStatus = (itemId: number, status: 'draft' | 'scheduled' | 'published') => {
     setContentItems(prev => 
       prev.map(item => 
         item.id === itemId ? { ...item, status } : item

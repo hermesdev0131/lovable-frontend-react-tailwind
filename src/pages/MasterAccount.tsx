@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { useMasterAccount, Client } from "@/contexts/MasterAccountContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle, Trash2, Mail, Lock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,7 +15,7 @@ const MasterAccount = () => {
     name: "",
     email: "",
     password: "",
-    subscription: "Basic"
+    subscription: "Basic" as const
   });
   
   const { addClient, clients, removeClient } = useMasterAccount();
@@ -26,7 +25,7 @@ const MasterAccount = () => {
     setNewClient({ ...newClient, [e.target.name]: e.target.value });
   };
 
-  const handleSelectChange = (value: string) => {
+  const handleSelectChange = (value: 'Basic' | 'Professional' | 'Enterprise') => {
     setNewClient({ ...newClient, subscription: value });
   };
 
@@ -78,7 +77,7 @@ const MasterAccount = () => {
     });
   };
 
-  const deleteClient = (id: number) => {
+  const deleteClient = (id: string) => {
     removeClient(id);
     toast({
       title: "Client Removed",
@@ -154,7 +153,10 @@ const MasterAccount = () => {
                 </div>
                 <div>
                   <Label>Subscription Plan</Label>
-                  <Select onValueChange={handleSelectChange} defaultValue={newClient.subscription}>
+                  <Select 
+                    onValueChange={handleSelectChange as (value: string) => void} 
+                    defaultValue={newClient.subscription}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select subscription" />
                     </SelectTrigger>

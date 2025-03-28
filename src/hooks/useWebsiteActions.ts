@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { useMasterAccount, WebsitePage } from '@/contexts/MasterAccountContext';
 import { toast } from '@/hooks/use-toast';
 import { PageFormValues } from '@/types/website';
 
@@ -33,9 +33,9 @@ export const useWebsiteActions = () => {
   
   const handleAddPage = (data: PageFormValues) => {
     // Convert form data to the context's WebsitePage type format
-    const newPage = {
+    const newPage: Omit<WebsitePage, "id"> = {
       title: data.title,
-      url: data.slug, // map slug to url
+      url: data.slug || '', // map slug to url
       status: data.status as 'published' | 'draft' | 'scheduled',
       type: data.type as 'landing' | 'blog' | 'product' | 'other',
       views: 0,
@@ -71,7 +71,7 @@ export const useWebsiteActions = () => {
     if (editingPageId) {
       updateWebsitePage(editingPageId, {
         title: data.title,
-        url: data.slug, // map slug to url
+        url: data.slug || '', // map slug to url
         status: data.status as 'published' | 'draft' | 'scheduled',
         type: data.type as 'landing' | 'blog' | 'product' | 'other',
         updatedAt: new Date().toISOString(),
