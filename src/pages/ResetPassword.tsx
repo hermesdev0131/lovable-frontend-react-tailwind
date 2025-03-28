@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,30 +8,34 @@ import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
 import { ArrowLeft, KeyRound, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   
-  // Get token from URL
-  const token = searchParams.get('token');
-  
-  // Check if token exists
+  // Check if we have a valid hash for password reset
   useEffect(() => {
-    if (!token) {
-      toast({
-        title: "Invalid Request",
-        description: "No reset token found. Please request a new password reset.",
-        variant: "destructive"
-      });
-      navigate('/forgot-password');
-    }
-  }, [token, navigate]);
+    const checkHashParam = async () => {
+      // Supabase automatically handles the hash parameter
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error || !data.session) {
+        toast({
+          title: "Invalid Request",
+          description: "This password reset link is invalid or has expired. Please request a new password reset.",
+          variant: "destructive"
+        });
+        navigate('/forgot-password');
+      }
+    };
+    
+    checkHashParam();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,22 +73,17 @@ const ResetPassword = () => {
     setIsLoading(true);
     
     try {
-      if (token) {
-        const success = await resetPassword(token, password);
+      // In Supabase flow, we don't need the token parameter
+      const success = await resetPassword("", password);
       
-        if (success) {
-          setIsSuccess(true);
-          toast({
-            title: "Success",
-            description: "Your password has been reset. You can now log in with your new password.",
-          });
-        } else {
-          toast({
-            title: "Failed",
-            description: "Unable to reset password. The token may be invalid or expired.",
-            variant: "destructive"
-          });
-        }
+      if (success) {
+        setIsSuccess(true);
+      } else {
+        toast({
+          title: "Failed",
+          description: "Unable to reset password. The reset link may be invalid or expired.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       toast({

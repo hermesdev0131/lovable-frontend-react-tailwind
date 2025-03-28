@@ -4,6 +4,7 @@ import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { X } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface User {
   id: string;
@@ -15,7 +16,7 @@ interface User {
 interface AuthContextType {
   currentUser: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
   requestPasswordReset: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
@@ -29,12 +30,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('crm_current_user');
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
-    }
+    // Check for existing session on load
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        const { user } = data.session;
+        if (user) {
+          // Get user profile data from Supabase if needed
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('name, role')
+            .eq('id', user.id)
+            .single();
+
+          const authUser: User = {
+            id: user.id,
+            email: user.email || '',
+            name: profileData?.name || user.email?.split('@')[0] || 'User',
+            role: profileData?.role || 'user',
+          };
+          
+          setCurrentUser(authUser);
+        }
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const user = session.user;
+          
+          // Get user profile data if available
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('name, role')
+            .eq('id', user.id)
+            .single();
+          
+          const authUser: User = {
+            id: user.id,
+            email: user.email || '',
+            name: profileData?.name || user.email?.split('@')[0] || 'User',
+            role: profileData?.role || 'user',
+          };
+          
+          setCurrentUser(authUser);
+        } else if (event === 'SIGNED_OUT') {
+          setCurrentUser(null);
+        }
+      }
+    );
+
+    return () => {
+      // Clean up the subscription
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
+  // Legacy client sync (can be removed once fully migrated to Supabase)
   useEffect(() => {
     if (currentClientId) {
       const client = clients.find(c => c.id === currentClientId);
@@ -46,7 +102,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           role: 'admin',
         };
         setCurrentUser(user);
-        localStorage.setItem('crm_current_user', JSON.stringify(user));
       }
     }
   }, [currentClientId, clients]);
@@ -54,30 +109,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const success = loginToAccount(email, password);
-      
-      if (success) {
-        const client = clients.find(c => c.email === email);
-        if (client) {
-          const user: User = {
-            id: client.id,
-            email: client.email || '',
-            name: client.name,
-            role: 'admin',
-          };
-          setCurrentUser(user);
-          localStorage.setItem('crm_current_user', JSON.stringify(user));
+      // First try Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Supabase login error:', error);
+        
+        // Fallback to legacy login if Supabase auth fails
+        const success = loginToAccount(email, password);
+        
+        if (success) {
+          const client = clients.find(c => c.email === email);
+          if (client) {
+            const user: User = {
+              id: client.id,
+              email: client.email || '',
+              name: client.name,
+              role: 'admin',
+            };
+            setCurrentUser(user);
+          }
+          return true;
+        } else {
+          toast({
+            title: "Login Failed",
+            description: "Invalid email or password. Please try again.",
+            variant: "destructive",
+            action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+          });
+          return false;
         }
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
-        });
       }
       
-      return success;
+      // If Supabase login succeeded
+      if (data.user) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+        });
+        return true;
+      }
+      
+      return !!data.user;
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -92,49 +169,94 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('crm_current_user');
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout Failed",
+        description: "An error occurred during logout. Please try again.",
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+      });
+    }
   };
 
-  // Demo method to simulate password reset request
   const requestPasswordReset = async (email: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (email) {
-          // Generate and store reset token (in a real app, this would be sent by email)
-          const resetToken = `reset_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-          localStorage.setItem(`reset_token_${email}`, resetToken);
-          
-          // In a real app with a backend, an email would be sent here
-          // For demo purposes, we'll create a reset link
-          const resetLink = `${window.location.origin}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-          
-          // Store the link so the ForgotPassword component can display it
-          localStorage.setItem(`reset_link_${email}`, resetLink);
-          
-          console.log(`DEMO MODE: Password reset requested for ${email}`);
-          console.log(`Reset link: ${resetLink}`);
-        }
-        resolve(true);
-      }, 1000);
-    });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) {
+        console.error('Password reset request error:', error);
+        toast({
+          title: "Password Reset Failed",
+          description: error.message,
+          variant: "destructive",
+          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+        });
+        return false;
+      }
+      
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your email for a link to reset your password.",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      toast({
+        title: "Password Reset Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+      });
+      return false;
+    }
   };
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const isValidToken = token.startsWith('reset_');
-        
-        if (isValidToken && newPassword.length >= 8) {
-          localStorage.setItem('last_password_reset', new Date().toISOString());
-          console.log(`Password reset successful with token: ${token}`);
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      }, 1000);
-    });
+    try {
+      // In Supabase, password reset is handled differently
+      // The token is already in the URL and managed by Supabase
+      // We just need to update the password
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      
+      if (error) {
+        console.error('Password reset error:', error);
+        toast({
+          title: "Password Reset Failed",
+          description: error.message,
+          variant: "destructive",
+          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+        });
+        return false;
+      }
+      
+      toast({
+        title: "Password Reset Successful",
+        description: "Your password has been updated. You can now log in with your new password.",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Password Reset Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
+      });
+      return false;
+    }
   };
 
   return (

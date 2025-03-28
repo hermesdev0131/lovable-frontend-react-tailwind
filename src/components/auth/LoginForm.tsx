@@ -1,22 +1,23 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { loginToAccount } = useMasterAccount();
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,19 +35,12 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      const success = loginToAccount(email, password);
+      const success = await login(email, password);
       
       if (success) {
         // Redirect to the intended destination or to the dashboard
         const destination = location.state?.from?.pathname || '/dashboard';
         navigate(destination, { replace: true });
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
-        });
       }
     } catch (error) {
       toast({

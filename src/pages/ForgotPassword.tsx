@@ -6,14 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, X, ExternalLink } from 'lucide-react';
+import { Mail, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [resetLink, setResetLink] = useState('');
   const { requestPasswordReset } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,15 +36,9 @@ const ForgotPassword = () => {
       if (success) {
         setIsSubmitted(true);
         
-        // For demo purposes, retrieve and display the reset link that would normally be sent via email
-        const storedResetLink = localStorage.getItem(`reset_link_${email}`);
-        if (storedResetLink) {
-          setResetLink(storedResetLink);
-        }
-        
         toast({
-          title: "Reset Link Generated",
-          description: "In a real application, a password reset link would be sent to your email.",
+          title: "Password Reset Email Sent",
+          description: "Check your email for a link to reset your password.",
           action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
       }
@@ -78,7 +71,7 @@ const ForgotPassword = () => {
             <CardTitle className="text-2xl font-bold text-white">Reset Password</CardTitle>
             <CardDescription className="text-zinc-400">
               {isSubmitted 
-                ? "Demo Mode: Use the reset link below" 
+                ? "Password reset email sent" 
                 : "Enter your email to receive password reset instructions"}
             </CardDescription>
           </CardHeader>
@@ -87,46 +80,24 @@ const ForgotPassword = () => {
             <CardContent className="space-y-4">
               <div className="p-4 rounded-md bg-zinc-800">
                 <p className="text-zinc-300 mb-2 text-center">
-                  We've generated a reset link for:
+                  We've sent a password reset link to:
                 </p>
                 <p className="font-medium text-white text-center mb-4">{email}</p>
                 
                 <div className="bg-zinc-700 p-3 rounded-md mb-4 border border-zinc-600">
-                  <p className="text-sm text-zinc-300 mb-2 font-medium">Demo Mode: Password Reset Link</p>
-                  <div className="flex items-center">
-                    <a 
-                      href={resetLink} 
-                      className="text-primary text-sm break-all hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {resetLink}
-                    </a>
-                  </div>
-                </div>
-                
-                <div className="flex justify-center">
-                  <a 
-                    href={resetLink} 
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-                  >
-                    <ExternalLink size={16} />
-                    Open Reset Link
-                  </a>
+                  <p className="text-sm text-zinc-300 mb-2">
+                    Check your email inbox for the password reset link. If you don't see it, check your spam folder.
+                  </p>
                 </div>
               </div>
               
-              <div className="text-sm text-zinc-400 bg-zinc-800/50 p-3 rounded-md border border-zinc-700">
-                <h4 className="font-medium mb-1 text-zinc-300">About This Demo</h4>
-                <p className="mb-2">
-                  This is a frontend demo without a real email service. In a production app:
-                </p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>The reset link would be emailed to you</li>
-                  <li>The token would expire after a short time</li>
-                  <li>The process would be handled securely on a backend</li>
-                </ul>
-              </div>
+              <Button
+                onClick={() => setIsSubmitted(false)}
+                variant="outline"
+                className="w-full"
+              >
+                Back to Reset Form
+              </Button>
             </CardContent>
           ) : (
             <form onSubmit={handleSubmit}>
@@ -151,12 +122,12 @@ const ForgotPassword = () => {
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                      Generating Reset Link...
+                      Sending Reset Email...
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      Generate Reset Link
+                      Send Reset Email
                     </span>
                   )}
                 </Button>
