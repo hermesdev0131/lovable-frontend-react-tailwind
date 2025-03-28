@@ -87,10 +87,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Password reset functionality
   const requestPasswordReset = async (email: string): Promise<boolean> => {
-    // In a real implementation, this would send a request to a server
-    // For now, we'll just simulate success
+    // For this demo, we'll simulate a successful request that generates
+    // a "token" that would normally be sent via email
     return new Promise((resolve) => {
       setTimeout(() => {
+        // Store the reset token in localStorage to simulate our "database"
+        // In a real implementation, this token would be generated on the server
+        // and sent to the user's email
+        if (email) {
+          const resetToken = `reset_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+          localStorage.setItem(`reset_token_${email}`, resetToken);
+          console.log(`Reset token for ${email}: ${resetToken}`);
+        }
         resolve(true);
       }, 1000);
     });
@@ -98,10 +106,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
     // In a real implementation, this would verify the token and update the password
-    // For now, we'll just simulate success
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(true);
+        // Simulate token validation and password update
+        // In a real app, this would verify the token against the database
+        // and update the user's password if valid
+        
+        // For demo purposes, we'll consider any token that starts with "reset_" as valid
+        const isValidToken = token.startsWith('reset_');
+        
+        if (isValidToken && newPassword.length >= 8) {
+          // Simulate password update in our "database"
+          // In a real app, you would update the password in your database
+          localStorage.setItem('last_password_reset', new Date().toISOString());
+          console.log(`Password reset successful with token: ${token}`);
+          
+          // Here you would invalidate the used token in a real application
+          resolve(true);
+        } else {
+          resolve(false);
+        }
       }, 1000);
     });
   };

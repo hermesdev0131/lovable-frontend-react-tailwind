@@ -30,15 +30,25 @@ const ForgotPassword = () => {
     setIsLoading(true);
     
     try {
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll simulate success after a delay
-      setTimeout(() => {
+      const success = await requestPasswordReset(email);
+      
+      if (success) {
         setIsSubmitted(true);
+        
+        // For demo purposes, generate a reset link that the user can click
+        // In a real app, this link would be sent to the user's email
+        const resetToken = localStorage.getItem(`reset_token_${email}`);
+        
+        // Create a demo reset link
+        if (resetToken) {
+          console.log(`DEMO: Reset link: ${window.location.origin}/reset-password?token=${resetToken}`);
+        }
+        
         toast({
           title: "Request Sent",
           description: "If this email is associated with an account, you'll receive password reset instructions shortly.",
         });
-      }, 1500);
+      }
     } catch (error) {
       toast({
         title: "Request Failed",
@@ -83,6 +93,9 @@ const ForgotPassword = () => {
               
               <div className="text-sm text-zinc-400">
                 <p>Didn't receive an email? Check your spam folder or try again.</p>
+                <p className="mt-2">
+                  <strong>For demo purposes only:</strong> Check the browser console for a reset link you can use.
+                </p>
               </div>
             </CardContent>
           ) : (
