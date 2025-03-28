@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog } from '@/components/ui/dialog';

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,7 +61,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
     }, 10000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [toast]);
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
