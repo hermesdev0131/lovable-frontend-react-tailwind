@@ -68,8 +68,8 @@ const WebsiteManagement = () => {
     // Convert the form data to a WebsitePage object that matches the context's expected format
     const pageData: Omit<WebsitePage, "id"> = {
       ...data,
-      views: 0,
       visits: 0,
+      views: 0,
       conversions: 0,
       bounceRate: 0,
       updatedAt: new Date().toISOString(),
