@@ -49,10 +49,15 @@ const TeamMembers = () => {
     }
   ]);
 
-  const [newMember, setNewMember] = useState({
+  // Fix here: Define the type of newMember to match TeamMember
+  const [newMember, setNewMember] = useState<{
+    name: string;
+    email: string;
+    role: "admin" | "editor" | "viewer";
+  }>({
     name: "",
     email: "",
-    role: "editor" as const
+    role: "editor"
   });
 
   const [inviteMode, setInviteMode] = useState(true);
@@ -296,7 +301,7 @@ const TeamMembers = () => {
               <Label htmlFor="member-role">Role</Label>
               <Select 
                 value={newMember.role}
-                onValueChange={(value) => setNewMember({...newMember, role: value as "admin" | "editor" | "viewer"})}
+                onValueChange={(value: "admin" | "editor" | "viewer") => setNewMember({...newMember, role: value})}
               >
                 <SelectTrigger id="member-role">
                   <SelectValue />
