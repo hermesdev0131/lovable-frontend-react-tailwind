@@ -86,12 +86,13 @@ const WebsiteManagement = () => {
   };
   
   const openEditDialog = (pageId: string) => {
+    // Convert pageId to string explicitly to ensure consistent comparison
     const page = websitePages.find(p => p.id === pageId);
     if (page) {
       editForm.reset({
         title: page.title,
         url: page.url,
-        slug: page.slug || page.url, // Use URL as slug if not available
+        slug: page.slug, // Now slug exists on the WebsitePage interface
         status: page.status,
         type: page.type
       });
