@@ -1,5 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
+import { trackError } from "./analytics";
 
 // Generic error handler for async operations
 export const handleAsyncError = (error: unknown, fallbackMessage = "An unexpected error occurred"): void => {
@@ -12,6 +13,9 @@ export const handleAsyncError = (error: unknown, fallbackMessage = "An unexpecte
   } else if (typeof error === 'string') {
     errorMessage = error;
   }
+  
+  // Track error for analytics
+  trackError(errorMessage, "Async Operation");
   
   toast({
     title: "Error",
@@ -38,6 +42,11 @@ export const logError = (
   console.error(errorObj);
   console.trace();
   console.groupEnd();
+  
+  // Track in analytics
+  if (severity === "error" || severity === "critical") {
+    trackError(errorObj.message, context);
+  }
   
   // Only show toast for user-facing errors
   if (showToast) {

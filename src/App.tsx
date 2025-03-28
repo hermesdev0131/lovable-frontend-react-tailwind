@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
 import { TasksProvider } from '@/contexts/TasksContext';
 import { MasterAccountProvider } from '@/contexts/MasterAccountContext';
+import { Toaster } from "@/components/ui/toaster";
+import BrowserCompatibilityCheck from '@/components/compatibility/BrowserCompatibilityCheck';
 import Index from './pages/Index';
 import Deals from './pages/Deals';
 import Contacts from './pages/Contacts';
@@ -50,6 +53,7 @@ function App() {
     <Router>
       <ThemeProvider defaultTheme="light" storageKey="crm-theme">
         <CustomErrorBoundary>
+          <BrowserCompatibilityCheck />
           <MasterAccountProvider>
             <DealsProvider>
               <TasksProvider>
@@ -101,6 +105,7 @@ function App() {
               </TasksProvider>
             </DealsProvider>
           </MasterAccountProvider>
+          <Toaster />
         </CustomErrorBoundary>
       </ThemeProvider>
     </Router>

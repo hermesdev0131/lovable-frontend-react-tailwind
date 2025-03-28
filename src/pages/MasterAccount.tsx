@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
-import { Building2, Settings, BarChart3, AlertTriangle } from "lucide-react";
+import { Building2, Settings, BarChart3, AlertTriangle, Loader2 } from "lucide-react";
 import SalesSummaryCards from "@/components/master-account/SalesSummaryCards";
 import ClientSalesChart from "@/components/master-account/ClientSalesChart";
 import ClientPerformanceTable from "@/components/master-account/ClientPerformanceTable";
@@ -11,6 +12,7 @@ import ClientDirectory from "@/components/master-account/ClientDirectory";
 import { logError } from "@/lib/errorHandling";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const MasterAccount = () => {
   const { clients } = useMasterAccount();
@@ -22,6 +24,8 @@ const MasterAccount = () => {
       try {
         setIsLoading(true);
         setError(null);
+        // Simulate data loading
+        await new Promise(resolve => setTimeout(resolve, 800));
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
         setError(errorMessage);
@@ -67,6 +71,26 @@ const MasterAccount = () => {
     );
   }
   
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="flex justify-between items-center mb-8">
+          <Skeleton className="h-10 w-64" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-lg" />
+          ))}
+        </div>
+        
+        <Skeleton className="h-80 w-full rounded-lg" />
+        
+        <Skeleton className="h-96 w-full rounded-lg" />
+      </div>
+    );
+  }
+  
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center mb-8">
@@ -86,16 +110,26 @@ const MasterAccount = () => {
         </TabsList>
         
         <TabsContent value="dashboard" className="space-y-6">
-          <SalesSummaryCards 
-            totalSales={totalSales} 
-            averageSales={averageSales} 
-            totalLeads={totalLeads} 
-            totalConversions={totalConversions} 
-          />
-          
-          <ClientSalesChart clientSalesData={clientSalesData} />
-          
-          <ClientPerformanceTable clientSalesData={clientSalesData} />
+          {clients.length === 0 ? (
+            <Alert>
+              <AlertDescription>
+                You don't have any clients yet. Add clients in the Settings tab to see your dashboard.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <>
+              <SalesSummaryCards 
+                totalSales={totalSales} 
+                averageSales={averageSales} 
+                totalLeads={totalLeads} 
+                totalConversions={totalConversions} 
+              />
+              
+              <ClientSalesChart clientSalesData={clientSalesData} />
+              
+              <ClientPerformanceTable clientSalesData={clientSalesData} />
+            </>
+          )}
         </TabsContent>
         
         <TabsContent value="settings" className="space-y-6" id="settings-tab">
