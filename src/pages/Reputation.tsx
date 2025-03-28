@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ThumbsDown, MessageSquare, Bell, BarChart2, Filter, RefreshCw, AlertCircle, CheckCircle, ArrowRight, Upload, Link as LinkIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,70 +19,20 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const ratingData = Array.from({ length: 30 }, (_, i) => ({
+// Empty initial data instead of sample data
+const emptyRatingData = Array.from({ length: 30 }, (_, i) => ({
   date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split('T')[0],
-  average: (3.5 + Math.sin(i / 3) + Math.random() * 0.5).toFixed(1),
-  volume: Math.floor(30 + Math.random() * 15),
+  average: "0.0",
+  volume: 0,
 }));
 
-const reviewsData = [
-  {
-    id: 1,
-    name: 'Sarah Johnson',
-    rating: 5,
-    date: '2023-10-05',
-    platform: 'Google',
-    comment: 'Excellent service! The team was very responsive and helped me find exactly what I needed. Will definitely recommend to others.',
-    status: 'published',
-    replied: true,
-  },
-  {
-    id: 2,
-    name: 'Michael Chang',
-    rating: 4,
-    date: '2023-10-03',
-    platform: 'Yelp',
-    comment: 'Great experience overall. The product quality was excellent but delivery took a bit longer than expected.',
-    status: 'published',
-    replied: false,
-  },
-  {
-    id: 3,
-    name: 'David Smith',
-    rating: 2,
-    date: '2023-10-01',
-    platform: 'Facebook',
-    comment: 'Disappointing experience. The customer service was not helpful and the product did not meet my expectations.',
-    status: 'flagged',
-    replied: false,
-  },
-  {
-    id: 4,
-    name: 'Emma Wilson',
-    rating: 5,
-    date: '2023-09-28',
-    platform: 'Google',
-    comment: 'I had a wonderful experience! The staff was friendly and knowledgeable. The facilities are clean and modern.',
-    status: 'published',
-    replied: true,
-  },
-  {
-    id: 5,
-    name: 'Robert Chen',
-    rating: 3,
-    date: '2023-09-25',
-    platform: 'Google',
-    comment: 'Average service. Nothing outstanding but nothing terrible either. Might use again if needed.',
-    status: 'published',
-    replied: false,
-  },
-];
+const emptyReviewsData = [];
 
-const platformData = [
-  { name: 'Google', reviews: 45, average: 4.7 },
-  { name: 'Yelp', reviews: 23, average: 4.2 },
-  { name: 'Facebook', reviews: 18, average: 4.5 },
-  { name: 'TripAdvisor', reviews: 12, average: 4.3 },
+const emptyPlatformData = [
+  { name: 'Google', reviews: 0, average: 0 },
+  { name: 'Yelp', reviews: 0, average: 0 },
+  { name: 'Facebook', reviews: 0, average: 0 },
+  { name: 'TripAdvisor', reviews: 0, average: 0 },
 ];
 
 const Reputation = () => {
@@ -102,9 +53,17 @@ const Reputation = () => {
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const { toast } = useToast();
+  
+  // Using the empty data sets
+  const [ratingData, setRatingData] = useState(emptyRatingData);
+  const [reviewsData, setReviewsData] = useState(emptyReviewsData);
+  const [platformData, setPlatformData] = useState(emptyPlatformData);
 
+  // Calculate stats based on actual data
   const totalReviews = reviewsData.length;
-  const averageRating = (reviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1);
+  const averageRating = totalReviews > 0 
+    ? (reviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1) 
+    : "0.0";
   const positiveReviews = reviewsData.filter(review => review.rating >= 4).length;
   const negativeReviews = reviewsData.filter(review => review.rating <= 2).length;
   const pendingResponses = reviewsData.filter(review => !review.replied).length;
@@ -262,8 +221,8 @@ const Reputation = () => {
                     <div className="text-3xl font-bold flex items-center">
                       {averageRating} <Star className="h-5 w-5 ml-1 text-amber-400 fill-amber-400" />
                     </div>
-                    <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                      +0.2 ↑
+                    <div className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                      No change
                     </div>
                   </div>
                   <div className="mt-2">
@@ -284,7 +243,7 @@ const Reputation = () => {
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground mt-2">
-                    {ratingData[ratingData.length - 1].volume - ratingData[ratingData.length - 7].volume} new in the last week
+                    No new reviews this week
                   </div>
                 </CardContent>
               </Card>
@@ -295,7 +254,7 @@ const Reputation = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-3xl font-bold">{Math.round((positiveReviews / totalReviews) * 100)}%</div>
+                    <div className="text-3xl font-bold">{totalReviews > 0 ? Math.round((positiveReviews / totalReviews) * 100) : 0}%</div>
                     <div className="flex gap-2">
                       <span className="flex items-center text-green-600">
                         <ThumbsUp className="h-4 w-4 mr-1" /> {positiveReviews}
@@ -308,7 +267,7 @@ const Reputation = () => {
                   <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 dark:bg-gray-700">
                     <div 
                       className="bg-green-500 h-2.5 rounded-full" 
-                      style={{ width: `${(positiveReviews / totalReviews) * 100}%` }}
+                      style={{ width: `${totalReviews > 0 ? (positiveReviews / totalReviews) * 100 : 0}%` }}
                     ></div>
                   </div>
                 </CardContent>
@@ -422,32 +381,46 @@ const Reputation = () => {
                   <CardDescription>Latest feedback from customers</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {reviewsData.slice(0, 3).map((review) => (
-                      <div key={review.id} className="border-b pb-4 last:border-0 last:pb-0">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium">{review.name}</div>
-                            <div className="flex items-center mt-1">
-                              <StarRating rating={review.rating} />
-                              <span className="text-xs text-muted-foreground ml-2">
-                                {formatDate(review.date)}
-                              </span>
+                  {reviewsData.length > 0 ? (
+                    <div className="space-y-4">
+                      {reviewsData.slice(0, 3).map((review) => (
+                        <div key={review.id} className="border-b pb-4 last:border-0 last:pb-0">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-medium">{review.name}</div>
+                              <div className="flex items-center mt-1">
+                                <StarRating rating={review.rating} />
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  {formatDate(review.date)}
+                                </span>
+                              </div>
                             </div>
+                            <Badge variant="outline">{review.platform}</Badge>
                           </div>
-                          <Badge variant="outline">{review.platform}</Badge>
+                          <p className="text-sm mt-2 line-clamp-2">{review.comment}</p>
                         </div>
-                        <p className="text-sm mt-2 line-clamp-2">{review.comment}</p>
-                      </div>
-                    ))}
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-2"
-                      onClick={() => setActiveTab('reviews')}
-                    >
-                      View All Reviews
-                    </Button>
-                  </div>
+                      ))}
+                      <Button 
+                        variant="outline" 
+                        className="w-full mt-2"
+                        onClick={() => setActiveTab('reviews')}
+                      >
+                        View All Reviews
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                      <p className="text-muted-foreground">No reviews yet</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => setActiveTab('settings')}
+                      >
+                        Connect Review Sources
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -530,44 +503,45 @@ const Reputation = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredReviews.map((review) => (
-                    <TableRow key={review.id}>
-                      <TableCell className="font-medium">{review.name}</TableCell>
-                      <TableCell>
-                        <StarRating rating={review.rating} />
-                      </TableCell>
-                      <TableCell>{formatDate(review.date)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{review.platform}</Badge>
-                      </TableCell>
-                      <TableCell className="max-w-[300px] truncate">{review.comment}</TableCell>
-                      <TableCell>
-                        {review.status === 'published' ? (
-                          <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30">
-                            <CheckCircle className="h-3 w-3 mr-1" /> Published
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
-                            <AlertCircle className="h-3 w-3 mr-1" /> Flagged
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleRespond(review.id)} 
-                          disabled={review.replied}
-                        >
-                          {review.replied ? 'Replied' : 'Respond'}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredReviews.length === 0 && (
+                  {filteredReviews.length > 0 ? (
+                    filteredReviews.map((review) => (
+                      <TableRow key={review.id}>
+                        <TableCell className="font-medium">{review.name}</TableCell>
+                        <TableCell>
+                          <StarRating rating={review.rating} />
+                        </TableCell>
+                        <TableCell>{formatDate(review.date)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{review.platform}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[300px] truncate">{review.comment}</TableCell>
+                        <TableCell>
+                          {review.status === 'published' ? (
+                            <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30">
+                              <CheckCircle className="h-3 w-3 mr-1" /> Published
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                              <AlertCircle className="h-3 w-3 mr-1" /> Flagged
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleRespond(review.id)} 
+                            disabled={review.replied}
+                          >
+                            {review.replied ? 'Replied' : 'Respond'}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                        No reviews match your current filters
+                        No reviews yet. Connect your review sources to get started.
                       </TableCell>
                     </TableRow>
                   )}
@@ -593,22 +567,10 @@ const Reputation = () => {
                         <CardContent>
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <span className="text-sm">Customer Service</span>
-                              <span className="text-sm font-medium">42%</span>
+                              <span className="text-sm">No data available</span>
+                              <span className="text-sm font-medium">0%</span>
                             </div>
-                            <Progress value={42} className="h-2" />
-                            
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">Product Quality</span>
-                              <span className="text-sm font-medium">38%</span>
-                            </div>
-                            <Progress value={38} className="h-2" />
-                            
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">Value for Money</span>
-                              <span className="text-sm font-medium">25%</span>
-                            </div>
-                            <Progress value={25} className="h-2" />
+                            <Progress value={0} className="h-2" />
                           </div>
                         </CardContent>
                       </Card>
@@ -620,22 +582,10 @@ const Reputation = () => {
                         <CardContent>
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <span className="text-sm">Shipping Time</span>
-                              <span className="text-sm font-medium">28%</span>
+                              <span className="text-sm">No data available</span>
+                              <span className="text-sm font-medium">0%</span>
                             </div>
-                            <Progress value={28} className="h-2" />
-                            
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">Pricing</span>
-                              <span className="text-sm font-medium">16%</span>
-                            </div>
-                            <Progress value={16} className="h-2" />
-                            
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm">Product Availability</span>
-                              <span className="text-sm font-medium">12%</span>
-                            </div>
-                            <Progress value={12} className="h-2" />
+                            <Progress value={0} className="h-2" />
                           </div>
                         </CardContent>
                       </Card>
@@ -644,13 +594,8 @@ const Reputation = () => {
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm font-medium">Trending Topics</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-wrap gap-1.5">
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">New collection</Badge>
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">Online support</Badge>
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">Mobile app</Badge>
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">Loyalty program</Badge>
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">Shipping</Badge>
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">Returns policy</Badge>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">No trending topics yet</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -661,29 +606,8 @@ const Reputation = () => {
                         <CardDescription>How frequently topics are mentioned in reviews</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="h-[250px]">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart
-                              data={Array.from({ length: 12 }, (_, i) => ({
-                                month: new Date(2023, i, 1).toLocaleString('default', { month: 'short' }),
-                                'Customer Service': Math.floor(Math.random() * 40) + 20,
-                                'Product Quality': Math.floor(Math.random() * 35) + 15,
-                                'Shipping': Math.floor(Math.random() * 30) + 10,
-                                'Value': Math.floor(Math.random() * 25) + 5,
-                              }))}
-                              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="month" />
-                              <YAxis />
-                              <Tooltip />
-                              <Legend />
-                              <Area type="monotone" dataKey="Customer Service" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                              <Area type="monotone" dataKey="Product Quality" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-                              <Area type="monotone" dataKey="Shipping" stackId="1" stroke="#ffc658" fill="#ffc658" />
-                              <Area type="monotone" dataKey="Value" stackId="1" stroke="#ff8042" fill="#ff8042" />
-                            </AreaChart>
-                          </ResponsiveContainer>
+                        <div className="h-[250px] flex items-center justify-center">
+                          <p className="text-muted-foreground">Not enough data to generate trends</p>
                         </div>
                       </CardContent>
                     </Card>
