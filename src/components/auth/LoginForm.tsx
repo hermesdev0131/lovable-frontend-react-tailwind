@@ -100,9 +100,6 @@ export const LoginForm = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Demo account: dej@avai.vip / FilthyRich2025!
-              </p>
             </div>
           </CardContent>
           <CardFooter>
