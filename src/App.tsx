@@ -55,19 +55,20 @@ function App() {
                   {/* Public routes */}
                   <Route path="/login" element={<Login />} />
                   
-                  {/* Protected routes wrapped in Sidebar layout */}
+                  {/* Layout Route */}
                   <Route 
                     element={
                       <ProtectedRoute>
-                        <div className="flex h-screen overflow-hidden">
-                          <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
-                          <div className="flex-1 overflow-y-auto">
-                            <Outlet />
-                          </div>
-                        </div>
+                        <Sidebar 
+                          isExpanded={sidebarExpanded} 
+                          onToggle={toggleSidebar}
+                        >
+                          <Outlet />
+                        </Sidebar>
                       </ProtectedRoute>
                     }
                   >
+                    {/* Protected routes inside layout */}
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/deals" element={<Deals />} />

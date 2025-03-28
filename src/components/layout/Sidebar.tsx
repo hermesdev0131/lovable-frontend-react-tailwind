@@ -30,7 +30,7 @@ import MobileSidebar from './MobileSidebar';
 interface SidebarProps {
   isExpanded: boolean;
   onToggle: () => void;
-  children?: React.ReactNode; 
+  children: React.ReactNode; 
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => {

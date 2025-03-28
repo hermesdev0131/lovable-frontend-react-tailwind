@@ -45,5 +45,5 @@ export const ProtectedRoute = ({ children, requireMasterAccount = false }: Prote
   }
   
   // If children are provided, render them, otherwise use Outlet for nested routes
-  return <>{children || <Outlet />}</>;
+  return <>{children ? children : <Outlet />}</>;
 };
