@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
 import { TasksProvider } from '@/contexts/TasksContext';
 import { MasterAccountProvider } from '@/contexts/MasterAccountContext';
@@ -22,6 +22,7 @@ import CustomErrorBoundary from '@/components/CustomErrorBoundary';
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import Sidebar from '@/components/layout/Sidebar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import WebsiteManagement from './pages/WebsiteManagement';
 
 function App() {
   // State for chatbot knowledge base
@@ -55,11 +56,18 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   
                   {/* Protected routes wrapped in Sidebar layout */}
-                  <Route element={
-                    <ProtectedRoute>
-                      <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
-                    </ProtectedRoute>
-                  }>
+                  <Route 
+                    element={
+                      <ProtectedRoute>
+                        <div className="flex h-screen overflow-hidden">
+                          <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
+                          <div className="flex-1 overflow-y-auto">
+                            <Outlet />
+                          </div>
+                        </div>
+                      </ProtectedRoute>
+                    }
+                  >
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/deals" element={<Deals />} />
@@ -69,6 +77,7 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/social-media" element={<SocialMediaIntegration />} />
                     <Route path="/integrations" element={<Integrations />} />
+                    <Route path="/website" element={<WebsiteManagement />} />
                     <Route path="/chatbot" element={
                       <ChatbotManagement 
                         knowledgeBase={knowledgeBase} 
