@@ -10,9 +10,9 @@ import { useDeals } from '@/contexts/DealsContext';
 import { TeamMember } from '@/components/settings/TeamMembers';
 
 const SAMPLE_TEAM_MEMBERS: TeamMember[] = [
-  { id: 'tm1', name: 'John Doe', role: 'Sales Rep', email: 'john@example.com' },
-  { id: 'tm2', name: 'Jane Smith', role: 'Account Manager', email: 'jane@example.com' },
-  { id: 'tm3', name: 'Alex Johnson', role: 'Sales Manager', email: 'alex@example.com' },
+  { id: 'tm1', name: 'John Doe', role: 'admin', email: 'john@example.com' },
+  { id: 'tm2', name: 'Jane Smith', role: 'editor', email: 'jane@example.com' },
+  { id: 'tm3', name: 'Alex Johnson', role: 'admin', email: 'alex@example.com' },
 ];
 
 const Deals = () => {
