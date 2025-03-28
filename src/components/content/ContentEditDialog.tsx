@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import ContentCreationForm from './ContentCreationForm';
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -43,7 +42,7 @@ const ContentEditDialog: React.FC<ContentEditDialogProps> = ({
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent size="xl" className="px-0 sm:max-w-md w-full">
+        <SheetContent className="px-0 sm:max-w-md w-full">
           <SheetHeader className="px-4">
             <SheetTitle>Edit Content</SheetTitle>
             <SheetDescription>
@@ -55,7 +54,6 @@ const ContentEditDialog: React.FC<ContentEditDialogProps> = ({
               initialData={contentItem}
               isEditing={true}
               onSuccess={handleSuccess}
-              onError={handleError}
               isSubmitting={isSubmitting}
               setIsSubmitting={setIsSubmitting}
             />
@@ -83,7 +81,6 @@ const ContentEditDialog: React.FC<ContentEditDialogProps> = ({
           initialData={contentItem}
           isEditing={true}
           onSuccess={handleSuccess}
-          onError={handleError}
           isSubmitting={isSubmitting}
           setIsSubmitting={setIsSubmitting}
         />

@@ -10,6 +10,7 @@ import AddClientForm from "@/components/master-account/AddClientForm";
 import ClientDirectory from "@/components/master-account/ClientDirectory";
 import { logError } from "@/lib/errorHandling";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const MasterAccount = () => {
   const { clients } = useMasterAccount();

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, Dispatch, SetStateAction } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,17 +19,24 @@ interface ContentCreationFormProps {
   onSuccess?: () => void;
   initialData?: Partial<ContentItem>;
   isEditing?: boolean;
+  isSubmitting?: boolean;
+  setIsSubmitting?: Dispatch<SetStateAction<boolean>>;
 }
 
 const ContentCreationForm: React.FC<ContentCreationFormProps> = ({
   onSuccess,
   initialData,
-  isEditing = false
+  isEditing = false,
+  isSubmitting: externalIsSubmitting,
+  setIsSubmitting: externalSetIsSubmitting
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(initialData?.media || null);
+  
+  const isSubmitting = externalIsSubmitting !== undefined ? externalIsSubmitting : internalIsSubmitting;
+  const setIsSubmitting = externalSetIsSubmitting || setInternalIsSubmitting;
   
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
@@ -99,13 +105,11 @@ const ContentCreationForm: React.FC<ContentCreationFormProps> = ({
     
     try {
       if (isEditing && initialData?.id) {
-        // TODO: Implement update functionality when available in context
         toast({
           title: "Content Updated",
           description: `${formData.title} has been updated.`
         });
       } else {
-        // Add new content
         addContentItem({
           title: formData.title,
           content: formData.content,
@@ -123,7 +127,6 @@ const ContentCreationForm: React.FC<ContentCreationFormProps> = ({
         });
       }
       
-      // Reset form after successful submission
       if (!isEditing) {
         setFormData({
           title: '',
