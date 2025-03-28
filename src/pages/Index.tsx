@@ -10,9 +10,12 @@ import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useDeals } from '@/contexts/DealsContext';
+import { PieChart as RechartsChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { deals: userDeals } = useDeals();
   const [recentActivity, setRecentActivity] = useState<{
     id: number;
     action: string;
@@ -21,14 +24,22 @@ const Index = () => {
   }[]>([]);
   
   const totalContacts = contacts.length;
-  const totalDeals = deals.length;
+  const totalDeals = userDeals.length;
   const totalOpportunities = opportunities.length;
   
-  const openDeals = deals.filter(deal => !['closed-won', 'closed-lost'].includes(deal.stage)).length;
-  const wonDeals = deals.filter(deal => deal.stage === 'closed-won').length;
+  const openDeals = userDeals.filter(deal => !['closed-won', 'closed-lost'].includes(deal.stage)).length;
+  const wonDeals = userDeals.filter(deal => deal.stage === 'closed-won').length;
+  const lostDeals = userDeals.filter(deal => deal.stage === 'closed-lost').length;
   
-  const totalDealValue = deals.reduce((sum, deal) => sum + deal.value, 0);
+  const totalDealValue = userDeals.reduce((sum, deal) => sum + deal.value, 0);
   const potentialValue = opportunities.reduce((sum, opp) => sum + opp.potentialValue, 0);
+  
+  // Create data for the pie chart
+  const dealStageData = [
+    { name: 'Open', value: openDeals, color: '#4f46e5' },
+    { name: 'Won', value: wonDeals, color: '#10b981' },
+    { name: 'Lost', value: lostDeals, color: '#ef4444' }
+  ].filter(item => item.value > 0);
   
   const taskForm = useForm({
     defaultValues: {
@@ -165,16 +176,39 @@ const Index = () => {
               <CardTitle>Deal Overview</CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <PieChart className="h-16 w-16 mx-auto mb-4 text-primary/40" />
-                <p>Add deals to see your deal overview</p>
-                <Button 
-                  className="mt-4"
-                  onClick={() => navigate('/deals')}
-                >
-                  View Deals
-                </Button>
-              </div>
+              {userDeals.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsChart>
+                    <Pie
+                      data={dealStageData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}`}
+                    >
+                      {dealStageData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value} deals`, '']} />
+                    <Legend />
+                  </RechartsChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <PieChart className="h-16 w-16 mx-auto mb-4 text-primary/40" />
+                  <p>Add deals to see your deal overview</p>
+                  <Button 
+                    className="mt-4"
+                    onClick={() => navigate('/deals')}
+                  >
+                    View Deals
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
           
