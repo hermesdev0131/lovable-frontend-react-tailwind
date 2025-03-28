@@ -10,7 +10,7 @@ import { Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 // Import website types
-import { PageFormValues, WebsitePage } from '@/types/website';
+import { PageFormValues } from '@/types/website';
 
 // Import refactored components
 import WebsiteStats from '@/components/website/WebsiteStats';
@@ -65,7 +65,7 @@ const WebsiteManagement = () => {
   });
   
   const handleAddPage = (data: PageFormValues) => {
-    const newPage: Omit<WebsitePage, 'id'> = {
+    const newPage = {
       ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
