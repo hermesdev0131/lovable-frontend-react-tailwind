@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
 import { TasksProvider } from '@/contexts/TasksContext';
@@ -13,9 +14,21 @@ import Integrations from './pages/Integrations';
 import ChatbotManagement from './pages/ChatbotManagement';
 import CalendarPage from './pages/Calendar';
 import CustomErrorBoundary from '@/components/CustomErrorBoundary';
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 
 function App() {
+  // State for chatbot knowledge base
+  const [knowledgeBase, setKnowledgeBase] = useState<string[]>([
+    "Our company operates Monday to Friday, 9am to 5pm.",
+    "Our main office is located at 123 Business Avenue, Tech City.",
+    "We offer a 30-day money-back guarantee on all our products.",
+    "Customer support can be reached at support@example.com.",
+  ]);
+
+  const handleAddKnowledge = (knowledge: string) => {
+    setKnowledgeBase(prev => [...prev, knowledge]);
+  };
+
   return (
     <Router>
       <ThemeProvider defaultTheme="light" storageKey="crm-theme">
@@ -31,7 +44,12 @@ function App() {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/social-media" element={<SocialMediaIntegration />} />
                 <Route path="/integrations" element={<Integrations />} />
-                <Route path="/chatbot" element={<ChatbotManagement />} />
+                <Route path="/chatbot" element={
+                  <ChatbotManagement 
+                    knowledgeBase={knowledgeBase} 
+                    onAddKnowledge={handleAddKnowledge} 
+                  />
+                } />
                 <Route path="/calendar" element={<CalendarPage />} />
               </Routes>
             </TasksProvider>
