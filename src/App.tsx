@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
@@ -23,6 +22,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import Sidebar from '@/components/layout/Sidebar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import WebsiteManagement from './pages/WebsiteManagement';
+import EmailMarketing from './pages/EmailMarketing';
 
 function App() {
   // State for chatbot knowledge base
@@ -79,6 +79,7 @@ function App() {
                     <Route path="/social-media" element={<SocialMediaIntegration />} />
                     <Route path="/integrations" element={<Integrations />} />
                     <Route path="/website" element={<WebsiteManagement />} />
+                    <Route path="/email" element={<EmailMarketing />} />
                     <Route path="/chatbot" element={
                       <ChatbotManagement 
                         knowledgeBase={knowledgeBase} 
