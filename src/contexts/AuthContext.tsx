@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
@@ -96,13 +97,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('crm_current_user');
   };
 
+  // Demo method to simulate password reset request
   const requestPasswordReset = async (email: string): Promise<boolean> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         if (email) {
+          // Generate and store reset token (in a real app, this would be sent by email)
           const resetToken = `reset_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
           localStorage.setItem(`reset_token_${email}`, resetToken);
-          console.log(`Reset token for ${email}: ${resetToken}`);
+          
+          // In a real app with a backend, an email would be sent here
+          // For demo purposes, we'll create a reset link
+          const resetLink = `${window.location.origin}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+          
+          // Store the link so the ForgotPassword component can display it
+          localStorage.setItem(`reset_link_${email}`, resetLink);
+          
+          console.log(`DEMO MODE: Password reset requested for ${email}`);
+          console.log(`Reset link: ${resetLink}`);
         }
         resolve(true);
       }, 1000);
