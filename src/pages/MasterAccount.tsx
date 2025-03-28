@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,10 +6,59 @@ import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Settings, BarChart3 } from "lucide-react";
+import { Building2, Settings, BarChart3, Mail, Lock, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const MasterAccount = () => {
-  const { clients } = useMasterAccount();
+  const { clients, addClient, removeClient } = useMasterAccount();
+  
+  const [newClient, setNewClient] = useState({
+    name: '',
+    email: '',
+    password: '',
+    subscription: 'Basic',
+    status: 'active',
+    users: 0,
+    deals: 0,
+    contacts: 0,
+    lastActivity: new Date().toISOString(),
+    logo: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewClient(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setNewClient(prev => ({ ...prev, subscription: value }));
+  };
+
+  const addNewClient = () => {
+    if (!newClient.name || !newClient.email || !newClient.password) {
+      return; // Simple validation
+    }
+    addClient(newClient);
+    // Reset form
+    setNewClient({
+      name: '',
+      email: '',
+      password: '',
+      subscription: 'Basic',
+      status: 'active',
+      users: 0,
+      deals: 0,
+      contacts: 0,
+      lastActivity: new Date().toISOString(),
+      logo: ''
+    });
+  };
+
+  const deleteClient = (id: number) => {
+    removeClient(id);
+  };
   
   const clientSalesData = clients.map(client => ({
     name: client.name,
@@ -214,7 +264,7 @@ const MasterAccount = () => {
                   </p>
                 </div>
                 <div>
-                  <Label>Subscription Plan</Label>
+                  <Label htmlFor="subscription">Subscription Plan</Label>
                   <Select onValueChange={handleSelectChange} defaultValue={newClient.subscription}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select subscription" />
@@ -227,7 +277,7 @@ const MasterAccount = () => {
                   </Select>
                 </div>
               </div>
-              <Button onClick={addNewClient} className="mt-2">Add Client</Button>
+              <Button onClick={addNewClient} className="mt-4">Add Client</Button>
             </CardContent>
           </Card>
 
