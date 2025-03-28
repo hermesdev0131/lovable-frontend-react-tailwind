@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Filter, MoreHorizontal, DollarSign, Calendar, Users, Edit, Trash2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +18,34 @@ import { useToast } from "@/hooks/use-toast";
 import EditDealDialog from '@/components/deals/EditDealDialog';
 import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
 import { DEFAULT_COLUMNS, STORAGE_KEYS } from '@/components/deals/types';
+import { TeamMember } from '@/components/settings/TeamMembers';
+
+// Sample team members data for demo purposes
+const demoTeamMembers: TeamMember[] = [
+  {
+    id: "1",
+    name: "Jane Smith",
+    email: "jane@example.com",
+    role: "admin",
+    status: "active",
+    lastActive: "Today at 2:34 PM"
+  },
+  {
+    id: "2",
+    name: "John Doe",
+    email: "john@example.com",
+    role: "editor",
+    status: "active",
+    lastActive: "Yesterday at 5:12 PM"
+  },
+  {
+    id: "3",
+    name: "Alex Johnson",
+    email: "alex@example.com",
+    role: "viewer",
+    status: "pending",
+  }
+];
 
 // Empty deals data structure
 const initialDeals: any[] = [];
@@ -48,6 +75,7 @@ const Deals = () => {
   const [editingDeal, setEditingDeal] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
+  const [teamMembers] = useState<TeamMember[]>(demoTeamMembers); // Using demo data
   
   // Update dealsByStage when columns change
   useEffect(() => {
@@ -249,7 +277,7 @@ const Deals = () => {
       closingDate: new Date().toISOString().split('T')[0],
       probability: 50,
       createdAt: new Date().toISOString(),
-      assignedTo: "John Smith",
+      assignedTo: "account-owner",
       description: "New deal description"
     };
     
@@ -281,6 +309,13 @@ const Deals = () => {
     
     // Update dealsByStage to include new columns
     setDealsByStage(getInitialDealsByStage(deals, newColumns));
+  };
+
+  // Function to get display name for assigned person
+  const getAssignedPersonName = (assignedId: string) => {
+    if (assignedId === "account-owner") return "Account Owner";
+    const member = teamMembers.find(m => m.id === assignedId);
+    return member ? member.name : "Unassigned";
   };
 
   return (
@@ -361,7 +396,7 @@ const Deals = () => {
                             closingDate: new Date().toISOString().split('T')[0],
                             probability: 50,
                             createdAt: new Date().toISOString(),
-                            assignedTo: "John Smith",
+                            assignedTo: "account-owner",
                             description: "New deal description"
                           };
                           
@@ -472,7 +507,7 @@ const Deals = () => {
                                           <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                                           <div>
                                             <div className="text-sm text-muted-foreground">Assigned To</div>
-                                            <div className="font-medium">{deal.assignedTo}</div>
+                                            <div className="font-medium">{getAssignedPersonName(deal.assignedTo)}</div>
                                           </div>
                                         </div>
                                         
@@ -577,7 +612,7 @@ const Deals = () => {
                       <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                       <div>
                         <div className="text-sm text-muted-foreground">Assigned To</div>
-                        <div className="font-medium">{deal.assignedTo}</div>
+                        <div className="font-medium">{getAssignedPersonName(deal.assignedTo)}</div>
                       </div>
                     </div>
                     
@@ -617,6 +652,7 @@ const Deals = () => {
         deal={editingDeal}
         onSave={handleSaveEditedDeal}
         stages={columns.map(column => ({ id: column.id, label: column.label }))}
+        teamMembers={teamMembers}
       />
       
       {/* Column Customizer Dialog */}

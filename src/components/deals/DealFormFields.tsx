@@ -4,14 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Deal, Stage } from './types';
+import { TeamMember } from '@/components/settings/TeamMembers';
 
 interface DealFormFieldsProps {
   deal: Deal;
   stages: Stage[];
+  teamMembers: TeamMember[];
   onChange: (field: string, value: any) => void;
 }
 
-const DealFormFields: React.FC<DealFormFieldsProps> = ({ deal, stages, onChange }) => {
+const DealFormFields: React.FC<DealFormFieldsProps> = ({ deal, stages, teamMembers, onChange }) => {
   return (
     <div className="grid gap-4 py-4">
       <div className="grid grid-cols-2 gap-4">
@@ -83,6 +85,23 @@ const DealFormFields: React.FC<DealFormFieldsProps> = ({ deal, stages, onChange 
             <SelectContent>
               {stages.map((stage) => (
                 <SelectItem key={stage.id} value={stage.id}>{stage.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="assignedTo">Assigned To</Label>
+          <Select 
+            value={deal.assignedTo || ""} 
+            onValueChange={(value) => onChange('assignedTo', value)}
+          >
+            <SelectTrigger id="assignedTo">
+              <SelectValue placeholder="Select person" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="account-owner">Account Owner</SelectItem>
+              {teamMembers.map((member) => (
+                <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import DealFormFields from './DealFormFields';
 import { Deal, Stage } from './types';
+import { TeamMember } from '@/components/settings/TeamMembers';
 
 interface EditDealDialogProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface EditDealDialogProps {
   deal: Deal | null;
   onSave: (updatedDeal: Deal) => void;
   stages: Stage[];
+  teamMembers: TeamMember[];
 }
 
 const EditDealDialog: React.FC<EditDealDialogProps> = ({ 
@@ -19,7 +21,8 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
   onClose, 
   deal, 
   onSave,
-  stages 
+  stages,
+  teamMembers 
 }) => {
   const [editedDeal, setEditedDeal] = useState<Deal | null>(null);
   const { toast } = useToast();
@@ -61,6 +64,7 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
         <DealFormFields 
           deal={editedDeal}
           stages={stages}
+          teamMembers={teamMembers}
           onChange={handleChange}
         />
         <DialogFooter>

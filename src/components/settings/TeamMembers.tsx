@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,7 @@ import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X } from "lucide-react"
 import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 
-interface TeamMember {
+export interface TeamMember {
   id: string;
   name: string;
   email: string;
@@ -49,7 +48,6 @@ const TeamMembers = () => {
     }
   ]);
 
-  // Fix here: Define the type of newMember to match TeamMember
   const [newMember, setNewMember] = useState<{
     name: string;
     email: string;
@@ -81,7 +79,6 @@ const TeamMembers = () => {
       return;
     }
 
-    // Check for duplicate email
     if (teamMembers.some(member => member.email.toLowerCase() === newMember.email.toLowerCase())) {
       toast({
         title: "Duplicate email",
