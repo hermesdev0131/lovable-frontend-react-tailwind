@@ -13,7 +13,7 @@ export interface ReviewFilter {
   keyword?: string;
 }
 
-// Added missing types that are referenced by other components
+// Updated type definition to match what's used in the application
 export interface WebsitePage {
   id: string;
   title: string;
@@ -32,4 +32,19 @@ export interface PageFormValues {
   template?: string;
   content?: string;
   status: 'published' | 'draft';
+}
+
+// Adding integration interfaces
+export interface Integration {
+  id: string;
+  name: string;
+  type: 'email' | 'calendar' | 'webhook' | 'api' | 'other';
+  url?: string;
+  status: 'active' | 'inactive' | 'error';
+}
+
+export interface WebhookIntegration extends Integration {
+  webhookUrl: string;
+  events: string[];
+  lastTriggered?: string;
 }

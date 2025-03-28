@@ -14,6 +14,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { integrations } from '@/lib/data';
 import { YextConnect } from "@/components/integrations/YextConnect";
+import { MailchimpConnect } from "@/components/email/MailchimpConnect";
+import { GoogleCalendarConnect } from "@/components/integrations/GoogleCalendarConnect";
+import { ZapierConnect } from "@/components/integrations/ZapierConnect";
+import { CustomWebhookConnect } from "@/components/integrations/CustomWebhookConnect";
+import { MakeConnect } from "@/components/integrations/MakeConnect";
 
 const SettingsPage = () => {
   const location = useLocation();
@@ -74,69 +79,6 @@ const SettingsPage = () => {
     toast({
       title: 'Syncing...',
       description: 'Attempting to sync integration',
-    });
-  };
-  
-  const handleZapierSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!webhookUrl) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a Zapier webhook URL',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    if (!webhookUrl.includes('hooks.zapier.com')) {
-      toast({
-        title: 'Warning',
-        description: 'This doesn\'t look like a Zapier webhook URL',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    toast({
-      title: 'Webhook Saved',
-      description: 'Your Zapier webhook has been connected',
-    });
-  };
-
-  const handleMakeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!webhookUrl) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a Make.com webhook URL',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    if (!webhookUrl.includes('hook.eu1.make.com') && !webhookUrl.includes('hook.make.com')) {
-      toast({
-        title: 'Warning',
-        description: 'This doesn\'t look like a Make.com webhook URL',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    addWebhook({
-      name: "New Integration Webhook",
-      url: webhookUrl,
-      events: ["client.created"],
-      active: true
-    });
-    
-    setWebhookUrl('');
-    
-    toast({
-      title: 'Make.com Webhook Added',
-      description: 'Your Make.com webhook has been connected',
     });
   };
 
@@ -393,7 +335,10 @@ const SettingsPage = () => {
                   </p>
                 </div>
                 
-                <YextConnect />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <YextConnect />
+                  <MailchimpConnect />
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {integrations.map((integration, index) => (
@@ -457,117 +402,11 @@ const SettingsPage = () => {
             </Card>
             
             <h3 className="text-lg font-medium mb-4">Add New Integration</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="glass-card hover:shadow-md transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-full">
-                      <Zap className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-base">Zapier Integration</CardTitle>
-                  </div>
-                  <CardDescription>Connect with 3,000+ apps via Zapier</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleZapierSubmit}>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="webhook-url">Zapier Webhook URL</Label>
-                        <Input
-                          id="webhook-url"
-                          placeholder="https://hooks.zapier.com/..."
-                          value={webhookUrl}
-                          onChange={(e) => setWebhookUrl(e.target.value)}
-                        />
-                      </div>
-                      <Button type="submit" className="w-full">Connect to Zapier</Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-card hover:shadow-md transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-full">
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-base">Google Calendar</CardTitle>
-                  </div>
-                  <CardDescription>Sync meetings and appointments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Connect your Google Calendar to automatically track meetings and set reminders.
-                    </p>
-                    <Button className="w-full">Connect Google Calendar</Button>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-card hover:shadow-md transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-full">
-                      <ExternalLink className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-base">Custom Webhook</CardTitle>
-                  </div>
-                  <CardDescription>Send data to your own endpoints</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="custom-webhook">Webhook URL</Label>
-                      <Input
-                        id="custom-webhook"
-                        placeholder="https://your-service.com/webhook"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="webhook-desc">Description (optional)</Label>
-                      <Textarea
-                        id="webhook-desc"
-                        placeholder="Describe what this webhook does"
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-                    <Button className="w-full">Create Webhook</Button>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-card hover:shadow-md transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-full">
-                      <Zap className="h-5 w-5" />
-                    </div>
-                    <CardTitle className="text-base">Make.com Integration</CardTitle>
-                  </div>
-                  <CardDescription>Automate workflows with Make.com</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleMakeSubmit}>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="make-webhook-url">Make.com Webhook URL</Label>
-                        <Input
-                          id="make-webhook-url"
-                          placeholder="https://hook.eu1.make.com/..."
-                          value={webhookUrl}
-                          onChange={(e) => setWebhookUrl(e.target.value)}
-                        />
-                      </div>
-                      <Button type="submit" className="w-full">Connect to Make.com</Button>
-                      <p className="text-xs text-muted-foreground">
-                        For advanced options including event selection, go to Settings → Make.com
-                      </p>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ZapierConnect />
+              <GoogleCalendarConnect />
+              <CustomWebhookConnect />
+              <MakeConnect />
             </div>
           </div>
         </TabsContent>
