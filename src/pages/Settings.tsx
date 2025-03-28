@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Cable, RefreshCw } from "lucide-react";
+import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Cable, RefreshCw, Users } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +19,7 @@ import { GoogleCalendarConnect } from "@/components/integrations/GoogleCalendarC
 import { ZapierConnect } from "@/components/integrations/ZapierConnect";
 import { CustomWebhookConnect } from "@/components/integrations/CustomWebhookConnect";
 import { MakeConnect } from "@/components/integrations/MakeConnect";
+import TeamMembers from "@/components/settings/TeamMembers";
 
 const SettingsPage = () => {
   const location = useLocation();
@@ -155,6 +155,10 @@ const SettingsPage = () => {
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="team">
+            <Users className="h-4 w-4 mr-2" />
+            Team
+          </TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="make">Make.com</TabsTrigger>
         </TabsList>
@@ -300,6 +304,10 @@ const SettingsPage = () => {
               <Button>Update Password</Button>
             </CardFooter>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="team">
+          <TeamMembers />
         </TabsContent>
         
         <TabsContent value="integrations">
