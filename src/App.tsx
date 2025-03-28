@@ -65,8 +65,8 @@ function App() {
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <BrowserRouter>
-        <AuthProvider>
-          <MasterAccountProvider>
+        <MasterAccountProvider>
+          <AuthProvider>
             <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
               <QueryClientProvider client={queryClient}>
                 <DealsProvider>
@@ -97,8 +97,8 @@ function App() {
                 </DealsProvider>
               </QueryClientProvider>
             </ThemeProvider>
-          </MasterAccountProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </MasterAccountProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );

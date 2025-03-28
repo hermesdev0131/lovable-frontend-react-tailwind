@@ -1,52 +1,90 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useMasterAccount } from './MasterAccountContext';
 
 interface User {
   id: string;
-  name: string;
   email: string;
+  name: string;
+  role: 'admin' | 'user';
 }
 
 interface AuthContextType {
   currentUser: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('crm_current_user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const { loginToAccount, currentClientId, clients } = useMasterAccount();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Initialize auth state from localStorage on mount
   useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('crm_current_user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('crm_current_user');
+    const savedUser = localStorage.getItem('crm_current_user');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
     }
-  }, [currentUser]);
+  }, []);
 
-  const login = async (email: string, password: string) => {
-    // In a real app, this would validate credentials with an API
-    // For now, we'll simulate a successful login with mock data
-    const mockUser = {
-      id: '1',
-      name: 'Demo User',
-      email: email
-    };
-    
-    setCurrentUser(mockUser);
+  // Update currentUser when client changes
+  useEffect(() => {
+    if (currentClientId) {
+      const client = clients.find(c => c.id === currentClientId);
+      if (client && client.email) {
+        const user: User = {
+          id: client.id,
+          email: client.email,
+          name: client.name,
+          role: 'admin',
+        };
+        setCurrentUser(user);
+        localStorage.setItem('crm_current_user', JSON.stringify(user));
+      }
+    }
+  }, [currentClientId, clients]);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      // Use the MasterAccountContext loginToAccount function
+      const success = loginToAccount(email, password);
+      
+      if (success) {
+        // Find the client with matching email
+        const client = clients.find(c => c.email === email);
+        if (client) {
+          const user: User = {
+            id: client.id,
+            email: client.email || '',
+            name: client.name,
+            role: 'admin',
+          };
+          setCurrentUser(user);
+          localStorage.setItem('crm_current_user', JSON.stringify(user));
+        }
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('crm_current_user');
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

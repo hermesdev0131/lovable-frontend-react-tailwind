@@ -39,8 +39,9 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     });
   };
   
-  const handleSwitchToClient = (clientId: number) => {
-    switchToClient(clientId);
+  const handleSwitchToClient = (clientId: string) => {
+    // Convert to number before passing to switchToClient
+    switchToClient(Number(clientId));
     setOpen(false);
     navigate('/');
     toast({
