@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +13,7 @@ import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { integrations } from '@/lib/data';
+import { YextConnect } from "@/components/integrations/YextConnect";
 
 const SettingsPage = () => {
   const location = useLocation();
@@ -41,7 +41,6 @@ const SettingsPage = () => {
   const [webhookUrl, setWebhookUrl] = useState('');
   const [copied, setCopied] = useState(false);
   
-  // Determine the initial tab from location state
   const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
@@ -393,6 +392,8 @@ const SettingsPage = () => {
                     This is your secret API key. Keep it secure and never share it publicly.
                   </p>
                 </div>
+                
+                <YextConnect />
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {integrations.map((integration, index) => (

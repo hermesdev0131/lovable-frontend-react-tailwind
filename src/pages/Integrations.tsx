@@ -10,6 +10,7 @@ import { integrations, formatDate } from '@/lib/data';
 import { toast } from '@/hooks/use-toast';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useNavigate } from 'react-router-dom';
+import { YextConnect } from "@/components/integrations/YextConnect";
 
 const Integrations = () => {
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -125,6 +126,7 @@ const Integrations = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <YextConnect />
           {integrations.map((integration, index) => (
             <Card 
               key={integration.id} 
