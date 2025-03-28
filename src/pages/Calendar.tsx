@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Clock, Copy, ExternalLink, Info, Link, Plus, Share2, CalendarIcon, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Copy, ExternalLink, Info, Link, Plus, Share2, CalendarIcon, RefreshCw, Pencil, Trash } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CalendarIntegration from '@/components/calendar/CalendarIntegration';
+import EditBookingTypeDialog, { BookingType } from '@/components/calendar/EditBookingTypeDialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const sampleEvents: {
   id: number;
@@ -29,7 +31,7 @@ const eventTypes = {
   internal: { label: 'Internal', color: 'bg-purple-500' },
 };
 
-const bookingTypes = [
+const defaultBookingTypes: BookingType[] = [
   { id: 'sales-call', name: 'Sales Call', duration: 30 },
   { id: 'product-demo', name: 'Product Demo', duration: 60 },
   { id: 'discovery', name: 'Discovery Call', duration: 45 },
@@ -41,10 +43,13 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [events, setEvents] = useState(sampleEvents);
   const [bookingUrl, setBookingUrl] = useState('');
-  const [selectedBookingType, setSelectedBookingType] = useState(bookingTypes[0].id);
+  const [bookingTypes, setBookingTypes] = useState<BookingType[]>(defaultBookingTypes);
+  const [selectedBookingType, setSelectedBookingType] = useState(defaultBookingTypes[0].id);
   const [showIntegrationDialog, setShowIntegrationDialog] = useState(false);
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
   const [activeCalendarType, setActiveCalendarType] = useState<string>("");
+  const [editingBookingType, setEditingBookingType] = useState<BookingType | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
 
   const prevMonth = () => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
@@ -65,9 +70,10 @@ const Calendar = () => {
     return format(date, 'h:mm a');
   };
 
-  const copyBookingLink = () => {
+  const copyBookingLink = (typeId: string) => {
+    setSelectedBookingType(typeId);
     const baseUrl = window.location.origin;
-    const generatedUrl = `${baseUrl}/booking/${selectedBookingType}`;
+    const generatedUrl = `${baseUrl}/booking/${typeId}`;
     setBookingUrl(generatedUrl);
     
     navigator.clipboard.writeText(generatedUrl);
@@ -79,6 +85,70 @@ const Calendar = () => {
 
   const getBookingTypeDetails = (id: string) => {
     return bookingTypes.find(type => type.id === id) || bookingTypes[0];
+  };
+
+  const handleEditBookingType = (bookingType: BookingType) => {
+    setEditingBookingType(bookingType);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteBookingType = (typeId: string) => {
+    if (bookingTypes.length <= 1) {
+      toast({
+        title: "Cannot delete",
+        description: "You must have at least one booking type.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setBookingTypes(prev => prev.filter(type => type.id !== typeId));
+    
+    if (selectedBookingType === typeId) {
+      setSelectedBookingType(bookingTypes.find(type => type.id !== typeId)?.id || '');
+    }
+    
+    toast({
+      title: "Booking type deleted",
+      description: "The booking type has been deleted.",
+    });
+  };
+
+  const handleAddBookingType = () => {
+    setEditingBookingType(null);
+    setShowEditDialog(true);
+  };
+
+  const handleSaveBookingType = (bookingType: BookingType) => {
+    if (editingBookingType) {
+      setBookingTypes(prev => 
+        prev.map(type => type.id === editingBookingType.id ? bookingType : type)
+      );
+      
+      toast({
+        title: "Booking type updated",
+        description: "Your booking type has been updated.",
+      });
+    } else {
+      if (bookingTypes.some(type => type.id === bookingType.id)) {
+        let counter = 1;
+        let newId = `${bookingType.id}-${counter}`;
+        
+        while (bookingTypes.some(type => type.id === newId)) {
+          counter++;
+          newId = `${bookingType.id}-${counter}`;
+        }
+        
+        bookingType.id = newId;
+      }
+      
+      setBookingTypes(prev => [...prev, bookingType]);
+      
+      toast({
+        title: "Booking type created",
+        description: "Your new booking type has been created.",
+      });
+    }
   };
 
   const handleSyncCalendar = () => {
@@ -259,14 +329,19 @@ const Calendar = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Your Booking Links</CardTitle>
-                    <CardDescription>
-                      Create and share booking links for prospects and clients
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <div>
+                      <CardTitle>Your Booking Links</CardTitle>
+                      <CardDescription>
+                        Create and share booking links for prospects and clients
+                      </CardDescription>
+                    </div>
+                    <Button size="sm" onClick={handleAddBookingType}>
+                      <Plus className="h-4 w-4 mr-1" /> New Type
+                    </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {bookingTypes.map((type) => (
                         <div key={type.id} className="flex justify-between items-center border-b pb-4 last:border-0">
                           <div>
@@ -275,25 +350,38 @@ const Calendar = () => {
                               <Clock className="h-3 w-3 mr-1" /> {type.duration} min
                             </p>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBookingType(type.id);
-                              copyBookingLink();
-                            }}
-                          >
-                            <Copy className="h-4 w-4 mr-1" /> Copy Link
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => copyBookingLink(type.id)}
+                            >
+                              <Copy className="h-4 w-4 mr-1" /> Copy
+                            </Button>
+                            
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditBookingType(type)}>
+                                  <Pencil className="h-4 w-4 mr-2" /> Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  className="text-red-500"
+                                  onClick={() => handleDeleteBookingType(type.id)}
+                                >
+                                  <Trash className="h-4 w-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <Button className="w-full">
-                      <Plus className="h-4 w-4 mr-1" /> Create New Booking Type
-                    </Button>
-                  </CardFooter>
                 </Card>
               </div>
               
@@ -559,6 +647,13 @@ const Calendar = () => {
           />
         </DialogContent>
       </Dialog>
+      
+      <EditBookingTypeDialog 
+        bookingType={editingBookingType}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleSaveBookingType}
+      />
     </div>
   );
 };
