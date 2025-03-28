@@ -14,6 +14,7 @@ const Login = () => {
     const isAuthenticated = isInMasterMode || currentClientId !== null;
     
     if (isAuthenticated) {
+      // Get the intended destination or default to dashboard
       const destination = location.state?.from?.pathname || '/dashboard';
       navigate(destination, { replace: true });
     }

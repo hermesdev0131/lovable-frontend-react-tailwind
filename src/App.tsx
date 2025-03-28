@@ -23,6 +23,7 @@ import EmailMarketing from "./pages/EmailMarketing"
 import Reputation from "./pages/Reputation"
 import Account from "./pages/Account"
 import Login from "./pages/Login"
+import Integrations from "./pages/Integrations"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -115,10 +116,7 @@ function App() {
               <Route path="/integrations" element={
                 <ProtectedRoute>
                   <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                    <div className="container mx-auto py-6">
-                      <h1 className="text-3xl font-bold mb-6">Integrations</h1>
-                      <p>Integration management page content will go here.</p>
-                    </div>
+                    <Integrations />
                   </Layout>
                 </ProtectedRoute>
               } />
