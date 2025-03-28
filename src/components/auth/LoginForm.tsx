@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const LoginForm = () => {
@@ -26,7 +26,8 @@ export const LoginForm = () => {
       toast({
         title: "Error",
         description: "Please enter both email and password",
-        variant: "destructive"
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
       });
       return;
     }
@@ -40,12 +41,20 @@ export const LoginForm = () => {
         // Redirect to the intended destination or to the dashboard
         const destination = location.state?.from?.pathname || '/dashboard';
         navigate(destination, { replace: true });
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+          action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+        });
       }
     } catch (error) {
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
       });
     } finally {
       setIsLoading(false);

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ForgotPassword = () => {
@@ -22,7 +22,8 @@ const ForgotPassword = () => {
       toast({
         title: "Error",
         description: "Please enter your email address",
-        variant: "destructive"
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
       });
       return;
     }
@@ -47,13 +48,15 @@ const ForgotPassword = () => {
         toast({
           title: "Request Sent",
           description: "If this email is associated with an account, you'll receive password reset instructions shortly.",
+          action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
         });
       }
     } catch (error) {
       toast({
         title: "Request Failed",
         description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
+        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
       });
     } finally {
       setIsLoading(false);
