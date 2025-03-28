@@ -12,13 +12,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { deals as initialDeals, Deal, DealStage, getContactById, getStageLabel, formatCurrency, DEFAULT_STAGES, DEFAULT_STAGE_LABELS } from '@/lib/data';
+import { getContactById, getStageLabel, formatCurrency, DEFAULT_STAGES, DEFAULT_STAGE_LABELS } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import StageManager from "@/components/pipeline/StageManager";
+import { useDeals } from "@/contexts/DealsContext";
+import { Deal, DealStage } from '@/components/deals/types';
 
 const LOCAL_STORAGE_KEYS = {
   STAGES: 'crm_pipeline_stages',
@@ -32,7 +34,9 @@ const Pipeline = () => {
   const [activeTab, setActiveTab] = useState<'kanban' | 'list'>('kanban');
   const [sortField, setSortField] = useState<'value' | 'probability'>('value');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [allDeals, setAllDeals] = useState<Deal[]>([...initialDeals]);
+  
+  const { deals: allDeals, addDeal: addDealToContext, updateDeal } = useDeals();
+  
   const [addDealOpen, setAddDealOpen] = useState(false);
   const [stageManagerOpen, setStageManagerOpen] = useState(false);
   const [newDeal, setNewDeal] = useState({
@@ -112,18 +116,14 @@ const Pipeline = () => {
   };
 
   const handleAddDeal = () => {
-    const dealId = `deal${allDeals.length + 1}`;
     const currentDate = new Date().toISOString();
     
-    const deal: Deal = { 
-      id: dealId,
+    addDealToContext({ 
       ...newDeal,
-      notes: '',
-      createdAt: currentDate,
-      updatedAt: currentDate
-    };
+      closingDate: newDeal.expectedCloseDate,
+      description: newDeal.notes || ''
+    });
     
-    setAllDeals([...allDeals, deal]);
     setAddDealOpen(false);
     toast({
       title: "Deal Added",
@@ -170,11 +170,9 @@ const Pipeline = () => {
     const updatedDeal: Deal = {
       ...deal,
       stage: destination.droppableId as DealStage,
-      updatedAt: new Date().toISOString()
     };
 
-    const newDeals = allDeals.map(d => d.id === draggableId ? updatedDeal : d);
-    setAllDeals(newDeals);
+    updateDeal(updatedDeal);
 
     toast({
       title: "Deal Moved",

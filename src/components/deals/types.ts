@@ -33,5 +33,5 @@ export const DEFAULT_COLUMNS: Column[] = [
 export const STORAGE_KEYS = {
   DEALS_COLUMNS: 'crm_deals_columns',
   OPPORTUNITIES_COLUMNS: 'crm_opportunities_columns',
-  DEALS_DATA: 'crm_deals_data' // Adding a new storage key for deals data
+  DEALS_DATA: 'crm_deals_data'
 };
