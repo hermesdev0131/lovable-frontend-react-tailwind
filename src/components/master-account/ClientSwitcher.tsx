@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   DropdownMenu, 
@@ -20,7 +21,7 @@ interface ClientSwitcherProps {
 }
 
 export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) => {
-  const { clients, currentClientId, switchToClient, isInMasterMode } = useMasterAccount();
+  const { clients, currentClientId, switchToClient, isInMasterMode, toggleMasterMode } = useMasterAccount();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   
@@ -52,8 +53,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     switchToClient(null);
     
     if (isInMasterMode) {
-      // You may need to access this from context, add if needed
-      // toggleMasterMode();
+      toggleMasterMode();
     }
     
     toast({

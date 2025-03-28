@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Mail, Lock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const MasterAccount = () => {
@@ -40,6 +40,24 @@ const MasterAccount = () => {
       return;
     }
     
+    if (!validateEmail(newClient.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newClient.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     addClient({
       name: newClient.name,
       email: newClient.email,
@@ -66,6 +84,10 @@ const MasterAccount = () => {
       title: "Client Removed",
       description: "The client has been removed successfully."
     });
+  };
+  
+  const validateEmail = (email: string) => {
+    return /\S+@\S+\.\S+/.test(email);
   };
 
   return (
@@ -99,25 +121,36 @@ const MasterAccount = () => {
                 </div>
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    placeholder="Enter client email"
-                    value={newClient.email} 
-                    onChange={handleInputChange} 
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      type="email" 
+                      id="email" 
+                      name="email" 
+                      placeholder="Enter client email"
+                      className="pl-9"
+                      value={newClient.email} 
+                      onChange={handleInputChange} 
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="password">Password</Label>
-                  <Input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Create a password"
-                    value={newClient.password} 
-                    onChange={handleInputChange} 
-                  />
+                  <div className="relative">
+                    <Lock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      type="password" 
+                      id="password" 
+                      name="password" 
+                      placeholder="Create a password"
+                      className="pl-9"
+                      value={newClient.password} 
+                      onChange={handleInputChange} 
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Min. 6 characters. Will be used for client login.
+                  </p>
                 </div>
                 <div>
                   <Label>Subscription Plan</Label>

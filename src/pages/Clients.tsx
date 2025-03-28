@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, Users, X } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, Users, X, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -57,11 +57,33 @@ const Clients = () => {
     setNewClient({ name: "", email: "", password: "", subscription: "Basic" });
   };
 
+  const validateEmail = (email: string) => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
+
   const handleAddClient = () => {
     if (!newClient.name || !newClient.email || !newClient.password) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!validateEmail(newClient.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newClient.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
         variant: "destructive"
       });
       return;
@@ -168,7 +190,18 @@ const Clients = () => {
                   <div className="space-y-3 mt-4">
                     <div className="text-sm">
                       <span className="text-muted-foreground">Email: </span>
-                      <span>{client.email}</span>
+                      <span className="flex items-center">
+                        <Mail className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        {client.email}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Login Status: </span>
+                      <span className="flex items-center">
+                        <Lock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        Account Active
+                      </span>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-2 mt-4">
@@ -227,29 +260,38 @@ const Clients = () => {
               <Label htmlFor="client-email" className="text-right">
                 Email
               </Label>
-              <Input
-                id="client-email"
-                name="email"
-                type="email"
-                placeholder="Enter email address"
-                value={newClient.email}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
+              <div className="relative col-span-3">
+                <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="client-email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={newClient.email}
+                  onChange={handleInputChange}
+                  className="pl-9 w-full"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="client-password" className="text-right">
                 Password
               </Label>
-              <Input
-                id="client-password"
-                name="password"
-                type="password"
-                placeholder="Create a password"
-                value={newClient.password}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
+              <div className="relative col-span-3">
+                <Lock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="client-password"
+                  name="password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={newClient.password}
+                  onChange={handleInputChange}
+                  className="pl-9 w-full"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Min. 6 characters. Client will use this to log in.
+                </p>
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Subscription</Label>
