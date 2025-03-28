@@ -5,19 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { loginToAccount } = useMasterAccount();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +25,7 @@ export const LoginForm = () => {
       toast({
         title: "Error",
         description: "Please enter both email and password",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -34,35 +33,18 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      console.log('LoginForm: Submitting with email:', email);
-      // Make sure we're passing the correct credentials
-      const success = await login(email.trim(), password);
+      const success = loginToAccount(email, password);
       
       if (success) {
-        console.log('LoginForm: Login successful');
-        toast({
-          title: "Login Successful",
-          description: "Welcome back!",
-        });
-        
         // Redirect to the intended destination or to the dashboard
         const destination = location.state?.from?.pathname || '/dashboard';
-        console.log('LoginForm: Redirecting to', destination);
         navigate(destination, { replace: true });
-      } else {
-        console.log('LoginForm: Login failed');
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive",
-        });
       }
     } catch (error) {
-      console.error("Login error:", error);
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -118,7 +100,6 @@ export const LoginForm = () => {
                   required
                   disabled={isLoading}
                   className="pr-10 bg-zinc-800 border-zinc-700 text-white"
-                  placeholder="Enter your password"
                 />
                 <button 
                   type="button"
@@ -129,21 +110,13 @@ export const LoginForm = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <div className="flex justify-end mt-1">
-                <Link 
-                  to="/forgot-password" 
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
                   Logging in...
                 </span>
               ) : (

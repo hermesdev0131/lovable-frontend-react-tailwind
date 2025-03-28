@@ -1,411 +1,243 @@
-import React, { useState, useEffect } from 'react';
-import { Client } from '@/contexts/MasterAccountContext';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
-import { Button } from "@/components/ui/button";
+
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { toast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form"
-import * as z from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useNavigate } from 'react-router-dom';
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Client name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  industry: z.string().optional(),
-  website: z.string().optional(),
-  logo: z.string().optional(),
-  subscription: z.enum(["Basic", "Professional", "Enterprise"]),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
-})
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlusCircle, Trash2, Mail, Lock } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const MasterAccount = () => {
-  const { clients, addClient, updateClient, removeClient } = useMasterAccount();
-  const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
-  const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const navigate = useNavigate();
+  const [newClient, setNewClient] = useState({
+    name: "",
+    email: "",
+    password: "",
+    subscription: "Basic"
+  });
+  
+  const { addClient, clients, removeClient } = useMasterAccount();
+  const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      industry: "",
-      website: "",
-      logo: "",
-      subscription: "Basic",
-      password: ""
-    },
-  })
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewClient({ ...newClient, [e.target.name]: e.target.value });
+  };
 
-  const addClientForm = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      industry: "",
-      website: "",
-      logo: "",
-      subscription: "Basic",
-      password: ""
-    },
-  })
+  const handleSelectChange = (value: string) => {
+    setNewClient({ ...newClient, subscription: value });
+  };
 
-  const { reset } = addClientForm;
-
-  const handleAddClient = (data: any) => {
+  const addNewClient = () => {
+    if (!newClient.name || !newClient.email || !newClient.password || !newClient.subscription) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!validateEmail(newClient.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newClient.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     addClient({
-      name: data.name,
-      email: data.email,
-      industry: data.industry,
-      website: data.website,
-      logo: data.logo || "",
-      status: "active" as const,
-      subscription: data.subscription as "Basic" | "Professional" | "Enterprise",
-      users: 1,
+      name: newClient.name,
+      email: newClient.email,
+      password: newClient.password,
+      subscription: newClient.subscription,
+      status: "active",
+      users: 0,
       deals: 0,
       contacts: 0,
       lastActivity: new Date().toISOString(),
-      password: data.password
+      logo: "/placeholder.svg"
     });
     
-    setIsAddClientDialogOpen(false);
-    reset();
+    setNewClient({ name: "", email: "", password: "", subscription: "Basic" });
+    toast({
+      title: "Client Added",
+      description: `${newClient.name} has been added successfully.`
+    });
   };
 
-  const handleEditClient = (client: Client) => {
-    setSelectedClient(client);
-    form.setValue("name", client.name);
-    form.setValue("email", client.email || "");
-    form.setValue("industry", client.industry || "");
-    form.setValue("website", client.website || "");
-    form.setValue("logo", client.logo || "");
-    form.setValue("subscription", client.subscription);
-    setIsEditClientDialogOpen(true);
+  const deleteClient = (id: number) => {
+    removeClient(id);
+    toast({
+      title: "Client Removed",
+      description: "The client has been removed successfully."
+    });
   };
-
-  const handleUpdateClient = (data: any) => {
-    if (selectedClient) {
-      const updatedClient = {
-        id: selectedClient.id,
-        name: data.name,
-        email: data.email,
-        industry: data.industry,
-        website: data.website,
-        logo: data.logo,
-        status: selectedClient.status,
-        subscription: data.subscription,
-        users: selectedClient.users,
-        deals: selectedClient.deals,
-        contacts: selectedClient.contacts,
-        lastActivity: selectedClient.lastActivity,
-        password: data.password
-      };
-      updateClient(updatedClient);
-      setIsEditClientDialogOpen(false);
-      setSelectedClient(null);
-      form.reset();
-    }
-  };
-
-  const handleDeleteClient = (clientId: string) => {
-    if (confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
-      removeClient(clientId);
-    }
+  
+  const validateEmail = (email: string) => {
+    return /\S+@\S+\.\S+/.test(email);
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-semibold">Master Account Dashboard</h1>
-        <Button onClick={() => navigate('/')}>Go to Dashboard</Button>
-      </div>
+    <div className="container mx-auto py-6 space-y-6">
+      <Tabs defaultValue="clients" className="w-full">
+        <TabsList className="mb-4 flex justify-start">
+          <TabsTrigger value="clients">Client Management</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="clients" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <PlusCircle className="h-5 w-5 mr-2" /> Add New Client
+              </CardTitle>
+              <CardDescription>Create a new client account in the system</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Client Name</Label>
+                  <Input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    placeholder="Enter client name"
+                    value={newClient.name} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      type="email" 
+                      id="email" 
+                      name="email" 
+                      placeholder="Enter client email"
+                      className="pl-9"
+                      value={newClient.email} 
+                      onChange={handleInputChange} 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      type="password" 
+                      id="password" 
+                      name="password" 
+                      placeholder="Create a password"
+                      className="pl-9"
+                      value={newClient.password} 
+                      onChange={handleInputChange} 
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Min. 6 characters. Will be used for client login.
+                  </p>
+                </div>
+                <div>
+                  <Label>Subscription Plan</Label>
+                  <Select onValueChange={handleSelectChange} defaultValue={newClient.subscription}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select subscription" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Basic">Basic</SelectItem>
+                      <SelectItem value="Professional">Professional</SelectItem>
+                      <SelectItem value="Enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button onClick={addNewClient} className="mt-2">Add Client</Button>
+            </CardContent>
+          </Card>
 
-      <div className="mb-6">
-        <Dialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default">
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Client
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add Client</DialogTitle>
-              <DialogDescription>
-                Create a new client account.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...addClientForm}>
-              <form onSubmit={addClientForm.handleSubmit(handleAddClient)} className="space-y-4">
-                <FormField
-                  control={addClientForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="name">Name</Label>
-                      <FormControl>
-                        <Input id="name" placeholder="Client Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={addClientForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="email">Email</Label>
-                      <FormControl>
-                        <Input id="email" placeholder="admin@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={addClientForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="password">Password</Label>
-                      <FormControl>
-                        <Input id="password" type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={addClientForm.control}
-                  name="industry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="industry">Industry</Label>
-                      <FormControl>
-                        <Input id="industry" placeholder="e.g. Technology" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={addClientForm.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="website">Website</Label>
-                      <FormControl>
-                        <Input id="website" placeholder="www.example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={addClientForm.control}
-                  name="subscription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Label htmlFor="subscription">Subscription</Label>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a subscription" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Basic">Basic</SelectItem>
-                          <SelectItem value="Professional">Professional</SelectItem>
-                          <SelectItem value="Enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" variant="default" className="w-full" disabled={addClientForm.formState.isSubmitting}>
-                  {addClientForm.formState.isSubmitting ? "Adding..." : "Add Client"}
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="rounded-md border">
-        <Table>
-          <TableCaption>A list of your client accounts.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Industry</TableHead>
-              <TableHead>Subscription</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clients.map((client) => (
-              <TableRow key={client.id}>
-                <TableCell>{client.name}</TableCell>
-                <TableCell>{client.email}</TableCell>
-                <TableCell>{client.industry}</TableCell>
-                <TableCell>{client.subscription}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditClient(client)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
+          <Card>
+            <CardHeader>
+              <CardTitle>Client Directory</CardTitle>
+              <CardDescription>View and manage all client accounts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {clients.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No clients have been added yet</p>
+                  <Button variant="outline" onClick={() => document.getElementById('name')?.focus()}>
+                    Add Your First Client
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteClient(client.id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Dialog open={isEditClientDialogOpen} onOpenChange={setIsEditClientDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Client</DialogTitle>
-            <DialogDescription>
-              Make changes to the selected client account.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleUpdateClient)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label htmlFor="name">Name</Label>
-                    <FormControl>
-                      <Input id="name" placeholder="Client Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label htmlFor="email">Email</Label>
-                    <FormControl>
-                      <Input id="email" placeholder="admin@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="industry"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label htmlFor="industry">Industry</Label>
-                    <FormControl>
-                      <Input id="industry" placeholder="e.g. Technology" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label htmlFor="website">Website</Label>
-                    <FormControl>
-                      <Input id="website" placeholder="www.example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="subscription"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label htmlFor="subscription">Subscription</Label>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a subscription" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Basic">Basic</SelectItem>
-                        <SelectItem value="Professional">Professional</SelectItem>
-                        <SelectItem value="Enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">Update Client</Button>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Client Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Subscription</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {clients.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">{client.name}</TableCell>
+                        <TableCell>{client.email}</TableCell>
+                        <TableCell>{client.subscription}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${client.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
+                            {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => deleteClient(client.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>Master Account Settings</CardTitle>
+              <CardDescription>Configure your master account preferences</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Settings options will appear here in future updates.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

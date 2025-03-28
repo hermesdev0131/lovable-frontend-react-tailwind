@@ -1,7 +1,5 @@
 
 // Create a type adapter to handle context vs component type differences
-import { WebsitePage } from "@/contexts/MasterAccountContext";
-
 type ContextWebsitePage = {
   id: number;
   title: string;
@@ -13,11 +11,11 @@ type ContextWebsitePage = {
   views: number;
   conversions: number;
   bounceRate: number;
-  clientId: string | null;
+  clientId: number | null;
 };
 
 // Type adapter function to ensure consistency
-export const adaptWebsitePageForComponents = (page: WebsitePage) => {
+export const adaptWebsitePageForComponents = (page: ContextWebsitePage) => {
   return {
     id: String(page.id),
     title: page.title,

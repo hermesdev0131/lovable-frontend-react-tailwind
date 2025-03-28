@@ -1,505 +1,329 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
+
+import React, { useState } from 'react';
+import { Search, Plus, Filter, MoreHorizontal, Users, X, Mail, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { toast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
+} from '@/components/ui/dropdown-menu';
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 const Clients = () => {
-  const { clients, addClient, updateClient, deleteClient } = useMasterAccount();
-  const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
-  const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortColumn, setSortColumn] = useState(null);
-  const [sortDirection, setSortDirection] = useState('asc');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newClient, setNewClient] = useState({
+    name: "",
+    email: "",
+    password: "",
+    subscription: "Basic"
+  });
+  
+  const { clients, addClient } = useMasterAccount();
+  const { toast } = useToast();
+  
+  // Filter clients based on search query
+  const filteredClients = clients.filter(client => {
+    const name = client.name.toLowerCase();
+    const email = client.email.toLowerCase();
+    const query = searchQuery.toLowerCase();
+    
+    return name.includes(query) || email.includes(query);
+  });
 
-  const clientSchema = z.object({
-    name: z.string().min(2, {
-      message: "Client name must be at least 2 characters.",
-    }),
-    email: z.string().email({
-      message: "Invalid email address.",
-    }),
-    industry: z.string().min(2, {
-      message: "Industry must be at least 2 characters.",
-    }),
-    website: z.string().url({
-      message: "Invalid website URL.",
-    }),
-    logo: z.string().url({
-      message: "Invalid logo URL.",
-    }).optional(),
-    subscription: z.enum(["Basic", "Professional", "Enterprise"]),
-    password: z.string().min(6, {
-      message: "Password must be at least 6 characters.",
-    }),
-  })
+  // Get status badge variant
+  const getStatusBadgeVariant = (status: string) => {
+    return status === 'active' ? 'outline' : 'secondary';
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewClient({ ...newClient, [e.target.name]: e.target.value });
+  };
 
-  const addClientForm = useForm<z.infer<typeof clientSchema>>({
-    resolver: zodResolver(clientSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      industry: "",
-      website: "",
-      logo: "",
-      subscription: "Basic",
-      password: "",
-    },
-  })
+  const handleSelectChange = (value: string) => {
+    setNewClient({ ...newClient, subscription: value });
+  };
+  
+  const resetForm = () => {
+    setNewClient({ name: "", email: "", password: "", subscription: "Basic" });
+  };
 
-  const editClientForm = useForm<z.infer<typeof clientSchema>>({
-    resolver: zodResolver(clientSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      industry: "",
-      website: "",
-      logo: "",
-      subscription: "Basic",
-      password: "",
-    },
-  })
+  const validateEmail = (email: string) => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
 
-  const handleAddClient = (data: any) => {
+  const handleAddClient = () => {
+    if (!newClient.name || !newClient.email || !newClient.password) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!validateEmail(newClient.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newClient.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     addClient({
-      name: data.name,
-      email: data.email,
-      industry: data.industry,
-      website: data.website,
-      logo: data.logo || "",
-      status: "active" as const,
-      subscription: data.subscription as "Basic" | "Professional" | "Enterprise", // Fix the type
-      users: 1,
+      name: newClient.name,
+      email: newClient.email,
+      password: newClient.password,
+      subscription: newClient.subscription,
+      status: "active",
+      users: 0,
       deals: 0,
       contacts: 0,
       lastActivity: new Date().toISOString(),
-      password: data.password
+      logo: "/placeholder.svg"
     });
     
-    addClientForm.reset();
-    setIsAddClientDialogOpen(false);
-  };
-
-  const handleEditClient = (data: any) => {
-    if (selectedClient) {
-      updateClient({
-        id: selectedClient.id,
-        name: data.name,
-        email: data.email,
-        industry: data.industry,
-        website: data.website,
-        logo: data.logo || "",
-        status: selectedClient.status,
-        subscription: data.subscription,
-        users: selectedClient.users,
-        deals: selectedClient.deals,
-        contacts: selectedClient.contacts,
-        lastActivity: selectedClient.lastActivity,
-        password: data.password
-      });
-      setIsEditClientDialogOpen(false);
-    }
-  };
-
-  const handleDeleteClient = (clientId: string) => {
-    if (confirm('Are you sure you want to delete this client?')) {
-      deleteClient(clientId);
-    }
-  };
-
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.industry?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const sortedClients = [...filteredClients].sort((a, b) => {
-    if (!sortColumn) return 0;
-    const aValue = a[sortColumn];
-    const bValue = b[sortColumn];
-
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  const handleSort = (column) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(column);
-      setSortDirection('asc');
-    }
-  };
-
-  const openEditClientDialog = (client) => {
-    setSelectedClient(client);
-    editClientForm.reset({
-      name: client.name,
-      email: client.email,
-      industry: client.industry,
-      website: client.website,
-      logo: client.logo,
-      subscription: client.subscription,
-      password: client.password || "",
+    resetForm();
+    setShowAddDialog(false);
+    toast({
+      title: "Client Added",
+      description: `${newClient.name} has been added successfully.`
     });
-    setIsEditClientDialogOpen(true);
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <Input
-          type="text"
-          placeholder="Search clients..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md"
-        />
-        <Button onClick={() => setIsAddClientDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Add Client</Button>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search clients..."
+              className="pl-8 w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Filter className="h-4 w-4" /> Filter
+            </Button>
+            <Button 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setShowAddDialog(true)}
+            >
+              <Plus className="h-4 w-4" /> Add Client
+            </Button>
+          </div>
+        </div>
+        
+        {filteredClients.length === 0 ? (
+          <Card className="w-full p-8 text-center">
+            <CardContent className="flex flex-col items-center pt-6">
+              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <CardTitle className="mb-2">No Clients Yet</CardTitle>
+              <CardDescription className="mb-6">
+                Add your first client to start managing your accounts.
+              </CardDescription>
+              <Button onClick={() => setShowAddDialog(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Client
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredClients.map((client) => (
+              <Card key={client.id} className="hover:shadow-md transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center">
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarImage src={client.logo} alt={client.name} />
+                        <AvatarFallback>{client.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-lg font-medium">{client.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={getStatusBadgeVariant(client.status)}>
+                            {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">{client.subscription}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                        <DropdownMenuItem>Manage Access</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  
+                  <div className="space-y-3 mt-4">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Email: </span>
+                      <span className="flex items-center">
+                        <Mail className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        {client.email}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Login Status: </span>
+                      <span className="flex items-center">
+                        <Lock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                        Account Active
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2 mt-4">
+                      <div className="text-center p-2 bg-background rounded-lg border border-border">
+                        <div className="text-lg font-semibold">{client.users}</div>
+                        <div className="text-xs text-muted-foreground">Users</div>
+                      </div>
+                      <div className="text-center p-2 bg-background rounded-lg border border-border">
+                        <div className="text-lg font-semibold">{client.deals}</div>
+                        <div className="text-xs text-muted-foreground">Deals</div>
+                      </div>
+                      <div className="text-center p-2 bg-background rounded-lg border border-border">
+                        <div className="text-lg font-semibold">{client.contacts}</div>
+                        <div className="text-xs text-muted-foreground">Contacts</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Last Activity: </span>
+                        <span>{new Date(client.lastActivity).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
-      <ScrollArea>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead onClick={() => handleSort('name')} className="cursor-pointer">
-                Name {sortColumn === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </TableHead>
-              <TableHead onClick={() => handleSort('email')} className="cursor-pointer">
-                Email {sortColumn === 'email' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </TableHead>
-              <TableHead onClick={() => handleSort('industry')} className="cursor-pointer">
-                Industry {sortColumn === 'industry' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </TableHead>
-              <TableHead onClick={() => handleSort('subscription')} className="cursor-pointer">
-                Subscription {sortColumn === 'subscription' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedClients.map(client => (
-              <TableRow key={client.id}>
-                <TableCell>{client.name}</TableCell>
-                <TableCell>{client.email}</TableCell>
-                <TableCell>{client.industry}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{client.subscription}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => openEditClientDialog(client)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDeleteClient(client.id)}>Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
-
       {/* Add Client Dialog */}
-      <AlertDialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Add New Client</AlertDialogTitle>
-            <AlertDialogDescription>
-              Enter the details for the new client.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <Form {...addClientForm}>
-            <form onSubmit={addClientForm.handleSubmit(handleAddClient)} className="space-y-4">
-              <FormField
-                control={addClientForm.control}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Client</DialogTitle>
+            <DialogDescription>
+              Create a new client account in the system
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="client-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="client-name"
                 name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                placeholder="Enter client name"
+                value={newClient.name}
+                onChange={handleInputChange}
+                className="col-span-3"
               />
-              <FormField
-                control={addClientForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={addClientForm.control}
-                name="industry"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Industry</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Industry" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={addClientForm.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Website" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={addClientForm.control}
-                name="logo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Logo URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Logo URL" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={addClientForm.control}
-                name="subscription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subscription</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a subscription" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Basic">Basic</SelectItem>
-                        <SelectItem value="Professional">Professional</SelectItem>
-                        <SelectItem value="Enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={addClientForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button type="submit">Add Client</Button>
-              </AlertDialogFooter>
-            </form>
-          </Form>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Edit Client Dialog */}
-      <AlertDialog open={isEditClientDialogOpen} onOpenChange={setIsEditClientDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Edit Client</AlertDialogTitle>
-            <AlertDialogDescription>
-              Update the details for the selected client.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <Form {...editClientForm}>
-            <form onSubmit={editClientForm.handleSubmit(handleEditClient)} className="space-y-4">
-              <FormField
-                control={editClientForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editClientForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editClientForm.control}
-                name="industry"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Industry</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Industry" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editClientForm.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Website" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editClientForm.control}
-                name="logo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Logo URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Logo URL" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editClientForm.control}
-                name="subscription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subscription</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a subscription" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Basic">Basic</SelectItem>
-                        <SelectItem value="Professional">Professional</SelectItem>
-                        <SelectItem value="Enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editClientForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button type="submit">Update Client</Button>
-              </AlertDialogFooter>
-            </form>
-          </Form>
-        </AlertDialogContent>
-      </AlertDialog>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="client-email" className="text-right">
+                Email
+              </Label>
+              <div className="relative col-span-3">
+                <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="client-email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={newClient.email}
+                  onChange={handleInputChange}
+                  className="pl-9 w-full"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="client-password" className="text-right">
+                Password
+              </Label>
+              <div className="relative col-span-3">
+                <Lock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="client-password"
+                  name="password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={newClient.password}
+                  onChange={handleInputChange}
+                  className="pl-9 w-full"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Min. 6 characters. Client will use this to log in.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Subscription</Label>
+              <Select 
+                onValueChange={handleSelectChange} 
+                defaultValue={newClient.subscription}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select subscription plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Basic">Basic</SelectItem>
+                  <SelectItem value="Professional">Professional</SelectItem>
+                  <SelectItem value="Enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                resetForm();
+                setShowAddDialog(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddClient}>Add Client</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

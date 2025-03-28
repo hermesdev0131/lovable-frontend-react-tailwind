@@ -1,525 +1,355 @@
+
 import React, { useState, useEffect } from 'react';
-import { Layout } from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
-import { toast } from '@/hooks/use-toast';
-import { Check, Send, Trash, Edit, Eye } from 'lucide-react';
-
-interface EmailTemplate {
-  id: number;
-  name: string;
-  subject: string;
-  content: string;
-  category: string;
-}
-
-interface EmailCampaign {
-  id: number;
-  name: string;
-  subject: string;
-  content: string;
-  status: 'draft' | 'scheduled' | 'sent';
-  recipients: number;
-  openRate: number;
-  clickRate: number;
-  sentAt?: string;
-  scheduledFor?: string;
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon, Loader2, RefreshCw, ExternalLink } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MailchimpConnect from "@/components/email/MailchimpConnect";
+import { 
+  isMailchimpConnected,
+  createCampaign,
+  scheduleCampaign,
+  getCampaigns,
+  MailchimpCampaign
+} from '@/services/mailchimp';
 
 const EmailMarketing = () => {
-  const { currentClientId, getContentItems, addContentItem, updateContentStatus } = useMasterAccount();
-  
-  // Templates state
-  const [templates, setTemplates] = useState<EmailTemplate[]>([
-    { id: 1, name: 'Welcome Email', subject: 'Welcome to our service!', content: 'Thank you for signing up...', category: 'Onboarding' },
-    { id: 2, name: 'Monthly Newsletter', subject: 'Your Monthly Update', content: 'Here are the latest updates...', category: 'Newsletter' },
-    { id: 3, name: 'Abandoned Cart', subject: 'You left something behind', content: 'We noticed you left items in your cart...', category: 'Sales' },
-  ]);
-  
-  // Campaigns state
-  const [campaigns, setCampaigns] = useState<EmailCampaign[]>([
-    { 
-      id: 1, 
-      name: 'January Newsletter', 
-      subject: 'January Updates', 
-      content: 'Here are our January updates...', 
-      status: 'sent', 
-      recipients: 1250, 
-      openRate: 32, 
-      clickRate: 8, 
-      sentAt: '2023-01-15T10:00:00Z' 
-    },
-    { 
-      id: 2, 
-      name: 'February Newsletter', 
-      subject: 'February Updates', 
-      content: 'Here are our February updates...', 
-      status: 'scheduled', 
-      recipients: 1300, 
-      openRate: 0, 
-      clickRate: 0, 
-      scheduledFor: '2023-02-15T10:00:00Z' 
-    },
-    { 
-      id: 3, 
-      name: 'Product Launch', 
-      subject: 'Introducing our new product!', 
-      content: 'We are excited to announce...', 
-      status: 'draft', 
-      recipients: 0, 
-      openRate: 0, 
-      clickRate: 0 
-    },
-  ]);
-  
-  // New email state
+  // State for email creation
   const [newEmail, setNewEmail] = useState({
-    name: '',
-    subject: '',
-    content: '',
-    recipients: '',
-    scheduledFor: ''
+    title: "",
+    content: "",
+    scheduledFor: undefined as Date | undefined,
   });
   
-  // Selected template for new email
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  // State for Mailchimp
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
+  const [mailchimpCampaigns, setMailchimpCampaigns] = useState<MailchimpCampaign[]>([]);
+  const [activeTab, setActiveTab] = useState('create');
   
-  // Email preview state
-  const [previewEmail, setPreviewEmail] = useState<EmailCampaign | null>(null);
-  
-  // Load email content from templates when selected
+  // Master account context and toast
+  const { addContentItem, getContentItems, currentClientId } = useMasterAccount();
+  const { toast } = useToast();
+  const [emails, setEmails] = useState(getContentItems(currentClientId, 'email'));
+
   useEffect(() => {
-    if (selectedTemplate) {
-      const template = templates.find(t => t.id === parseInt(selectedTemplate));
-      if (template) {
-        setNewEmail(prev => ({
-          ...prev,
-          subject: template.subject,
-          content: template.content
-        }));
+    setEmails(getContentItems(currentClientId, 'email'));
+  }, [currentClientId, getContentItems]);
+
+  useEffect(() => {
+    if (isMailchimpConnected() && activeTab === 'mailchimp') {
+      fetchMailchimpCampaigns();
+    }
+  }, [activeTab]);
+
+  const fetchMailchimpCampaigns = async () => {
+    if (!isMailchimpConnected()) return;
+    
+    setIsLoadingCampaigns(true);
+    try {
+      const campaigns = await getCampaigns();
+      setMailchimpCampaigns(campaigns);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    } finally {
+      setIsLoadingCampaigns(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setNewEmail({ ...newEmail, [e.target.name]: e.target.value });
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    setNewEmail({ ...newEmail, scheduledFor: date });
+  };
+
+  const handleCreateEmail = async () => {
+    if (!newEmail.title || !newEmail.content || !newEmail.scheduledFor) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill all required fields and select a date",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // If Mailchimp is connected, create a campaign there
+    if (isMailchimpConnected()) {
+      setIsLoading(true);
+      try {
+        const campaignId = await createCampaign(newEmail.title, newEmail.content);
+        
+        if (campaignId) {
+          const scheduled = await scheduleCampaign(campaignId, newEmail.scheduledFor);
+          
+          if (scheduled) {
+            toast({
+              title: "Campaign Scheduled in Mailchimp",
+              description: `${newEmail.title} has been scheduled in Mailchimp.`
+            });
+            
+            // Refresh campaigns list
+            fetchMailchimpCampaigns();
+          }
+        }
+      } catch (error) {
+        console.error('Error creating Mailchimp campaign:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
-  }, [selectedTemplate, templates]);
-  
-  // Handle input changes for new email
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewEmail(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
-  // Check if email can be sent
-  const canSendEmail = () => {
-    return (
-      newEmail.name.trim() !== '' &&
-      newEmail.subject.trim() !== '' &&
-      newEmail.content.trim() !== '' &&
-      newEmail.recipients.trim() !== ''
-    );
-  };
-  
-  // Handle sending email
-  const handleSendEmail = () => {
-    if (!canSendEmail()) return;
     
-    const newCampaign: EmailCampaign = {
-      id: Date.now(),
-      name: newEmail.name,
-      subject: newEmail.subject,
+    // Also add to local storage
+    addContentItem({
+      title: newEmail.title,
       content: newEmail.content,
-      status: newEmail.scheduledFor ? 'scheduled' : 'sent',
-      recipients: parseInt(newEmail.recipients) || 0,
-      openRate: 0,
-      clickRate: 0,
-      sentAt: newEmail.scheduledFor ? undefined : new Date().toISOString(),
-      scheduledFor: newEmail.scheduledFor || undefined
+      type: "email",
+      createdBy: currentClientId || 0,
+      scheduledFor: newEmail.scheduledFor.toISOString(),
+      clientId: currentClientId,
+    });
+    
+    setNewEmail({ title: "", content: "", scheduledFor: undefined });
+    toast({
+      title: "Email Scheduled",
+      description: `${newEmail.title} has been scheduled successfully.`
+    });
+  };
+
+  const getCampaignStatusBadge = (status: string) => {
+    const statusMap: Record<string, { variant: 'default' | 'secondary' | 'outline', text: string }> = {
+      'sent': { variant: 'default', text: 'Sent' },
+      'scheduled': { variant: 'outline', text: 'Scheduled' },
+      'sending': { variant: 'secondary', text: 'Sending' },
+      'save': { variant: 'secondary', text: 'Draft' },
+      'paused': { variant: 'secondary', text: 'Paused' },
     };
     
-    setCampaigns(prev => [...prev, newCampaign]);
-    
-    // Add to content items
-    addContentItem({
-      title: newEmail.subject,
-      content: newEmail.content,
-      type: 'email',
-      status: newEmail.scheduledFor ? 'scheduled' : 'published',
-      createdBy: 'user',
-      clientId: currentClientId,
-      scheduledFor: newEmail.scheduledFor || undefined
-    });
-    
-    // Reset form
-    setNewEmail({
-      name: '',
-      subject: '',
-      content: '',
-      recipients: '',
-      scheduledFor: ''
-    });
-    setSelectedTemplate('');
-    
-    toast({
-      title: newEmail.scheduledFor ? "Email Scheduled" : "Email Sent",
-      description: newEmail.scheduledFor 
-        ? `Your email has been scheduled for ${new Date(newEmail.scheduledFor).toLocaleString()}`
-        : "Your email has been sent successfully"
-    });
-  };
-  
-  // Handle deleting a campaign
-  const handleDeleteCampaign = (id: number) => {
-    setCampaigns(prev => prev.filter(campaign => campaign.id !== id));
-    toast({
-      title: "Campaign Deleted",
-      description: "The email campaign has been deleted"
-    });
-  };
-  
-  // Handle sending a draft campaign
-  const handleSendCampaign = (email: EmailCampaign) => {
-    setCampaigns(prev => 
-      prev.map(campaign => 
-        campaign.id === email.id 
-          ? { ...campaign, status: 'sent', sentAt: new Date().toISOString() } 
-          : campaign
-      )
-    );
-    
-    updateContentStatus(email.id, 'published');
-    
-    toast({
-      title: "Campaign Sent",
-      description: "The email campaign has been sent successfully"
-    });
-  };
-  
-  // Handle viewing email preview
-  const handlePreviewEmail = (email: EmailCampaign) => {
-    setPreviewEmail(email);
-  };
-  
-  // Close preview
-  const closePreview = () => {
-    setPreviewEmail(null);
+    return statusMap[status] || { variant: 'secondary', text: status };
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">Email Marketing</h1>
+    <div className="container mx-auto py-6 space-y-6">
+      <h1 className="text-2xl font-bold">Email Marketing</h1>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="create">Create Email</TabsTrigger>
+          <TabsTrigger value="scheduled">Scheduled Emails</TabsTrigger>
+          <TabsTrigger value="mailchimp">Mailchimp</TabsTrigger>
+        </TabsList>
         
-        <Tabs defaultValue="campaigns">
-          <TabsList className="mb-4">
-            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="create">Create Email</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-          
-          {/* Campaigns Tab */}
-          <TabsContent value="campaigns">
-            <Card>
-              <CardHeader>
-                <CardTitle>Email Campaigns</CardTitle>
-                <CardDescription>Manage your email marketing campaigns</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Recipients</TableHead>
-                      <TableHead>Open Rate</TableHead>
-                      <TableHead>Click Rate</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {campaigns.map(campaign => (
-                      <TableRow key={campaign.id}>
-                        <TableCell>{campaign.name}</TableCell>
-                        <TableCell>{campaign.subject}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            campaign.status === 'sent' 
-                              ? 'bg-green-100 text-green-800' 
-                              : campaign.status === 'scheduled' 
-                                ? 'bg-blue-100 text-blue-800' 
-                                : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                          </span>
-                        </TableCell>
-                        <TableCell>{campaign.recipients}</TableCell>
-                        <TableCell>{campaign.openRate}%</TableCell>
-                        <TableCell>{campaign.clickRate}%</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handlePreviewEmail(campaign)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {campaign.status === 'draft' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleSendCampaign(campaign)}
-                              >
-                                <Send className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleDeleteCampaign(campaign.id)}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Create Email Tab */}
-          <TabsContent value="create">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create New Email</CardTitle>
-                <CardDescription>Compose a new email campaign</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Campaign Name</Label>
-                    <Input 
-                      id="name" 
-                      name="name" 
-                      value={newEmail.name} 
-                      onChange={handleInputChange} 
-                      placeholder="Enter campaign name" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="template">Use Template (Optional)</Label>
-                    <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {templates.map(template => (
-                          <SelectItem key={template.id} value={template.id.toString()}>
-                            {template.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Email Subject</Label>
+        <TabsContent value="create" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Schedule New Email</CardTitle>
+              <CardDescription>Create and schedule a new email campaign</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">Email Title</Label>
                   <Input 
-                    id="subject" 
-                    name="subject" 
-                    value={newEmail.subject} 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    placeholder="Enter email title"
+                    value={newEmail.title} 
                     onChange={handleInputChange} 
-                    placeholder="Enter email subject" 
                   />
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="content">Email Content</Label>
-                  <Textarea 
-                    id="content" 
-                    name="content" 
-                    value={newEmail.content} 
-                    onChange={handleInputChange} 
-                    placeholder="Compose your email content" 
-                    rows={10} 
-                  />
+                <div>
+                  <Label htmlFor="scheduledFor">Schedule Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !newEmail.scheduledFor && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {newEmail.scheduledFor ? (
+                          format(newEmail.scheduledFor, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={newEmail.scheduledFor}
+                        onSelect={handleDateChange}
+                        disabled={(date) =>
+                          date < new Date()
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="recipients">Number of Recipients</Label>
-                    <Input 
-                      id="recipients" 
-                      name="recipients" 
-                      type="number" 
-                      value={newEmail.recipients} 
-                      onChange={handleInputChange} 
-                      placeholder="Enter number of recipients" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="scheduledFor">Schedule For (Optional)</Label>
-                    <Input 
-                      id="scheduledFor" 
-                      name="scheduledFor" 
-                      type="datetime-local" 
-                      value={newEmail.scheduledFor} 
-                      onChange={handleInputChange} 
-                    />
-                  </div>
+              </div>
+              <div>
+                <Label htmlFor="content">Email Content</Label>
+                <Textarea
+                  id="content"
+                  name="content"
+                  placeholder="Enter email content"
+                  value={newEmail.content}
+                  onChange={handleInputChange}
+                  className="min-h-32 resize-none"
+                />
+              </div>
+              <Button 
+                onClick={handleCreateEmail} 
+                disabled={isLoading}
+                className="mt-2"
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Schedule Email
+              </Button>
+              
+              {isMailchimpConnected() && (
+                <p className="text-xs text-muted-foreground">
+                  Your email will be scheduled both locally and in Mailchimp.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="scheduled">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Scheduled Emails</CardTitle>
+                <CardDescription>View all scheduled email campaigns</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {emails.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No emails have been scheduled yet</p>
+                  <Button variant="outline" onClick={() => setActiveTab('create')}>
+                    Schedule Your First Email
+                  </Button>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline">Save as Draft</Button>
-                <Button 
-                  variant="default"
-                  className="ml-4"
-                  onClick={handleSendEmail}
-                  disabled={!canSendEmail()}
-                >
-                  Send Email
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          
-          {/* Templates Tab */}
-          <TabsContent value="templates">
-            <Card>
-              <CardHeader>
-                <CardTitle>Email Templates</CardTitle>
-                <CardDescription>Manage your reusable email templates</CardDescription>
-              </CardHeader>
-              <CardContent>
+              ) : (
                 <Table>
+                  <TableCaption>A list of your scheduled email campaigns.</TableCaption>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Scheduled For</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {templates.map(template => (
-                      <TableRow key={template.id}>
-                        <TableCell>{template.name}</TableCell>
-                        <TableCell>{template.subject}</TableCell>
-                        <TableCell>{template.category}</TableCell>
+                    {emails.map((email) => (
+                      <TableRow key={email.id}>
+                        <TableCell className="font-medium">{email.title}</TableCell>
+                        <TableCell>{email.scheduledFor ? format(new Date(email.scheduledFor), "PPP") : 'N/A'}</TableCell>
                         <TableCell>
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Badge variant="secondary">Scheduled</Badge>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-              <CardFooter>
-                <Button>Add New Template</Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="mailchimp" className="space-y-6">
+          <MailchimpConnect />
           
-          {/* Analytics Tab */}
-          <TabsContent value="analytics">
+          {isMailchimpConnected() && (
             <Card>
-              <CardHeader>
-                <CardTitle>Email Analytics</CardTitle>
-                <CardDescription>Track the performance of your email campaigns</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Mailchimp Campaigns</CardTitle>
+                  <CardDescription>View your Mailchimp campaigns</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={fetchMailchimpCampaigns} disabled={isLoadingCampaigns}>
+                  {isLoadingCampaigns ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">Refresh</span>
+                </Button>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">32%</div>
-                        <p className="text-sm text-muted-foreground">Average Open Rate</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">8%</div>
-                        <p className="text-sm text-muted-foreground">Average Click Rate</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold">2.5%</div>
-                        <p className="text-sm text-muted-foreground">Average Conversion Rate</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="h-[300px] border rounded-md p-4 flex items-center justify-center">
-                  <p className="text-muted-foreground">Email performance chart will be displayed here</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        
-        {/* Email Preview Modal */}
-        {previewEmail && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-background rounded-lg w-full max-w-2xl max-h-[80vh] overflow-auto">
-              <div className="p-4 border-b">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-bold">Email Preview</h2>
-                  <Button variant="ghost" onClick={closePreview}>×</Button>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="mb-4">
-                  <p className="text-sm text-muted-foreground">From: Your Company &lt;noreply@yourcompany.com&gt;</p>
-                  <p className="text-sm text-muted-foreground">To: Recipients</p>
-                  <p className="text-sm text-muted-foreground">Subject: {previewEmail.subject}</p>
-                </div>
-                <div className="border rounded-md p-4 min-h-[200px]">
-                  {previewEmail.content}
-                </div>
-              </div>
-              <div className="p-4 border-t flex justify-end">
-                <Button variant="outline" onClick={closePreview}>Close</Button>
-                {previewEmail.status === 'draft' && (
-                  <Button className="ml-2" onClick={() => {
-                    handleSendCampaign(previewEmail);
-                    closePreview();
-                  }}>
-                    Send Now
-                  </Button>
+                {isLoadingCampaigns ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : mailchimpCampaigns.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">No campaigns found in your Mailchimp account</p>
+                    <Button variant="outline" onClick={() => setActiveTab('create')}>
+                      Create Your First Campaign
+                    </Button>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableCaption>Your Mailchimp campaigns</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {mailchimpCampaigns.map((campaign) => {
+                        const { variant, text } = getCampaignStatusBadge(campaign.status);
+                        return (
+                          <TableRow key={campaign.id}>
+                            <TableCell className="font-medium">{campaign.settings.title || campaign.settings.subject_line}</TableCell>
+                            <TableCell>{format(new Date(campaign.create_time), "PPP")}</TableCell>
+                            <TableCell>
+                              <Badge variant={variant}>{text}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {campaign.archive_url && (
+                                <Button variant="ghost" size="sm" onClick={() => window.open(campaign.archive_url, '_blank')}>
+                                  <ExternalLink className="h-4 w-4" />
+                                  <span className="sr-only">View Campaign</span>
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </Layout>
+              </CardContent>
+              <CardFooter className="text-sm text-muted-foreground border-t pt-4">
+                These campaigns are synced from your Mailchimp account.
+              </CardFooter>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
