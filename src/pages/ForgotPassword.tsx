@@ -43,7 +43,6 @@ const ForgotPassword = () => {
         title: "Error",
         description: "Please enter your email address",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" onClick={() => toast.dismiss()} className="h-8 px-2"><X size={16} /></Button>
       });
       return;
     }
@@ -59,8 +58,7 @@ const ForgotPassword = () => {
         
         toast({
           title: "Password Reset Email Sent",
-          description: "Check your email for a link to reset your password.",
-          action: <Button variant="ghost" size="sm" onClick={() => toast.dismiss()} className="h-8 px-2"><X size={16} /></Button>
+          description: "Check your email for a link to reset your password",
         });
       }
     } catch (error) {
@@ -68,7 +66,6 @@ const ForgotPassword = () => {
         title: "Request Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" onClick={() => toast.dismiss()} className="h-8 px-2"><X size={16} /></Button>
       });
     } finally {
       setIsLoading(false);

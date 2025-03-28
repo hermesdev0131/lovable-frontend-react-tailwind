@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -34,23 +35,14 @@ export const LoginForm = () => {
     
     try {
       console.log('LoginForm: Submitting with email:', email);
-      const success = await login(email, password);
+      // Make sure we're passing the correct credentials
+      const success = await login(email.trim(), password);
       
       if (success) {
         console.log('LoginForm: Login successful');
         toast({
           title: "Login Successful",
           description: "Welcome back!",
-          action: (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => toast.dismiss()}
-              className="h-8 px-2"
-            >
-              <X size={16} />
-            </Button>
-          ),
         });
         
         // Redirect to the intended destination or to the dashboard
@@ -63,16 +55,6 @@ export const LoginForm = () => {
           title: "Login Failed",
           description: "Invalid email or password. Please try again.",
           variant: "destructive",
-          action: (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => toast.dismiss()}
-              className="h-8 px-2"
-            >
-              <X size={16} />
-            </Button>
-          ),
         });
       }
     } catch (error) {
@@ -81,16 +63,6 @@ export const LoginForm = () => {
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => toast.dismiss()}
-            className="h-8 px-2"
-          >
-            <X size={16} />
-          </Button>
-        ),
       });
     } finally {
       setIsLoading(false);

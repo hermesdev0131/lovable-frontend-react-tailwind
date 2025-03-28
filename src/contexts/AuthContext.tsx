@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
@@ -106,6 +107,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('Attempting login with:', email);
       
+      // Try Supabase login first
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -113,12 +115,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (error) {
         console.log('Supabase login failed, trying master account login');
+        console.log('Error details:', error.message);
         
-        const success = loginToAccount(email, password);
+        // Try master account login as fallback
+        const success = await loginToAccount(email, password);
         
         if (success) {
           console.log('Master account login successful');
-          const client = clients.find(c => c.email === email);
+          const client = clients.find(c => c.email.toLowerCase() === email.toLowerCase());
           if (client) {
             const user: User = {
               id: client.id,
@@ -129,12 +133,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setCurrentUser(user);
             return true;
           }
+        } else {
+          console.log('Master account login failed');
         }
         return false;
       }
       
       if (data.user) {
-        console.log('Supabase login successful');
+        console.log('Supabase login successful', data.user);
+        
+        // Make sure we create the user properly from Supabase data
+        const userRole = ((data.user.user_metadata?.role as string) || 'user') as 'admin' | 'user';
+        const authUser: User = {
+          id: data.user.id,
+          email: data.user.email || '',
+          name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          role: userRole,
+        };
+        
+        setCurrentUser(authUser);
         return true;
       }
       
