@@ -27,11 +27,12 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
   const [editedDeal, setEditedDeal] = useState<Deal | null>(null);
   const { toast } = useToast();
 
+  // Reset editedDeal when dialog opens with a new deal
   useEffect(() => {
     if (deal) {
       setEditedDeal({ ...deal });
     }
-  }, [deal]);
+  }, [deal, isOpen]);
 
   const handleChange = (field: string, value: any) => {
     if (editedDeal) {
@@ -41,11 +42,19 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
 
   const handleSave = () => {
     if (editedDeal) {
-      onSave(editedDeal);
+      // Ensure all required fields are present
+      const updatedDeal = {
+        ...editedDeal,
+        updatedAt: new Date().toISOString()
+      };
+      
+      onSave(updatedDeal);
+      
       toast({
         title: "Deal Updated",
-        description: `${editedDeal.name} has been updated successfully.`
+        description: `${updatedDeal.name} has been updated successfully.`
       });
+      
       onClose();
     }
   };
