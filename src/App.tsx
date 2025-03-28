@@ -16,9 +16,12 @@ import ChatbotManagement from './pages/ChatbotManagement';
 import CalendarPage from './pages/Calendar';
 import Clients from './pages/Clients';
 import MasterAccount from './pages/MasterAccount';
+import NotFound from './pages/NotFound';
+import Login from './pages/Login';
 import CustomErrorBoundary from '@/components/CustomErrorBoundary';
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import Sidebar from '@/components/layout/Sidebar';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 function App() {
   // State for chatbot knowledge base
@@ -47,9 +50,17 @@ function App() {
           <MasterAccountProvider>
             <DealsProvider>
               <TasksProvider>
-                <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/login" element={<Login />} />
+                  
+                  {/* Protected routes wrapped in Sidebar layout */}
+                  <Route element={
+                    <ProtectedRoute>
+                      <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
+                    </ProtectedRoute>
+                  }>
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/deals" element={<Deals />} />
                     <Route path="/contacts" element={<Contacts />} />
@@ -67,9 +78,11 @@ function App() {
                     <Route path="/calendar" element={<CalendarPage />} />
                     <Route path="/clients" element={<Clients />} />
                     <Route path="/master-account" element={<MasterAccount />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Sidebar>
+                  </Route>
+                  
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </TasksProvider>
             </DealsProvider>
           </MasterAccountProvider>
