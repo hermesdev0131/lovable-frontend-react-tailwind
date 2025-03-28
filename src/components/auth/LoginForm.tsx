@@ -34,14 +34,23 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      const success = await login(email, password);
-      
-      if (success) {
-        // Redirect to the intended destination or to the dashboard
-        const destination = location.state?.from?.pathname || '/dashboard';
-        navigate(destination, { replace: true });
-      }
+      await login(email, password)
+        .then((success) => {
+          if (success) {
+            // Redirect to the intended destination or to the dashboard
+            const destination = location.state?.from?.pathname || '/dashboard';
+            navigate(destination, { replace: true });
+          } else {
+            // This branch handles the case where login returns false
+            toast({
+              title: "Login Failed",
+              description: "Invalid email or password. Please try again.",
+              variant: "destructive",
+            });
+          }
+        });
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
@@ -101,6 +110,7 @@ export const LoginForm = () => {
                   required
                   disabled={isLoading}
                   className="pr-10 bg-zinc-800 border-zinc-700 text-white"
+                  placeholder="Enter your password"
                 />
                 <button 
                   type="button"

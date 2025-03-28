@@ -12,8 +12,8 @@ const Login = () => {
   // If user is already authenticated, redirect to dashboard or the page they were trying to access
   useEffect(() => {
     if (currentUser) {
-      // Get the intended destination or default to home
-      const destination = location.state?.from?.pathname || '/';
+      // Get the intended destination or default to dashboard
+      const destination = location.state?.from?.pathname || '/dashboard';
       navigate(destination, { replace: true });
     }
   }, [currentUser, navigate, location]);

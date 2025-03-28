@@ -152,21 +152,29 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
+    
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
+  // Automatically start the dismiss timer for all toasts
   dispatch({
     type: "ADD_TOAST",
     toast: {
       ...props,
+      id,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()
       },
     },
   })
+  
+  // Automatically dismiss after the time delay
+  setTimeout(() => {
+    dismiss()
+  }, TOAST_REMOVE_DELAY)
 
   return {
-    id: id,
+    id,
     dismiss,
     update,
   }
