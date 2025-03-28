@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,13 +13,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MoreVertical, Edit, Trash2, CheckCircle, XCircle, Plus, CalendarIcon } from "lucide-react";
+import { MoreVertical, Edit, Trash2, CheckCircle, XCircle, Plus, CalendarIcon, LinkIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SocialMediaPlatform, socialMediaService } from '@/services/socialMedia';
 
 const PLATFORMS = [
   { id: "facebook", name: "Facebook", icon: Facebook },
@@ -48,6 +48,8 @@ const ContentScheduling = () => {
   const { addContentItem, getContentItems, updateContentStatus, clients, currentClientId, isInMasterMode } = useMasterAccount();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  const [publishingStatus, setPublishingStatus] = useState<Record<number, { inProgress: boolean, result?: { success: boolean, message: string } }>>({});
 
   useEffect(() => {
     const items = getContentItems(currentClientId);
@@ -97,11 +99,28 @@ const ContentScheduling = () => {
     });
   };
 
+  const getPlatformConnectionStatus = (platform: string): boolean => {
+    return socialMediaService.isPlatformConnected(platform as SocialMediaPlatform);
+  };
+
   const handleCreateContent = () => {
     if (!newContent.title || !newContent.content || newContent.platforms.length === 0 || !newContent.scheduledFor) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields and select at least one platform",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const disconnectedPlatforms = newContent.platforms.filter(
+      platform => !getPlatformConnectionStatus(platform)
+    );
+    
+    if (disconnectedPlatforms.length > 0) {
+      toast({
+        title: "Connection Required",
+        description: `Please connect your ${disconnectedPlatforms.join(', ')} accounts before scheduling content.`,
         variant: "destructive"
       });
       return;
@@ -175,7 +194,63 @@ const ContentScheduling = () => {
     return null;
   };
 
-  // Content Form Component
+  const handlePublishNow = async (contentItem: any) => {
+    if (publishingStatus[contentItem.id]?.inProgress) return;
+    
+    setPublishingStatus(prev => ({
+      ...prev,
+      [contentItem.id]: { inProgress: true }
+    }));
+    
+    try {
+      const result = await socialMediaService.postToSocialMedia(
+        contentItem.platform as SocialMediaPlatform,
+        {
+          content: contentItem.content,
+          title: contentItem.title,
+          mediaUrl: contentItem.media,
+          scheduledFor: contentItem.scheduledFor ? new Date(contentItem.scheduledFor) : undefined
+        }
+      );
+      
+      setPublishingStatus(prev => ({
+        ...prev,
+        [contentItem.id]: { inProgress: false, result }
+      }));
+      
+      if (result.success) {
+        toast({
+          title: "Content Published",
+          description: `Successfully published to ${contentItem.platform}.`
+        });
+      } else {
+        toast({
+          title: "Publishing Failed",
+          description: result.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error publishing content:", error);
+      setPublishingStatus(prev => ({
+        ...prev,
+        [contentItem.id]: { 
+          inProgress: false, 
+          result: { 
+            success: false, 
+            message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+          }
+        }
+      }));
+      
+      toast({
+        title: "Publishing Failed",
+        description: "An unexpected error occurred while publishing.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const ContentForm = () => (
     <div className="grid gap-4 py-4">
       <div className={cn("grid gap-4", isMobile ? "grid-cols-1" : "grid-cols-4 items-center")}>
@@ -322,7 +397,6 @@ const ContentScheduling = () => {
     </div>
   );
 
-  // Mobile Content Card Component
   const ContentCard = ({ content, index }: { content: any, index: number }) => (
     <Card key={content.id} className="mb-4">
       <CardHeader className="pb-2">
@@ -332,6 +406,9 @@ const ContentScheduling = () => {
             <CardDescription className="flex items-center mt-1">
               {renderPlatformIcon(content.platform)}
               {content.platform}
+              {!getPlatformConnectionStatus(content.platform) && (
+                <Badge variant="outline" className="ml-2 text-xs">Not Connected</Badge>
+              )}
             </CardDescription>
           </div>
           <DropdownMenu>
@@ -343,6 +420,11 @@ const ContentScheduling = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              {content.status === 'approved' && getPlatformConnectionStatus(content.platform) && (
+                <DropdownMenuItem onClick={() => handlePublishNow(content)}>
+                  <LinkIcon className="h-4 w-4 mr-2" /> Publish Now
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem disabled={content.status !== 'pending'} onClick={() => handleApproveContent(content.id)}>
                 <CheckCircle className="h-4 w-4 mr-2" /> Approve
               </DropdownMenuItem>
@@ -388,6 +470,39 @@ const ContentScheduling = () => {
               <span className="font-medium">{getClientName(content.createdBy)}</span>
             </div>
           )}
+          
+          {publishingStatus[content.id]?.inProgress ? (
+            <Badge className="mr-2">
+              <RefreshCw className="h-3 w-3 animate-spin mr-1" /> Publishing...
+            </Badge>
+          ) : publishingStatus[content.id]?.result ? (
+            <Badge 
+              variant={publishingStatus[content.id].result?.success ? "default" : "destructive"}
+              className="mr-2"
+            >
+              {publishingStatus[content.id].result?.success ? "Published" : "Failed"}
+            </Badge>
+          ) : null}
+          
+          {content.status === 'approved' && getPlatformConnectionStatus(content.platform) && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full mt-2"
+              onClick={() => handlePublishNow(content)}
+              disabled={publishingStatus[content.id]?.inProgress}
+            >
+              {publishingStatus[content.id]?.inProgress ? (
+                <>
+                  <RefreshCw className="h-3 w-3 animate-spin mr-1" /> Publishing...
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="h-3 w-3 mr-1" /> Publish Now
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -403,41 +518,50 @@ const ContentScheduling = () => {
               <CardDescription>Plan and schedule your social media content</CardDescription>
             </div>
             
-            {/* Proper Dialog structure for desktop */}
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-              {!isMobile ? (
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" /> Schedule New Content
-                  </Button>
-                </DialogTrigger>
-              ) : (
-                <Button onClick={() => setIsCreateModalOpen(true)} size="sm" className="flex items-center">
-                  <Plus className="h-4 w-4 mr-2" /> New Content
-                </Button>
-              )}
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size={isMobile ? "sm" : "default"}
+                onClick={() => window.location.href = '/social-media-integration'}
+              >
+                <LinkIcon className="h-4 w-4 mr-2" /> Connect Accounts
+              </Button>
               
-              {!isMobile && (
-                <DialogContent className="sm:max-w-[525px]">
-                  <DialogHeader>
-                    <DialogTitle>Schedule New Content</DialogTitle>
-                    <DialogDescription>
-                      Create and schedule new content for multiple social media platforms at once.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ContentForm />
-                  <DialogFooter>
-                    <Button 
-                      type="submit" 
-                      onClick={handleCreateContent}
-                      disabled={newContent.platforms.length === 0}
-                    >
-                      Schedule Content {newContent.platforms.length > 0 && `(${newContent.platforms.length} platforms)`}
+              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                {!isMobile ? (
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" /> Schedule New Content
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              )}
-            </Dialog>
+                  </DialogTrigger>
+                ) : (
+                  <Button onClick={() => setIsCreateModalOpen(true)} size="sm" className="flex items-center">
+                    <Plus className="h-4 w-4 mr-2" /> New Content
+                  </Button>
+                )}
+                
+                {!isMobile && (
+                  <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                      <DialogTitle>Schedule New Content</DialogTitle>
+                      <DialogDescription>
+                        Create and schedule new content for multiple social media platforms at once.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ContentForm />
+                    <DialogFooter>
+                      <Button 
+                        type="submit" 
+                        onClick={handleCreateContent}
+                        disabled={newContent.platforms.length === 0}
+                      >
+                        Schedule Content {newContent.platforms.length > 0 && `(${newContent.platforms.length} platforms)`}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                )}
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -492,9 +616,12 @@ const ContentScheduling = () => {
                     <TableRow key={content.id}>
                       <TableCell className="font-medium">{content.title}</TableCell>
                       <TableCell>
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-1">
                           {renderPlatformIcon(content.platform)}
                           {content.platform}
+                          {!getPlatformConnectionStatus(content.platform) && (
+                            <Badge variant="outline" className="ml-1 text-xs">Not Connected</Badge>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{format(new Date(content.scheduledFor || ''), "PPP")}</TableCell>
@@ -511,6 +638,19 @@ const ContentScheduling = () => {
                       </TableCell>
                       {isInMasterMode && <TableCell>{getClientName(content.createdBy)}</TableCell>}
                       <TableCell className="text-right">
+                        {publishingStatus[content.id]?.inProgress ? (
+                          <Badge className="mr-2">
+                            <RefreshCw className="h-3 w-3 animate-spin mr-1" /> Publishing...
+                          </Badge>
+                        ) : publishingStatus[content.id]?.result ? (
+                          <Badge 
+                            variant={publishingStatus[content.id].result?.success ? "default" : "destructive"}
+                            className="mr-2"
+                          >
+                            {publishingStatus[content.id].result?.success ? "Published" : "Failed"}
+                          </Badge>
+                        ) : null}
+                        
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -520,6 +660,14 @@ const ContentScheduling = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            {content.status === 'approved' && getPlatformConnectionStatus(content.platform) && (
+                              <DropdownMenuItem 
+                                onClick={() => handlePublishNow(content)}
+                                disabled={publishingStatus[content.id]?.inProgress}
+                              >
+                                <LinkIcon className="h-4 w-4 mr-2" /> Publish Now
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem disabled={content.status !== 'pending'} onClick={() => handleApproveContent(content.id)}>
                               <CheckCircle className="h-4 w-4 mr-2" /> Approve
                             </DropdownMenuItem>
@@ -545,7 +693,6 @@ const ContentScheduling = () => {
         </CardContent>
       </Card>
 
-      {/* Mobile: Bottom drawer for creating content */}
       {isMobile && (
         <Drawer open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DrawerContent className="px-4 pb-6">

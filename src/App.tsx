@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -24,6 +23,7 @@ import Reputation from "./pages/Reputation"
 import Account from "./pages/Account"
 import Login from "./pages/Login"
 import Integrations from "./pages/Integrations"
+import SocialMediaIntegration from "./pages/SocialMediaIntegration"
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -176,6 +176,17 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
+              
+              <Route 
+                path="/social-media-integration" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <SocialMediaIntegration />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* Catch all route */}
               <Route path="*" element={<NotFound />} />
