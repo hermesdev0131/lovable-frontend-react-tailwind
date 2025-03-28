@@ -65,18 +65,19 @@ const WebsiteManagement = () => {
   });
   
   const handleAddPage = (data: PageFormValues) => {
-    const newPage = {
+    // Convert the form data to a WebsitePage object that matches the context's expected format
+    addWebsitePage({
       ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-      views: 0,
       visits: 0,
+      views: 0,
       conversions: 0,
       bounceRate: 0,
-    };
+      updatedAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      clientId: null
+    });
     
-    addWebsitePage(newPage);
     addForm.reset();
     setIsAddDialogOpen(false);
   };
@@ -87,7 +88,7 @@ const WebsiteManagement = () => {
       editForm.reset({
         title: page.title,
         url: page.url,
-        slug: page.slug,
+        slug: page.url, // Using URL as slug if not available
         status: page.status,
         type: page.type
       });
@@ -98,7 +99,10 @@ const WebsiteManagement = () => {
   
   const handleEditPage = (data: PageFormValues) => {
     if (editingPageId) {
-      updateWebsitePage(editingPageId, data);
+      updateWebsitePage(editingPageId, {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      });
       setIsEditDialogOpen(false);
       setEditingPageId(null);
     }
@@ -181,7 +185,7 @@ const WebsiteManagement = () => {
         
         <TabsContent value="all" className="mt-4">
           <AllPagesTab 
-            websitePages={websitePages}
+            websitePages={websitePages} 
             openEditDialog={openEditDialog}
             deletePage={deletePage}
             startTracking={startTracking}
