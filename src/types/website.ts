@@ -27,6 +27,7 @@ export interface WebsitePage {
   updatedAt: string;
   lastUpdated: string;
   createdAt: string;
+  clientId: number | null;
 }
 
 export interface PageFormValues {
