@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Button } from '@/components/ui/button';
@@ -67,7 +68,7 @@ const WebsiteManagement = () => {
       views: 0,
       conversions: 0,
       bounceRate: 0,
-      clientId: currentClientId,
+      clientId: currentClientId || '',
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

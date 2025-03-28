@@ -21,15 +21,15 @@ export interface WebsitePage {
   status: 'published' | 'draft' | 'scheduled';
   type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   visits: number;
-  views?: number;
-  conversions?: number;
-  bounceRate?: number;
+  views: number;
+  conversions: number;
+  bounceRate: number;
   lastUpdated: string;
-  updatedAt?: string;
+  updatedAt: string;
   createdAt: string;
   content?: string;
   template?: string;
-  clientId?: number;
+  clientId: string;
 }
 
 export interface PageFormValues {
