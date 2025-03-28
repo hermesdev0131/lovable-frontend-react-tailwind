@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Plus, GripVertical, Edit, Save, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DEFAULT_STAGES, DealStage } from '@/lib/data';
+import { DEFAULT_STAGES } from '@/lib/data';
 import { useToast } from "@/hooks/use-toast";
+import { DealStage } from '@/components/deals/types';
 
 interface StageManagerProps {
   stages: DealStage[];

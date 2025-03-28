@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move, Settings } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -46,8 +47,8 @@ const Pipeline = () => {
     currency: 'USD',
     probability: 50,
     stage: 'lead' as DealStage,
-    contactId: 'contact1',
-    expectedCloseDate: new Date().toISOString().split('T')[0],
+    contactId: 'contact1', // This property will now be recognized
+    expectedCloseDate: new Date().toISOString().split('T')[0], // This property will now be recognized
     notes: '',
     createdAt: '',
     updatedAt: ''

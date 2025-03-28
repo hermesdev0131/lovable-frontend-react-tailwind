@@ -9,7 +9,9 @@ export interface Deal {
   stage: string;
   closingDate: string;
   description: string;
-  assignedTo?: string; // Adding the assignedTo property as optional
+  assignedTo?: string;
+  contactId?: string; // Adding contactId property
+  expectedCloseDate?: string; // Adding expectedCloseDate property
 }
 
 export interface Stage {
@@ -21,6 +23,9 @@ export interface Column {
   id: string;
   label: string;
 }
+
+// Adding DealStage type
+export type DealStage = string;
 
 export const DEFAULT_COLUMNS: Column[] = [
   { id: 'discovery', label: 'Discovery' },
