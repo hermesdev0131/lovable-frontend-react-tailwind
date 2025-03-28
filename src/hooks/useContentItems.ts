@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { ContentItem, Client } from '@/types/masterAccount';
+import { ContentItem, Client, Notification } from '@/types/masterAccount';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { toast } from "@/hooks/use-toast";
 
