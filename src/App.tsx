@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
 import { TasksProvider } from '@/contexts/TasksContext';
 import Index from './pages/Index';
@@ -37,6 +37,7 @@ function App() {
             <TasksProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Index />} />
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/opportunities" element={<Opportunities />} />
@@ -51,6 +52,7 @@ function App() {
                   />
                 } />
                 <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </TasksProvider>
           </DealsProvider>
