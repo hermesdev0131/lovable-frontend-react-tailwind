@@ -15,6 +15,7 @@ import ChatbotManagement from './pages/ChatbotManagement';
 import CalendarPage from './pages/Calendar';
 import CustomErrorBoundary from '@/components/CustomErrorBoundary';
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import Sidebar from '@/components/layout/Sidebar';
 
 function App() {
   // State for chatbot knowledge base
@@ -29,31 +30,40 @@ function App() {
     setKnowledgeBase(prev => [...prev, knowledge]);
   };
 
+  // Sidebar state
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  
+  const toggleSidebar = () => {
+    setSidebarExpanded(prev => !prev);
+  };
+
   return (
     <Router>
       <ThemeProvider defaultTheme="light" storageKey="crm-theme">
         <CustomErrorBoundary>
           <DealsProvider>
             <TasksProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Index />} />
-                <Route path="/deals" element={<Deals />} />
-                <Route path="/contacts" element={<Contacts />} />
-                <Route path="/opportunities" element={<Opportunities />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/social-media" element={<SocialMediaIntegration />} />
-                <Route path="/integrations" element={<Integrations />} />
-                <Route path="/chatbot" element={
-                  <ChatbotManagement 
-                    knowledgeBase={knowledgeBase} 
-                    onAddKnowledge={handleAddKnowledge} 
-                  />
-                } />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Index />} />
+                  <Route path="/deals" element={<Deals />} />
+                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/social-media" element={<SocialMediaIntegration />} />
+                  <Route path="/integrations" element={<Integrations />} />
+                  <Route path="/chatbot" element={
+                    <ChatbotManagement 
+                      knowledgeBase={knowledgeBase} 
+                      onAddKnowledge={handleAddKnowledge} 
+                    />
+                  } />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Sidebar>
             </TasksProvider>
           </DealsProvider>
         </CustomErrorBoundary>
