@@ -4,6 +4,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Login = () => {
   const location = useLocation();
@@ -31,6 +33,16 @@ const Login = () => {
         title: "Login Error",
         description: decodeURIComponent(errorParam),
         variant: "destructive",
+        action: (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => toast.dismiss()}
+            className="h-8 px-2"
+          >
+            <X size={16} />
+          </Button>
+        ),
       });
     }
   }, [location.search]);

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Loader2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -42,6 +42,16 @@ export const LoginForm = () => {
         toast({
           title: "Login Successful",
           description: "Welcome back!",
+          action: (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toast.dismiss()}
+              className="h-8 px-2"
+            >
+              <X size={16} />
+            </Button>
+          ),
         });
         
         // Redirect to the intended destination or to the dashboard
@@ -54,6 +64,16 @@ export const LoginForm = () => {
           title: "Login Failed",
           description: "Invalid email or password. Please try again.",
           variant: "destructive",
+          action: (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toast.dismiss()}
+              className="h-8 px-2"
+            >
+              <X size={16} />
+            </Button>
+          ),
         });
       }
     } catch (error) {
@@ -62,6 +82,16 @@ export const LoginForm = () => {
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
+        action: (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => toast.dismiss()}
+            className="h-8 px-2"
+          >
+            <X size={16} />
+          </Button>
+        ),
       });
     } finally {
       setIsLoading(false);
