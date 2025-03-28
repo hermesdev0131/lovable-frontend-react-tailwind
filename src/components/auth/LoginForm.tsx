@@ -56,18 +56,27 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-muted">
-      <Card className="w-full max-w-md">
+    <div className="flex flex-col items-center justify-center w-full max-w-md px-4">
+      {/* Logo above the login form */}
+      <div className="mb-8">
+        <img 
+          src="/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png" 
+          alt="Company Logo" 
+          className="h-20 w-auto"
+        />
+      </div>
+      
+      <Card className="w-full max-w-md bg-zinc-900 border-zinc-800 text-white">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold text-white">Login</CardTitle>
+          <CardDescription className="text-zinc-400">
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-zinc-300">Email</Label>
               <Input 
                 id="email" 
                 type="email" 
@@ -77,10 +86,11 @@ export const LoginForm = () => {
                 required
                 disabled={isLoading}
                 autoFocus
+                className="bg-zinc-800 border-zinc-700 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-zinc-300">Password</Label>
               <div className="relative">
                 <Input 
                   id="password" 
@@ -89,12 +99,12 @@ export const LoginForm = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pr-10"
+                  className="pr-10 bg-zinc-800 border-zinc-700 text-white"
                 />
                 <button 
                   type="button"
                   onClick={toggleShowPassword}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-white"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -103,7 +113,7 @@ export const LoginForm = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
