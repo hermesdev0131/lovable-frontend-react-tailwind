@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   DropdownMenu, 
@@ -42,7 +41,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
   const handleSwitchToClient = (clientId: number) => {
     switchToClient(clientId);
     setOpen(false);
-    navigate('/'); // Navigate to dashboard
+    navigate('/');
     toast({
       title: "Client Account Switched",
       description: `You are now viewing ${clients.find(c => c.id === clientId)?.name}`
@@ -51,11 +50,18 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
 
   const handleLogout = () => {
     switchToClient(null);
-    navigate('/');
+    
+    if (isInMasterMode) {
+      // You may need to access this from context, add if needed
+      // toggleMasterMode();
+    }
+    
     toast({
       title: "Logged Out",
       description: "You have been logged out successfully"
     });
+    
+    navigate('/login', { replace: true });
   };
   
   return (
@@ -135,7 +141,6 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
   );
 };
 
-// Helper function to conditionally add classes
 function cn(...classes: any) {
   return classes.filter(Boolean).join(' ');
 }

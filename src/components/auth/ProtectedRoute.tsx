@@ -28,6 +28,9 @@ export const ProtectedRoute = ({ children, requireMasterAccount = false }: Prote
         description: "Please log in to access this page",
         variant: "destructive"
       });
+      
+      // Force navigation to login page
+      navigate('/login', { replace: true, state: { from: location } });
     }
     
     // If user attempts to access a master-only route without proper permissions
@@ -38,7 +41,7 @@ export const ProtectedRoute = ({ children, requireMasterAccount = false }: Prote
         variant: "destructive"
       });
     }
-  }, [isAuthenticated, location.pathname, requireMasterAccount, isInMasterMode]);
+  }, [isAuthenticated, location.pathname, requireMasterAccount, isInMasterMode, navigate, location]);
   
   if (!isAuthenticated) {
     // Redirect to login page with the intended destination in state

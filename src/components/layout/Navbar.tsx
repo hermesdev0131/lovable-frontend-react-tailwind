@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Menu, User, LogOut, Search, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,17 +34,19 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
     // Clear client selection
     switchToClient(null);
     
-    // Ensure master mode is disabled to trigger login screen
-    toggleMasterMode();
-    
-    // Navigate to root/login page
-    navigate('/');
+    // If in master mode, toggle it to disable
+    if (isInMasterMode) {
+      toggleMasterMode();
+    }
     
     // Show logout confirmation
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out."
     });
+    
+    // Navigate to login page with replacement (prevents going back)
+    navigate('/login', { replace: true });
   };
   
   return (
@@ -212,5 +213,5 @@ export default Navbar;
 
 // Helper function to conditionally add classes
 function cn(...classes: any) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(' '); 
 }
