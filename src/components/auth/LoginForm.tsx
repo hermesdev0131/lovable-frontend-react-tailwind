@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ export const LoginForm = () => {
         title: "Error",
         description: "Please enter both email and password",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return;
     }
@@ -46,7 +45,7 @@ export const LoginForm = () => {
           title: "Login Failed",
           description: "Invalid email or password. Please try again.",
           variant: "destructive",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
       }
     } catch (error) {
@@ -54,7 +53,7 @@ export const LoginForm = () => {
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
     } finally {
       setIsLoading(false);

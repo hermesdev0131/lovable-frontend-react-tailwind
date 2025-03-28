@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,7 @@ const ForgotPassword = () => {
         title: "Error",
         description: "Please enter your email address",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return;
     }
@@ -48,7 +47,7 @@ const ForgotPassword = () => {
         toast({
           title: "Request Sent",
           description: "If this email is associated with an account, you'll receive password reset instructions shortly.",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
       }
     } catch (error) {
@@ -56,7 +55,7 @@ const ForgotPassword = () => {
         title: "Request Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
     } finally {
       setIsLoading(false);

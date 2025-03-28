@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           title: "Login Failed",
           description: "Invalid email or password. Please try again.",
           variant: "destructive",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
       }
       
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => document.querySelector('[toast-close]')?.click()}><X size={16} /></Button>
+        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return false;
     } finally {
