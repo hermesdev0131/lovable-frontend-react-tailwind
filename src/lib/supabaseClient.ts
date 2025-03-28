@@ -1,5 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
+import type { SignInWithPasswordCredentials, SignUpWithPasswordCredentials, AuthResponse, AuthTokenResponsePassword, AuthError } from '@supabase/supabase-js';
 
 // Default values for development mode
 const DEMO_SUPABASE_URL = 'https://demo.supabase.com';
@@ -27,59 +28,75 @@ const createDemoClient = () => {
     mockClient.auth = {
       ...originalAuth,
       // Mock sign in
-      signInWithPassword: async (credentials) => {
-        console.log('DEMO MODE: Sign in attempt for', credentials.email);
+      signInWithPassword: async (credentials: SignInWithPasswordCredentials) => {
+        // Type guard to check if email exists in credentials
+        const email = 'email' in credentials ? credentials.email as string : '';
+        const password = credentials.password;
+        
+        console.log('DEMO MODE: Sign in attempt for', email);
         
         // Very basic demo authentication
-        if (demoUsers.has(credentials.email) && demoUsers.get(credentials.email).password === credentials.password) {
-          const user = demoUsers.get(credentials.email);
+        if (email && demoUsers.has(email) && demoUsers.get(email).password === password) {
+          const user = demoUsers.get(email);
           return {
             data: {
               user: {
                 id: `demo_${Date.now()}`,
-                email: credentials.email,
-                user_metadata: { name: user.name || credentials.email.split('@')[0] }
+                email: email,
+                user_metadata: { name: user.name || email.split('@')[0] }
               },
               session: { access_token: 'demo_token' }
             },
             error: null
-          };
+          } as AuthTokenResponsePassword;
         }
         
         return {
           data: { user: null, session: null },
-          error: { message: 'Invalid login credentials' }
-        };
+          error: { message: 'Invalid login credentials' } as AuthError
+        } as AuthTokenResponsePassword;
       },
       
       // Mock sign up
-      signUp: async (credentials) => {
-        console.log('DEMO MODE: Sign up for', credentials.email);
+      signUp: async (credentials: SignUpWithPasswordCredentials) => {
+        // Type guard to check if email exists in credentials
+        const email = 'email' in credentials ? credentials.email as string : '';
+        const password = credentials.password;
+        
+        console.log('DEMO MODE: Sign up for', email);
+        
+        if (!email) {
+          return {
+            data: { user: null, session: null },
+            error: { message: 'Email is required' } as AuthError
+          } as AuthResponse;
+        }
+        
         const metadata = credentials.options?.data as Record<string, unknown> | undefined;
         const name = metadata?.name as string | undefined;
         
-        demoUsers.set(credentials.email, { 
-          password: credentials.password,
-          name: name || credentials.email.split('@')[0]
+        demoUsers.set(email, { 
+          password: password,
+          name: name || email.split('@')[0]
         });
         
         return {
           data: {
             user: {
               id: `demo_${Date.now()}`,
-              email: credentials.email,
+              email: email,
               user_metadata: { 
-                name: name || credentials.email.split('@')[0] 
+                name: name || email.split('@')[0] 
               }
             },
             session: null
           },
           error: null
-        };
+        } as AuthResponse;
       },
       
       // Mock password reset request
-      resetPasswordForEmail: async (email, options) => {
+      resetPasswordForEmail: async (email: string, options?: { redirectTo?: string }) => {
         console.log('DEMO MODE: Password reset requested for', email);
         // Generate a demo reset token
         const resetToken = `reset_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
@@ -89,7 +106,7 @@ const createDemoClient = () => {
       },
       
       // Mock update user (for password reset)
-      updateUser: async (attributes) => {
+      updateUser: async (attributes: { password?: string }) => {
         console.log('DEMO MODE: Password updated');
         return { data: { user: null }, error: null };
       },

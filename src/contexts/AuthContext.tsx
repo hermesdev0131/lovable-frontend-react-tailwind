@@ -36,9 +36,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (data.session) {
           const { user } = data.session;
           if (user) {
+            const userRole = ((user.user_metadata?.role as string) || 'user') as 'admin' | 'user';
             const profileData = { 
               name: user.user_metadata?.name, 
-              role: (user.user_metadata?.role as 'admin' | 'user') || 'user'
+              role: userRole
             };
 
             const authUser: User = {
@@ -63,9 +64,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (event === 'SIGNED_IN' && session) {
           const user = session.user;
           
+          const userRole = ((user.user_metadata?.role as string) || 'user') as 'admin' | 'user';
           const profileData = { 
             name: user.user_metadata?.name, 
-            role: (user.user_metadata?.role as 'admin' | 'user') || 'user'
+            role: userRole
           };
           
           const authUser: User = {
