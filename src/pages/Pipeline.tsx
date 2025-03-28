@@ -118,8 +118,9 @@ const Pipeline = () => {
   const handleAddDeal = () => {
     addDealToContext({ 
       ...newDeal,
-      closingDate: newDeal.closingDate || newDeal.expectedCloseDate,
-      description: newDeal.notes || ''
+      description: newDeal.description || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
     
     setAddDealOpen(false);
@@ -542,8 +543,8 @@ const Pipeline = () => {
                 <Input
                   id="date"
                   type="date"
-                  value={newDeal.expectedCloseDate}
-                  onChange={(e) => setNewDeal({...newDeal, expectedCloseDate: e.target.value})}
+                  value={newDeal.closingDate}
+                  onChange={(e) => setNewDeal({...newDeal, closingDate: e.target.value})}
                   className="w-full"
                 />
               </div>

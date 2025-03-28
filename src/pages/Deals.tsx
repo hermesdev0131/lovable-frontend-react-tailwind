@@ -78,7 +78,7 @@ const Deals = () => {
   const [dealsByStage, setDealsByStage] = useState(getInitialDealsByStage(initialDeals, columns));
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const { toast } = useToast();
-  const [editingDeal, setEditingDeal] = useState<any>(null);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
   const [teamMembers] = useState<TeamMember[]>(demoTeamMembers); // Using demo data
@@ -192,7 +192,7 @@ const Deals = () => {
     );
     
     // Update the deal's stage
-    const updatedDeal = {...deal, stage: destination.droppableId};
+    const updatedDeal: Deal = {...deal, stage: destination.droppableId};
     
     // Add to the destination stage at the correct index
     newDealsByStage[destination.droppableId] = [
@@ -216,13 +216,13 @@ const Deals = () => {
   };
 
   // Handle edit deal
-  const handleEditDeal = (deal: any) => {
+  const handleEditDeal = (deal: Deal) => {
     setEditingDeal(deal);
     setIsEditDialogOpen(true);
   };
 
   // Handle save edited deal
-  const handleSaveEditedDeal = (updatedDeal: any) => {
+  const handleSaveEditedDeal = (updatedDeal: Deal) => {
     // Update the deal in the context
     updateDealInContext(updatedDeal);
     
@@ -234,7 +234,7 @@ const Deals = () => {
   };
 
   // Handle delete deal
-  const handleDeleteDeal = (deal: any) => {
+  const handleDeleteDeal = (deal: Deal) => {
     // Delete the deal from context
     deleteDealFromContext(deal.id);
     
@@ -248,8 +248,9 @@ const Deals = () => {
   // Add a new deal
   const handleAddDeal = () => {
     const defaultStage = columns.length > 0 ? columns[0].id : "discovery";
+    const now = new Date().toISOString();
     
-    const newDeal = {
+    const newDeal: Omit<Deal, "id"> = {
       name: "New Deal",
       company: "Example Company",
       stage: defaultStage,
@@ -259,7 +260,9 @@ const Deals = () => {
       probability: 50,
       description: "New deal description",
       assignedTo: "account-owner",
-      contactId: "contact1"
+      contactId: "contact1",
+      createdAt: now,
+      updatedAt: now
     };
     
     // Add to context
@@ -273,7 +276,6 @@ const Deals = () => {
     });
     
     // Edit the newly created deal
-    // Need to find the deal with the correct ID after it was added
     const addedDeal = existingDeals.find(d => 
       d.name === newDeal.name && 
       d.company === newDeal.company && 

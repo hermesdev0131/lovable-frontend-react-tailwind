@@ -22,8 +22,8 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const newDeal: Deal = {
       ...dealData,
       id: uuidv4(),
-      createdAt: now,
-      updatedAt: now
+      createdAt: dealData.createdAt || now,
+      updatedAt: dealData.updatedAt || now
     };
     addDealToStorage(newDeal);
   };
