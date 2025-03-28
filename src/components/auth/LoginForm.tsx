@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -34,21 +34,24 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      await login(email, password)
-        .then((success) => {
-          if (success) {
-            // Redirect to the intended destination or to the dashboard
-            const destination = location.state?.from?.pathname || '/dashboard';
-            navigate(destination, { replace: true });
-          } else {
-            // This branch handles the case where login returns false
-            toast({
-              title: "Login Failed",
-              description: "Invalid email or password. Please try again.",
-              variant: "destructive",
-            });
-          }
+      const success = await login(email, password);
+      
+      if (success) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
         });
+        
+        // Redirect to the intended destination or to the dashboard
+        const destination = location.state?.from?.pathname || '/dashboard';
+        navigate(destination, { replace: true });
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -135,7 +138,7 @@ export const LoginForm = () => {
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Logging in...
                 </span>
               ) : (
