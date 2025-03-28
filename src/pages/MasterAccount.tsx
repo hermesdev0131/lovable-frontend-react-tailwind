@@ -1,112 +1,173 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Trash2, Mail, Lock } from "lucide-react";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { Button } from "@/components/ui/button";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Building2, Settings, BarChart3 } from "lucide-react";
 
 const MasterAccount = () => {
-  const [newClient, setNewClient] = useState({
-    name: "",
-    email: "",
-    password: "",
-    subscription: "Basic"
-  });
+  const { clients } = useMasterAccount();
   
-  const { addClient, clients, removeClient } = useMasterAccount();
-  const { toast } = useToast();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewClient({ ...newClient, [e.target.name]: e.target.value });
-  };
-
-  const handleSelectChange = (value: string) => {
-    setNewClient({ ...newClient, subscription: value });
-  };
-
-  const addNewClient = () => {
-    if (!newClient.name || !newClient.email || !newClient.password || !newClient.subscription) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!validateEmail(newClient.email)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (newClient.password.length < 6) {
-      toast({
-        title: "Password Too Short",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    addClient({
-      name: newClient.name,
-      email: newClient.email,
-      password: newClient.password,
-      subscription: newClient.subscription,
-      status: "active",
-      users: 0,
-      deals: 0,
-      contacts: 0,
-      lastActivity: new Date().toISOString(),
-      logo: "/placeholder.svg"
-    });
-    
-    setNewClient({ name: "", email: "", password: "", subscription: "Basic" });
-    toast({
-      title: "Client Added",
-      description: `${newClient.name} has been added successfully.`
-    });
-  };
-
-  const deleteClient = (id: number) => {
-    removeClient(id);
-    toast({
-      title: "Client Removed",
-      description: "The client has been removed successfully."
-    });
-  };
+  const clientSalesData = clients.map(client => ({
+    name: client.name,
+    sales: Math.floor(Math.random() * 10000) + 2000,
+    leads: Math.floor(Math.random() * 50) + 10,
+    conversions: Math.floor(Math.random() * 30) + 5,
+  }));
   
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
-
+  const totalSales = clientSalesData.reduce((sum, client) => sum + client.sales, 0);
+  const averageSales = clients.length > 0 ? totalSales / clients.length : 0;
+  const totalLeads = clientSalesData.reduce((sum, client) => sum + client.leads, 0);
+  const totalConversions = clientSalesData.reduce((sum, client) => sum + client.conversions, 0);
+  
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <Tabs defaultValue="clients" className="w-full">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Master Account Dashboard</h1>
+      </div>
+      
+      <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="mb-4 flex justify-start">
-          <TabsTrigger value="clients">Client Management</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="dashboard" className="flex items-center">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Client Sales Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="clients" className="space-y-6">
+        <TabsContent value="dashboard" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Client Sales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${totalSales.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground mt-1">Across all clients</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Average Sales per Client</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${Math.round(averageSales).toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground mt-1">Monthly average</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads / Conversions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalLeads} / {totalConversions}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {Math.round((totalConversions / totalLeads) * 100)}% conversion rate
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Client Sales Overview</CardTitle>
+              <CardDescription>Monthly sales performance by client</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={clientSalesData}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => ['$' + value.toLocaleString(), 'Sales']} />
+                    <Legend />
+                    <Bar dataKey="sales" fill="#4f46e5" name="Sales ($)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Detailed Client Performance</CardTitle>
+              <CardDescription>Sales and conversion metrics for all clients</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {clients.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No clients have been added yet</p>
+                  <Button variant="outline" onClick={() => document.getElementById('settings-tab')?.click()}>
+                    <Building2 className="h-4 w-4 mr-2" />
+                    Add Your First Client
+                  </Button>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Client Name</TableHead>
+                      <TableHead>Sales</TableHead>
+                      <TableHead>Leads</TableHead>
+                      <TableHead>Conversions</TableHead>
+                      <TableHead>Rate</TableHead>
+                      <TableHead>Subscription</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {clientSalesData.map((data, index) => {
+                      const client = clients[index];
+                      return (
+                        <TableRow key={client.id}>
+                          <TableCell className="font-medium">{client.name}</TableCell>
+                          <TableCell>${data.sales.toLocaleString()}</TableCell>
+                          <TableCell>{data.leads}</TableCell>
+                          <TableCell>{data.conversions}</TableCell>
+                          <TableCell>{Math.round((data.conversions / data.leads) * 100)}%</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              client.subscription === 'Enterprise' 
+                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100' 
+                                : client.subscription === 'Professional'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+                                : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                            }`}>
+                              {client.subscription}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-6" id="settings-tab">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <PlusCircle className="h-5 w-5 mr-2" /> Add New Client
+                <Building2 className="h-5 w-5 mr-2" /> Add New Client
               </CardTitle>
               <CardDescription>Create a new client account in the system</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Client Name</Label>
@@ -222,9 +283,7 @@ const MasterAccount = () => {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="settings">
+          
           <Card>
             <CardHeader>
               <CardTitle>Master Account Settings</CardTitle>
