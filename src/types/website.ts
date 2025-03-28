@@ -17,15 +17,15 @@ export interface WebsitePage {
   id: string;
   title: string;
   slug: string;
-  url?: string; // Added for backward compatibility
+  url?: string;
   status: 'published' | 'draft' | 'scheduled';
   type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   visits: number;
-  views?: number; // Added for backward compatibility 
+  views?: number;
   conversions?: number;
   bounceRate?: number;
   lastUpdated: string;
-  updatedAt?: string; // Added for backward compatibility
+  updatedAt?: string;
   createdAt: string;
   content?: string;
   template?: string;
@@ -35,7 +35,7 @@ export interface WebsitePage {
 export interface PageFormValues {
   title: string;
   slug: string;
-  url?: string; // Added for backward compatibility
+  url?: string;
   type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   template?: string;
   content?: string;

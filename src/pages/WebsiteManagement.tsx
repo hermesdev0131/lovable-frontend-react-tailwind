@@ -10,7 +10,7 @@ import { Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 // Import website types
-import { PageFormValues } from '@/types/website';
+import { PageFormValues, WebsitePage } from '@/types/website';
 
 // Import refactored components
 import WebsiteStats from '@/components/website/WebsiteStats';
@@ -33,7 +33,7 @@ const WebsiteManagement = () => {
   // Calculate page stats
   const totalPages = websitePages.length;
   const publishedPages = websitePages.filter(page => page.status === 'published').length;
-  const totalViews = websitePages.reduce((sum, page) => sum + (page.views || page.visits || 0), 0);
+  const totalViews = websitePages.reduce((sum, page) => sum + (page.views || page.visits), 0);
   const totalConversions = websitePages.reduce((sum, page) => sum + (page.conversions || 0), 0);
   const avgBounceRate = websitePages.length > 0 
     ? websitePages.reduce((sum, page) => sum + (page.bounceRate || 0), 0) / websitePages.length 
@@ -41,7 +41,7 @@ const WebsiteManagement = () => {
   
   // Landing pages specifically
   const landingPages = websitePages.filter(page => page.type === 'landing');
-  const landingPageViews = landingPages.reduce((sum, page) => sum + (page.views || page.visits || 0), 0);
+  const landingPageViews = landingPages.reduce((sum, page) => sum + (page.views || page.visits), 0);
   const landingPageConversions = landingPages.reduce((sum, page) => sum + (page.conversions || 0), 0);
   
   const addForm = useForm<PageFormValues>({
@@ -63,7 +63,7 @@ const WebsiteManagement = () => {
   });
   
   const handleAddPage = (data: PageFormValues) => {
-    const newPage = {
+    const newPage: Omit<WebsitePage, 'id'> = {
       ...data,
       visits: 0,
       views: 0,
@@ -85,8 +85,9 @@ const WebsiteManagement = () => {
     if (page) {
       editForm.reset({
         title: page.title,
-        slug: page.slug || page.url,
-        status: page.status,
+        slug: page.slug,
+        url: page.url,
+        status: page.status as 'published' | 'draft' | 'scheduled',
         type: page.type,
         content: page.content,
         template: page.template
