@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import {
   Toast,
@@ -172,6 +171,13 @@ function toast(props: Toast) {
     dismiss,
     update,
   }
+}
+
+toast.dismiss = (toastId?: string) => {
+  dispatch({
+    type: "DISMISS_TOAST",
+    toastId,
+  })
 }
 
 function useToast() {
