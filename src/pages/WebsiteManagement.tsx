@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Card } from '@/components/ui/card';
