@@ -60,7 +60,7 @@ export const LoginForm = () => {
       {/* Logo above the login form */}
       <div className="mb-8">
         <img 
-          src="/lovable-uploads/0e3b9242-069b-4a19-b5ad-8f96b69d7d54.png" 
+          src="/lovable-uploads/56808916-d8ae-4d5a-8aa0-f0d671bc7717.png" 
           alt="Company Logo" 
           className="h-20 w-auto"
         />
