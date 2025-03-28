@@ -10,6 +10,31 @@ interface RealTimeAnalyticsProps {
   websiteId: string | null;
 }
 
+// Define a clear interface for different event types
+interface BaseEvent {
+  type: string;
+  time: string;
+  device: string;
+}
+
+interface PageViewEvent extends BaseEvent {
+  type: 'pageview';
+  page: string;
+}
+
+interface ClickEvent extends BaseEvent {
+  type: 'click';
+  element: string;
+}
+
+interface ConversionEvent extends BaseEvent {
+  type: 'conversion';
+  value: string;
+}
+
+// Union type for all possible events
+type AnalyticsEvent = PageViewEvent | ClickEvent | ConversionEvent;
+
 const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
   const [activeUsers, setActiveUsers] = useState(Math.floor(Math.random() * 20) + 1);
   const [pageViews, setPageViews] = useState(Math.floor(Math.random() * 50) + 10);
@@ -21,7 +46,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
     tablet: Math.floor(Math.random() * 10) + 5,
   });
   const [bounceRate, setBounceRate] = useState(Math.floor(Math.random() * 50) + 10);
-  const [recentEvents, setRecentEvents] = useState([
+  const [recentEvents, setRecentEvents] = useState<AnalyticsEvent[]>([
     { type: 'pageview', page: '/home', time: '2 seconds ago', device: 'mobile' },
     { type: 'click', element: 'Sign Up Button', time: '15 seconds ago', device: 'desktop' },
     { type: 'conversion', value: '$24.99', time: '47 seconds ago', device: 'desktop' },
@@ -54,25 +79,43 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ websiteId }) => {
       });
       
       // Generate a new event
-      const eventTypes = ['pageview', 'click', 'conversion'];
+      const eventTypes = ['pageview', 'click', 'conversion'] as const;
       const pages = ['/home', '/products', '/about', '/contact', '/blog'];
       const elements = ['Sign Up Button', 'Learn More Link', 'Add to Cart', 'Submit Form', 'Download PDF'];
       const devices = ['mobile', 'desktop', 'tablet'];
       
-      const newEvent = {
-        type: eventTypes[Math.floor(Math.random() * eventTypes.length)],
-        page: pages[Math.floor(Math.random() * pages.length)],
-        element: elements[Math.floor(Math.random() * elements.length)],
-        value: `$${(Math.random() * 100).toFixed(2)}`,
-        time: 'just now',
-        device: devices[Math.floor(Math.random() * devices.length)]
-      };
+      const randomEventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+      
+      let newEvent: AnalyticsEvent;
+      
+      if (randomEventType === 'pageview') {
+        newEvent = {
+          type: 'pageview',
+          page: pages[Math.floor(Math.random() * pages.length)],
+          time: 'just now',
+          device: devices[Math.floor(Math.random() * devices.length)]
+        };
+      } else if (randomEventType === 'click') {
+        newEvent = {
+          type: 'click',
+          element: elements[Math.floor(Math.random() * elements.length)],
+          time: 'just now',
+          device: devices[Math.floor(Math.random() * devices.length)]
+        };
+      } else {
+        newEvent = {
+          type: 'conversion',
+          value: `$${(Math.random() * 100).toFixed(2)}`,
+          time: 'just now',
+          device: devices[Math.floor(Math.random() * devices.length)]
+        };
+      }
       
       setRecentEvents(prev => [newEvent, ...prev.slice(0, 9)]);
     }, 10000);
     
     return () => clearInterval(interval);
-  }, [websiteId, toast]);
+  }, [websiteId]);
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

@@ -21,12 +21,47 @@ import DevicesTab from '@/components/website/DevicesTab';
 import AddPageDialog from '@/components/website/AddPageDialog';
 import EditPageDialog from '@/components/website/EditPageDialog';
 
+// Create a type adapter to handle context vs component type differences
+type ContextWebsitePage = {
+  id: number;
+  title: string;
+  url: string;
+  status: 'published' | 'draft' | 'scheduled';
+  type: 'landing' | 'blog' | 'product' | 'other';
+  createdAt: string;
+  updatedAt: string;
+  views: number;
+  conversions: number;
+  bounceRate: number;
+  clientId: number | null;
+};
+
+// Type adapter function to ensure consistency
+const adaptWebsitePageForComponents = (page: ContextWebsitePage) => {
+  return {
+    id: String(page.id),
+    title: page.title,
+    slug: page.url || '',
+    url: page.url,
+    status: page.status,
+    type: page.type,
+    visits: page.views || 0,
+    views: page.views || 0,
+    conversions: page.conversions || 0,
+    bounceRate: page.bounceRate || 0,
+    lastUpdated: page.updatedAt,
+    updatedAt: page.updatedAt,
+    createdAt: page.createdAt,
+    clientId: String(page.clientId)
+  };
+};
+
 const WebsiteManagement = () => {
   const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage, currentClientId } = useMasterAccount();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
-  const [selectedPage, setSelectedPage] = useState<number | null>(null);
+  const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   
   // Calculate page stats
@@ -71,7 +106,7 @@ const WebsiteManagement = () => {
       views: 0,
       conversions: 0,
       bounceRate: 0,
-      clientId: currentClientId || null,
+      clientId: currentClientId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -81,8 +116,10 @@ const WebsiteManagement = () => {
     setIsAddDialogOpen(false);
   };
   
-  const openEditDialog = (pageId: number) => {
-    const page = websitePages.find(p => p.id === pageId);
+  const openEditDialog = (pageId: string) => {
+    const numericId = Number(pageId);
+    const page = websitePages.find(p => p.id === numericId);
+    
     if (page) {
       editForm.reset({
         title: page.title,
@@ -90,7 +127,7 @@ const WebsiteManagement = () => {
         status: page.status,
         type: page.type,
       });
-      setEditingPageId(pageId);
+      setEditingPageId(numericId);
       setIsEditDialogOpen(true);
     }
   };
@@ -109,9 +146,10 @@ const WebsiteManagement = () => {
     }
   };
   
-  const deletePage = (pageId: number) => {
+  const deletePage = (pageId: string) => {
+    const numericId = Number(pageId);
     if (window.confirm('Are you sure you want to delete this page?')) {
-      removeWebsitePage(pageId);
+      removeWebsitePage(numericId);
     }
   };
   
@@ -136,7 +174,7 @@ const WebsiteManagement = () => {
     });
   };
   
-  const startTracking = (pageId: number) => {
+  const startTracking = (pageId: string) => {
     setSelectedPage(pageId);
     
     if (!isTracking) {
@@ -147,6 +185,10 @@ const WebsiteManagement = () => {
       });
     }
   };
+  
+  // Adapt website pages for component consumption
+  const adaptedWebsitePages = websitePages.map(adaptWebsitePageForComponents);
+  const adaptedLandingPages = landingPages.map(adaptWebsitePageForComponents);
   
   return (
     <div className="container mx-auto py-8 px-4 animate-fade-in">
@@ -186,16 +228,10 @@ const WebsiteManagement = () => {
         
         <TabsContent value="all" className="mt-4">
           <AllPagesTab 
-            websitePages={websitePages.map(page => ({
-              ...page,
-              id: String(page.id), // Convert to string for component compatibility
-              slug: page.url || '', // Map url to slug for component compatibility
-              lastUpdated: page.updatedAt, // Map updatedAt to lastUpdated for component compatibility
-              visits: page.views || 0 // Map views to visits for component compatibility
-            }))}
-            openEditDialog={(pageId) => openEditDialog(Number(pageId))}
-            deletePage={(pageId) => deletePage(Number(pageId))}
-            startTracking={(pageId) => startTracking(Number(pageId))}
+            websitePages={adaptedWebsitePages}
+            openEditDialog={openEditDialog}
+            deletePage={deletePage}
+            startTracking={startTracking}
             formatDate={formatDate}
             getStatusBadgeVariant={getStatusBadgeVariant}
           />
@@ -203,34 +239,22 @@ const WebsiteManagement = () => {
         
         <TabsContent value="landing" className="mt-4">
           <LandingPagesTab 
-            landingPages={landingPages.map(page => ({
-              ...page,
-              id: String(page.id), // Convert to string for component compatibility
-              slug: page.url || '', // Map url to slug for component compatibility
-              lastUpdated: page.updatedAt, // Map updatedAt to lastUpdated for component compatibility
-              visits: page.views || 0 // Map views to visits for component compatibility
-            }))}
+            landingPages={adaptedLandingPages}
             landingPageViews={landingPageViews}
             landingPageConversions={landingPageConversions}
-            openEditDialog={(pageId) => openEditDialog(Number(pageId))}
-            deletePage={(pageId) => deletePage(Number(pageId))}
+            openEditDialog={openEditDialog}
+            deletePage={deletePage}
             getStatusBadgeVariant={getStatusBadgeVariant}
           />
         </TabsContent>
         
         <TabsContent value="realtime" className="mt-4">
-          <RealTimeTab selectedPage={selectedPage ? String(selectedPage) : null} />
+          <RealTimeTab selectedPage={selectedPage} />
         </TabsContent>
         
         <TabsContent value="insights" className="mt-4">
           <InsightsTab 
-            websitePages={websitePages.map(page => ({
-              ...page,
-              id: String(page.id), // Convert to string for component compatibility
-              slug: page.url || '', // Map url to slug for component compatibility
-              lastUpdated: page.updatedAt, // Map updatedAt to lastUpdated for component compatibility
-              visits: page.views || 0 // Map views to visits for component compatibility
-            }))}
+            websitePages={adaptedWebsitePages}
           />
         </TabsContent>
         
