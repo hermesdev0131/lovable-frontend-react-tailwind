@@ -225,7 +225,7 @@ const PlatformDistribution = ({ platformData }: { platformData: any[] }) => {
   );
 };
 
-export const Reputation = () => {
+const Reputation = () => {
   const { toast } = useToast();
   const [reviews, setReviews] = useState<YextReview[]>([]);
   const [ratingData, setRatingData] = useState<YextRatingData[]>([]);
