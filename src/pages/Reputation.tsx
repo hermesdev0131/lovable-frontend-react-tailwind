@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ThumbsDown, MessageSquare, Bell, BarChart2, Filter, RefreshCw, AlertCircle, CheckCircle, ArrowRight, Upload, Link as LinkIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,22 +17,21 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Progress } from '@/components/ui/progress';
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Empty initial data instead of sample data
-const emptyRatingData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split('T')[0],
-  average: "0.0",
-  volume: 0,
-}));
-
-const emptyReviewsData = [];
-
-const emptyPlatformData = [
-  { name: 'Google', reviews: 0, average: 0 },
-  { name: 'Yelp', reviews: 0, average: 0 },
-  { name: 'Facebook', reviews: 0, average: 0 },
-  { name: 'TripAdvisor', reviews: 0, average: 0 },
-];
+import { 
+  getYextCredentials, 
+  storeYextCredentials, 
+  clearYextCredentials, 
+  testYextConnection, 
+  validateYextApiKey, 
+  fetchYextReviews, 
+  fetchYextRatingData, 
+  fetchYextPlatformData, 
+  respondToYextReview,
+  YextReview,
+  YextRatingData,
+  YextCredentials
+} from '@/services/yext';
+import { Textarea } from '@/components/ui/textarea';
 
 const Reputation = () => {
   const [selectedDate, setSelectedDate] = useState('30d');
@@ -52,49 +50,117 @@ const Reputation = () => {
   });
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
+  const [selectedReview, setSelectedReview] = useState<YextReview | null>(null);
+  const [responseText, setResponseText] = useState('');
+  const [showResponseDialog, setShowResponseDialog] = useState(false);
+  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const { toast } = useToast();
   
-  // Using the empty data sets
-  const [ratingData, setRatingData] = useState(emptyRatingData);
-  const [reviewsData, setReviewsData] = useState(emptyReviewsData);
-  const [platformData, setPlatformData] = useState(emptyPlatformData);
+  const [ratingData, setRatingData] = useState<YextRatingData[]>([]);
+  const [reviewsData, setReviewsData] = useState<YextReview[]>([]);
+  const [platformData, setPlatformData] = useState<any[]>([]);
 
-  // Calculate stats based on actual data
-  const totalReviews = reviewsData.length;
-  const averageRating = totalReviews > 0 
-    ? (reviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1) 
-    : "0.0";
-  const positiveReviews = reviewsData.filter(review => review.rating >= 4).length;
-  const negativeReviews = reviewsData.filter(review => review.rating <= 2).length;
-  const pendingResponses = reviewsData.filter(review => !review.replied).length;
+  useEffect(() => {
+    const savedCredentials = getYextCredentials();
+    
+    if (savedCredentials) {
+      setYextIntegration({
+        apiKey: savedCredentials.apiKey,
+        businessId: savedCredentials.businessId,
+        lastSynced: localStorage.getItem('yextLastSynced') || null,
+        isConnected: true
+      });
+      
+      fetchData(savedCredentials);
+    }
+  }, []);
 
-  const syncWithYext = () => {
+  const fetchData = async (credentials: YextCredentials) => {
+    setIsLoading(true);
+    
+    try {
+      const reviews = await fetchYextReviews(credentials, filters);
+      setReviewsData(reviews);
+      
+      const ratings = await fetchYextRatingData(credentials, selectedDate);
+      setRatingData(ratings);
+      
+      const platforms = await fetchYextPlatformData(credentials);
+      setPlatformData(platforms);
+      
+      const now = new Date().toISOString();
+      localStorage.setItem('yextLastSynced', now);
+      setYextIntegration(prev => ({...prev, lastSynced: now}));
+      
+    } catch (error) {
+      console.error("Error fetching Yext data:", error);
+      toast({
+        title: "Data Fetch Error",
+        description: "There was an error retrieving your Yext data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (yextIntegration.isConnected) {
+      const credentials = getYextCredentials();
+      if (credentials) {
+        fetchData(credentials);
+      }
+    }
+  }, [filters, selectedDate]);
+
+  const syncWithYext = async () => {
+    const credentials = getYextCredentials();
+    if (!credentials) {
+      toast({
+        title: "Connection Error",
+        description: "No Yext credentials found. Please reconnect your account.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setShowSyncDialog(true);
     setSyncProgress(0);
     
     const interval = setInterval(() => {
       setSyncProgress(prev => {
-        if (prev >= 100) {
+        if (prev >= 90) {
           clearInterval(interval);
-          setYextIntegration(prev => ({
-            ...prev,
-            lastSynced: new Date().toISOString(),
-            isConnected: true
-          }));
-          
-          setTimeout(() => {
-            setShowSyncDialog(false);
-            toast({
-              title: "Sync Complete",
-              description: "Your Yext data has been successfully synced.",
-            });
-          }, 500);
-          
-          return 100;
+          return 90;
         }
         return prev + 10;
       });
     }, 300);
+    
+    try {
+      await fetchData(credentials);
+      
+      setSyncProgress(100);
+      
+      setTimeout(() => {
+        setShowSyncDialog(false);
+        toast({
+          title: "Sync Complete",
+          description: "Your Yext data has been successfully synced.",
+        });
+      }, 500);
+    } catch (error) {
+      console.error("Yext sync error:", error);
+      clearInterval(interval);
+      setSyncProgress(0);
+      setShowSyncDialog(false);
+      
+      toast({
+        title: "Sync Failed",
+        description: "There was an error syncing with Yext.",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -121,37 +187,192 @@ const Reputation = () => {
 
   const handleRefresh = () => {
     setIsLoading(true);
-    setTimeout(() => {
+    const credentials = getYextCredentials();
+    
+    if (credentials) {
+      fetchData(credentials)
+        .then(() => {
+          toast({
+            title: "Dashboard refreshed",
+            description: "Latest reviews and ratings have been updated",
+          });
+        });
+    } else {
       setIsLoading(false);
       toast({
-        title: "Dashboard refreshed",
-        description: "Latest reviews and ratings have been updated",
+        title: "Connection Error",
+        description: "No Yext credentials found. Please connect your account.",
+        variant: "destructive"
       });
-    }, 1500);
+    }
   };
 
-  const handleRespond = (reviewId: number) => {
-    toast({
-      title: "Response mode activated",
-      description: "You can now draft a response to this review",
-    });
+  const handleRespond = (review: YextReview) => {
+    setSelectedReview(review);
+    setResponseText('');
+    setShowResponseDialog(true);
   };
 
-  const handleConnectYext = () => {
-    if (yextIntegration.apiKey && yextIntegration.businessId) {
-      syncWithYext();
-    } else {
+  const handleSubmitResponse = async () => {
+    if (!selectedReview || !responseText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a response.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const credentials = getYextCredentials();
+    if (!credentials) {
+      toast({
+        title: "Connection Error",
+        description: "No Yext credentials found. Please reconnect your account.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsSubmittingResponse(true);
+    
+    try {
+      const success = await respondToYextReview(
+        credentials,
+        selectedReview.id,
+        responseText
+      );
+      
+      if (success) {
+        setReviewsData(prevReviews => 
+          prevReviews.map(review => 
+            review.id === selectedReview.id 
+              ? {...review, replied: true, replyText: responseText} 
+              : review
+          )
+        );
+        
+        setShowResponseDialog(false);
+        toast({
+          title: "Response Submitted",
+          description: "Your response has been posted successfully.",
+        });
+      } else {
+        toast({
+          title: "Response Failed",
+          description: "There was an error posting your response. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error responding to review:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmittingResponse(false);
+    }
+  };
+
+  const handleConnectYext = async () => {
+    if (!yextIntegration.apiKey || !yextIntegration.businessId) {
       toast({
         title: "Missing Information",
         description: "Please enter your Yext API key and Business ID",
         variant: "destructive",
       });
+      return;
+    }
+    
+    if (!validateYextApiKey(yextIntegration.apiKey)) {
+      toast({
+        title: "Invalid API Key",
+        description: "Please enter a valid Yext API key",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const credentials = {
+        apiKey: yextIntegration.apiKey,
+        businessId: yextIntegration.businessId
+      };
+      
+      const isConnected = await testYextConnection(credentials);
+      
+      if (isConnected) {
+        storeYextCredentials(credentials);
+        const now = new Date().toISOString();
+        localStorage.setItem('yextLastSynced', now);
+        
+        setYextIntegration(prev => ({
+          ...prev,
+          lastSynced: now,
+          isConnected: true
+        }));
+        
+        await fetchData(credentials);
+        
+        toast({
+          title: "Connection Successful",
+          description: "Your Yext account has been connected successfully.",
+        });
+      } else {
+        toast({
+          title: "Connection Failed",
+          description: "Could not connect to Yext. Please verify your credentials.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Yext connection error:", error);
+      toast({
+        title: "Connection Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleDisconnect = () => {
+    clearYextCredentials();
+    localStorage.removeItem('yextLastSynced');
+    
+    setYextIntegration({
+      apiKey: '',
+      businessId: '',
+      lastSynced: null,
+      isConnected: false
+    });
+    
+    setRatingData([]);
+    setReviewsData([]);
+    setPlatformData([]);
+    
+    toast({
+      title: "Disconnected",
+      description: "Your Yext account has been disconnected.",
+    });
+  };
+
+  const totalReviews = reviewsData.length;
+  const averageRating = totalReviews > 0 
+    ? (reviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1) 
+    : "0.0";
+  const positiveReviews = reviewsData.filter(review => review.rating >= 4).length;
+  const negativeReviews = reviewsData.filter(review => review.rating <= 2).length;
+  const pendingResponses = reviewsData.filter(review => !review.replied).length;
 
   const filteredReviews = reviewsData.filter(review => {
     if (filters.rating && review.rating !== filters.rating) return false;
     if (filters.platform && review.platform !== filters.platform) return false;
+    if (filters.keyword && !review.comment.toLowerCase().includes(filters.keyword.toLowerCase())) return false;
     return true;
   });
 
@@ -764,6 +985,57 @@ const Reputation = () => {
               <span>{syncProgress}%</span>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showResponseDialog} onOpenChange={setShowResponseDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Respond to Review</DialogTitle>
+            <DialogDescription>
+              Write your response to the customer's review
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedReview && (
+            <div className="py-4">
+              <div className="mb-4 p-4 bg-muted rounded-md">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-medium">{selectedReview.authorName}</p>
+                    <div className="flex items-center mt-1">
+                      <StarRating rating={selectedReview.rating} />
+                      <span className="ml-2 text-xs text-muted-foreground">{formatDate(selectedReview.date)}</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline">{selectedReview.platform}</Badge>
+                </div>
+                <p className="text-sm mt-2">{selectedReview.comment}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="response">Your Response</Label>
+                <Textarea 
+                  id="response" 
+                  placeholder="Type your response here..." 
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  className="min-h-[120px]"
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResponseDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSubmitResponse} 
+              disabled={isSubmittingResponse || !responseText.trim()}
+            >
+              {isSubmittingResponse && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+              Submit Response
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
