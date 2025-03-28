@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CalendarDays, Check, Copy, ExternalLink, Loader2, RefreshCw, Search, Star, StarHalf, Trash2, X } from "lucide-react";
 import {
   YextCredentials,
@@ -20,6 +22,7 @@ import {
 } from '@/services/yext';
 import { useToast } from "@/hooks/use-toast";
 import { ReviewFilter } from '@/types/website';
+import { formatReviewDate } from '@/utils/formatters';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,31 +66,31 @@ const RatingBreakdown = ({ reviews }: { reviews: YextReview[] }) => {
   });
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rating Breakdown</CardTitle>
-        <CardDescription>Distribution of ratings across all reviews</CardDescription>
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Rating Breakdown</CardTitle>
+        <CardDescription className="text-xs">Distribution of ratings across all reviews</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {ratingCounts.map((count, index) => {
             const rating = index + 1;
             const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
             
             return (
               <div key={rating} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span>{rating} Star</span>
-                  <Star className="h-4 w-4 text-yellow-500" />
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">{rating} Star</span>
+                  <Star className="h-3 w-3 text-yellow-500" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-yellow-500"
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
-                  <span>{count}</span>
+                  <span className="text-xs">{count}</span>
                 </div>
               </div>
             );
@@ -100,23 +103,23 @@ const RatingBreakdown = ({ reviews }: { reviews: YextReview[] }) => {
 
 const ReviewsList = ({ reviews, onSelectReview }: { reviews: YextReview[], onSelectReview: (review: YextReview) => void }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-20rem)]">
       {reviews.length > 0 ? (
         reviews.map((review) => (
-          <Card key={review.id} className="glass-card hover:shadow-md transition-all duration-300">
-            <CardHeader className="flex items-start">
+          <Card key={review.id} className="hover:shadow-md transition-all duration-300">
+            <CardHeader className="flex items-start p-4">
               <div className="flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-yellow-500" />
+                    <Star key={i} className="h-3 w-3 text-yellow-500" />
                   ))}
                   {[...Array(5 - review.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-gray-300" />
+                    <Star key={i} className="h-3 w-3 text-gray-300" />
                   ))}
                 </div>
-                <CardTitle className="text-sm">{review.authorName}</CardTitle>
+                <CardTitle className="text-sm mt-1">{review.authorName}</CardTitle>
                 <CardDescription className="text-xs text-muted-foreground">
-                  {review.platform} - {new Date(review.date).toLocaleDateString()}
+                  {review.platform} - {formatReviewDate(review.date)}
                 </CardDescription>
               </div>
               
@@ -156,12 +159,12 @@ const ReviewsList = ({ reviews, onSelectReview }: { reviews: YextReview[], onSel
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardHeader>
-            <CardContent className="text-sm">
-              <p>{review.comment}</p>
+            <CardContent className="text-sm p-4 pt-0">
+              <p className="line-clamp-3">{review.comment}</p>
               {review.replied && (
-                <div className="mt-2 p-3 bg-muted rounded-md">
+                <div className="mt-2 p-2 bg-muted rounded-md">
                   <p className="text-xs font-medium">You Replied:</p>
-                  <p className="text-sm">{review.replyText}</p>
+                  <p className="text-xs line-clamp-2">{review.replyText}</p>
                 </div>
               )}
             </CardContent>
@@ -178,13 +181,13 @@ const ReviewsList = ({ reviews, onSelectReview }: { reviews: YextReview[], onSel
 
 const RatingChart = ({ ratingData }: { ratingData: YextRatingData[] }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rating Over Time</CardTitle>
-        <CardDescription>Average rating and review volume over the past 30 days</CardDescription>
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Rating Over Time</CardTitle>
+        <CardDescription className="text-xs">Average rating and review volume over the past 30 days</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-56 w-full">
+        <div className="h-48 w-full">
           {/* Placeholder for chart */}
           <Alert>
             <AlertDescription>
@@ -199,20 +202,20 @@ const RatingChart = ({ ratingData }: { ratingData: YextRatingData[] }) => {
 
 const PlatformDistribution = ({ platformData }: { platformData: any[] }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Platform Distribution</CardTitle>
-        <CardDescription>Distribution of reviews across different platforms</CardDescription>
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Platform Distribution</CardTitle>
+        <CardDescription className="text-xs">Distribution of reviews across different platforms</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {platformData.map((platform) => (
             <div key={platform.name} className="flex items-center justify-between">
-              <span>{platform.name}</span>
+              <span className="text-sm">{platform.name}</span>
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <span>{platform.average.toFixed(1)}</span>
-                <Badge variant="secondary">{platform.reviews} Reviews</Badge>
+                <Star className="h-3 w-3 text-yellow-500" />
+                <span className="text-sm">{platform.average.toFixed(1)}</span>
+                <Badge variant="secondary" className="text-xs">{platform.reviews} Reviews</Badge>
               </div>
             </div>
           ))}
@@ -392,56 +395,64 @@ export const Reputation = () => {
   };
   
   return (
-    <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8 flex justify-between items-center animate-fade-in">
+    <div className="container mx-auto py-4 max-w-full">
+      <div className="mb-4 flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Reputation Management</h2>
           <p className="text-muted-foreground">Monitor and respond to reviews from various platforms</p>
         </div>
-        <Button className="flex items-center gap-1">
-          <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Sync Reviews
+        <Button className="flex items-center gap-1" disabled={isLoading}>
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-1" />
+          )}
+          Sync Reviews
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="glass-card hover:shadow-md transition-all duration-300">
-          <CardHeader>
-            <CardTitle>Filter Reviews</CardTitle>
-            <CardDescription>Apply filters to narrow down the reviews</CardDescription>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <Card className="md:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Filter Reviews</CardTitle>
+            <CardDescription className="text-xs">Apply filters to narrow down the reviews</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="search">Search Reviews</Label>
+          <CardContent className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="search" className="text-xs">Search Reviews</Label>
               <div className="relative">
                 <Input
                   id="search"
                   placeholder="Enter keyword..."
-                  onChange={(e) => handleSearch(e.target.value)}
+                  className="text-sm"
+                  onChange={(e) => handleFilterChange({ keyword: e.target.value })}
                 />
-                <Search className="absolute top-2.5 right-3 h-5 w-5 text-muted-foreground" />
+                <Search className="absolute top-2 right-2 h-4 w-4 text-muted-foreground" />
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label>Rating</Label>
-              <div className="flex items-center gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Rating</Label>
+              <div className="grid grid-cols-5 gap-1">
                 {[5, 4, 3, 2, 1].map(rating => (
                   <Button
                     key={rating}
+                    size="sm" 
                     variant={filters.rating === rating ? "default" : "outline"}
-                    onClick={() => handleRatingFilter(filters.rating === rating ? undefined : rating)}
+                    className="h-8 text-xs"
+                    onClick={() => handleFilterChange({ rating: filters.rating === rating ? undefined : rating })}
                   >
-                    {rating} <Star className="h-4 w-4 ml-1" />
+                    {rating} <Star className="h-3 w-3 ml-1" />
                   </Button>
                 ))}
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label>Platform</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Platform</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
+                  <Button variant="outline" className="w-full justify-between text-xs">
                     {filters.platform || "Select platform"}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -453,43 +464,43 @@ export const Reputation = () => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="ml-2 h-4 w-4"
+                      className="ml-2 h-3 w-3"
                     >
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Select a platform</DropdownMenuLabel>
+                <DropdownMenuContent className="w-full">
+                  <DropdownMenuLabel className="text-xs">Select a platform</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {PLATFORMS.map(platform => (
-                    <DropdownMenuItem key={platform} onClick={() => handlePlatformFilter(platform)}>
+                    <DropdownMenuItem key={platform} className="text-xs" onClick={() => handleFilterChange({ platform })}>
                       {platform}
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handlePlatformFilter(undefined)}>
+                  <DropdownMenuItem className="text-xs" onClick={() => handleFilterChange({ platform: undefined })}>
                     Clear Platform
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             
-            <div className="space-y-2">
-              <Label>Date Range</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Date Range</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal text-xs",
                       !date?.from && "text-muted-foreground"
                     )}
                   >
-                    <CalendarDays className="mr-2 h-4 w-4" />
+                    <CalendarDays className="mr-2 h-3 w-3" />
                     {date?.from ? (
                       date.to ? (
-                        `${format(date.from, "MMM dd, yyyy")} - ${format(date.to, "MMM dd, yyyy")}`
+                        `${format(date.from, "MMM dd")} - ${format(date.to, "MMM dd, yyyy")}`
                       ) : (
                         format(date.from, "MMM dd, yyyy")
                       )
@@ -504,7 +515,7 @@ export const Reputation = () => {
                     defaultMonth={date?.from}
                     selected={date}
                     onSelect={handleDateRangeChange}
-                    numberOfMonths={2}
+                    numberOfMonths={1}
                     pagedNavigation
                   />
                 </PopoverContent>
@@ -517,19 +528,22 @@ export const Reputation = () => {
         <PlatformDistribution platformData={platformData} />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ReviewsList reviews={reviews} onSelectReview={setSelectedReview} />
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+        <div className="lg:col-span-4">
+          <h3 className="font-medium text-sm mb-2">Reviews ({reviews.length})</h3>
+          <ReviewsList reviews={reviews} onSelectReview={setSelectedReview} />
+        </div>
         
-        <Card className="glass-card hover:shadow-md transition-all duration-300">
-          <CardHeader>
-            <CardTitle>Review Details</CardTitle>
-            <CardDescription>View and respond to selected review</CardDescription>
+        <Card className="lg:col-span-3">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Review Details</CardTitle>
+            <CardDescription className="text-xs">View and respond to selected review</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {selectedReview ? (
               <>
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {[...Array(selectedReview.rating)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 text-yellow-500" />
                     ))}
@@ -539,28 +553,30 @@ export const Reputation = () => {
                   </div>
                   <p className="text-sm font-medium">{selectedReview.authorName}</p>
                   <p className="text-xs text-muted-foreground">
-                    {selectedReview.platform} - {new Date(selectedReview.date).toLocaleDateString()}
+                    {selectedReview.platform} - {formatReviewDate(selectedReview.date)}
                   </p>
-                  <p>{selectedReview.comment}</p>
+                  <p className="text-sm">{selectedReview.comment}</p>
                 </div>
                 
-                {selectedReview && (
-                  <div className="border-t pt-4 mt-4">
-                    <h3 className="font-medium mb-2">Response to {selectedReview.authorName}</h3>
-                    <Textarea
-                      placeholder="Write your response..."
-                      className="min-h-[100px]"
-                      value={responseText}
-                      onChange={(e) => setResponseText(e.target.value)}
-                    />
-                    <div className="flex justify-end mt-2">
-                      <Button onClick={() => handleRespondToReview(selectedReview.id)} disabled={!responseText.trim() || isSubmitting}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Send Response
-                      </Button>
-                    </div>
+                <div className="border-t pt-4 mt-4">
+                  <h3 className="font-medium mb-2 text-sm">Response to {selectedReview.authorName}</h3>
+                  <Textarea
+                    placeholder="Write your response..."
+                    className="min-h-[100px] text-sm"
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                  />
+                  <div className="flex justify-end mt-2">
+                    <Button 
+                      onClick={() => handleRespondToReview(selectedReview.id)} 
+                      disabled={!responseText.trim() || isSubmitting}
+                      size="sm"
+                    >
+                      {isSubmitting ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                      Send Response
+                    </Button>
                   </div>
-                )}
+                </div>
               </>
             ) : (
               <Alert>
