@@ -1,4 +1,3 @@
-
 export interface Deal {
   id: string;
   name: string;
@@ -9,6 +8,7 @@ export interface Deal {
   stage: string;
   closingDate: string;
   description: string;
+  assignedTo?: string; // Adding the assignedTo property as optional
 }
 
 export interface Stage {
