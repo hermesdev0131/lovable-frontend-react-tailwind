@@ -23,7 +23,7 @@ import AddPageDialog from '@/components/website/AddPageDialog';
 import EditPageDialog from '@/components/website/EditPageDialog';
 
 const WebsiteManagement = () => {
-  const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage, currentClientId } = useMasterAccount();
+  const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage } = useMasterAccount();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPageId, setEditingPageId] = useState<string | null>(null);

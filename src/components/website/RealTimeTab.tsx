@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import RealTimeAnalytics from '@/components/website/RealTimeAnalytics';
 
 interface RealTimeTabProps {
-  selectedPage: number | null;
+  selectedPage: string | null;
 }
 
 const RealTimeTab = ({ selectedPage }: RealTimeTabProps) => {
