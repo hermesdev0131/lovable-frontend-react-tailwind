@@ -34,9 +34,11 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
+      console.log('LoginForm: Submitting with email:', email);
       const success = await login(email, password);
       
       if (success) {
+        console.log('LoginForm: Login successful');
         toast({
           title: "Login Successful",
           description: "Welcome back!",
@@ -44,8 +46,10 @@ export const LoginForm = () => {
         
         // Redirect to the intended destination or to the dashboard
         const destination = location.state?.from?.pathname || '/dashboard';
+        console.log('LoginForm: Redirecting to', destination);
         navigate(destination, { replace: true });
       } else {
+        console.log('LoginForm: Login failed');
         toast({
           title: "Login Failed",
           description: "Invalid email or password. Please try again.",

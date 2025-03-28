@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import {
   Toast,
@@ -144,7 +143,9 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast(props: Toast) {
+  const id = genId()
+  
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
@@ -153,7 +154,7 @@ function toast({ ...props }: Toast) {
     
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
-  // Automatically start the dismiss timer for all toasts
+  // Dispatch with a properly formatted toast object - without id to let reducer add it
   dispatch({
     type: "ADD_TOAST",
     toast: {
@@ -164,9 +165,6 @@ function toast({ ...props }: Toast) {
       },
     },
   })
-  
-  // Generate ID after dispatch to ensure it's created by the reducer
-  const id = memoryState.toasts[memoryState.toasts.length - 1]?.id || "0"
   
   // Automatically dismiss after the time delay
   setTimeout(() => {

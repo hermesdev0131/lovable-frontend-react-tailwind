@@ -13,6 +13,7 @@ const Login = () => {
   // If user is already authenticated, redirect to dashboard or the page they were trying to access
   useEffect(() => {
     if (currentUser) {
+      console.log('Login page: User already authenticated, redirecting');
       // Get the intended destination or default to dashboard
       const destination = location.state?.from?.pathname || '/dashboard';
       navigate(destination, { replace: true });
@@ -25,6 +26,7 @@ const Login = () => {
     const errorParam = searchParams.get('error');
     
     if (errorParam) {
+      console.log('Login page: Error parameter found in URL:', errorParam);
       toast({
         title: "Login Error",
         description: decodeURIComponent(errorParam),

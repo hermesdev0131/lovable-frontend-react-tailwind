@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
@@ -105,17 +104,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      console.log('Attempting login with:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error('Supabase login error:', error);
+        console.log('Supabase login failed, trying master account login');
         
         const success = loginToAccount(email, password);
         
         if (success) {
+          console.log('Master account login successful');
           const client = clients.find(c => c.email === email);
           if (client) {
             const user: User = {
@@ -125,34 +127,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               role: 'admin',
             };
             setCurrentUser(user);
+            return true;
           }
-          return true;
-        } else {
-          toast({
-            title: "Login Failed",
-            description: "Invalid email or password. Please try again.",
-            variant: "destructive",
-          });
-          return false;
         }
+        return false;
       }
       
       if (data.user) {
-        toast({
-          title: "Login Successful",
-          description: "Welcome back!",
-        });
+        console.log('Supabase login successful');
         return true;
       }
       
-      return !!data.user;
+      return false;
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        title: "Login Failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
       return false;
     } finally {
       setIsLoading(false);
