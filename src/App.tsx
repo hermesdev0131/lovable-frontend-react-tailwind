@@ -1,11 +1,11 @@
 
-import { useState } from "react";
-import { Routes, Route, useLocation, useNavigate, BrowserRouter } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "./components/ui/toaster";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -30,22 +30,9 @@ import MasterAccount from "./pages/MasterAccount";
 import NotFound from "./pages/NotFound";
 import { DealsProvider } from './contexts/DealsContext';
 import { MasterAccountProvider } from './contexts/MasterAccountContext';
+import { useState } from "react";
 
 const queryClient = new QueryClient();
-
-function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // We'll use AuthContext hook inside the component
-  // This ensures it's used within the correct provider context
-  const handleAuthCheck = () => {
-    // Auth check logic will be handled inside the component
-    return children;
-  };
-
-  return handleAuthCheck();
-}
 
 function App() {
   const [knowledgeBase, setKnowledgeBase] = useState<string[]>([
@@ -61,47 +48,115 @@ function App() {
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <BrowserRouter>
-        <MasterAccountProvider>
-          <AuthProvider>
-            <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-              <QueryClientProvider client={queryClient}>
-                <DealsProvider>
-                  <Toaster />
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/clients" element={<Clients />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/opportunities" element={<Opportunities />} />
-                    <Route path="/deals" element={<Deals />} />
-                    <Route path="/pipeline" element={<Pipeline />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/conversations" element={<Conversations />} />
-                    <Route path="/content-scheduling" element={<ContentScheduling />} />
-                    <Route path="/social-media" element={<SocialMediaIntegration />} />
-                    <Route path="/email-marketing" element={<EmailMarketing />} />
-                    <Route path="/website" element={<WebsiteManagement />} />
-                    <Route path="/chatbot" element={
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <QueryClientProvider client={queryClient}>
+          <MasterAccountProvider>
+            <AuthProvider>
+              <DealsProvider>
+                <Toaster />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/clients" element={
+                    <ProtectedRoute>
+                      <Clients />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/contacts" element={
+                    <ProtectedRoute>
+                      <Contacts />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/opportunities" element={
+                    <ProtectedRoute>
+                      <Opportunities />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/deals" element={
+                    <ProtectedRoute>
+                      <Deals />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/pipeline" element={
+                    <ProtectedRoute>
+                      <Pipeline />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/calendar" element={
+                    <ProtectedRoute>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/projects" element={
+                    <ProtectedRoute>
+                      <Projects />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/conversations" element={
+                    <ProtectedRoute>
+                      <Conversations />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/content-scheduling" element={
+                    <ProtectedRoute>
+                      <ContentScheduling />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/social-media" element={
+                    <ProtectedRoute>
+                      <SocialMediaIntegration />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/email-marketing" element={
+                    <ProtectedRoute>
+                      <EmailMarketing />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/website" element={
+                    <ProtectedRoute>
+                      <WebsiteManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/chatbot" element={
+                    <ProtectedRoute>
                       <ChatbotManagement 
                         knowledgeBase={knowledgeBase} 
                         onAddKnowledge={handleAddKnowledge} 
                       />
-                    } />
-                    <Route path="/reputation" element={<Reputation />} />
-                    <Route path="/integrations" element={<Integrations />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/account" element={<Account />} />
-                    <Route path="/master-account" element={<MasterAccount />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </DealsProvider>
-              </QueryClientProvider>
-            </ThemeProvider>
-          </AuthProvider>
-        </MasterAccountProvider>
-      </BrowserRouter>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/reputation" element={
+                    <ProtectedRoute>
+                      <Reputation />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/integrations" element={
+                    <ProtectedRoute>
+                      <Integrations />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/account" element={
+                    <ProtectedRoute>
+                      <Account />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/master-account" element={
+                    <ProtectedRoute>
+                      <MasterAccount />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </DealsProvider>
+            </AuthProvider>
+          </MasterAccountProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

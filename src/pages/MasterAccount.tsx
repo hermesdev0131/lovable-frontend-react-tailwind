@@ -101,7 +101,7 @@ const MasterAccount = () => {
       website: data.website,
       logo: data.logo || "",
       status: "active" as const,
-      subscription: data.subscription as "Basic" | "Professional" | "Enterprise", // Fix the type
+      subscription: data.subscription as "Basic" | "Professional" | "Enterprise",
       users: 1,
       deals: 0,
       contacts: 0,
@@ -265,7 +265,9 @@ const MasterAccount = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Add Client</Button>
+                <Button type="submit" variant="default" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Adding..." : "Add Client"}
+                </Button>
               </form>
             </Form>
           </DialogContent>
