@@ -14,6 +14,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  requestPasswordReset: (email: string) => Promise<boolean>;
+  resetPassword: (token: string, newPassword: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,8 +85,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('crm_current_user');
   };
 
+  // Password reset functionality
+  const requestPasswordReset = async (email: string): Promise<boolean> => {
+    // In a real implementation, this would send a request to a server
+    // For now, we'll just simulate success
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 1000);
+    });
+  };
+
+  const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
+    // In a real implementation, this would verify the token and update the password
+    // For now, we'll just simulate success
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 1000);
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      currentUser, 
+      login, 
+      logout, 
+      isLoading, 
+      requestPasswordReset, 
+      resetPassword 
+    }}>
       {children}
     </AuthContext.Provider>
   );

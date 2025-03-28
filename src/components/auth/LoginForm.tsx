@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -109,6 +110,14 @@ export const LoginForm = () => {
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
+              </div>
+              <div className="flex justify-end mt-1">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
               </div>
             </div>
           </CardContent>

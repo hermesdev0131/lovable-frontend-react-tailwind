@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Clients from "./pages/Clients";
 import Contacts from "./pages/Contacts";
 import Opportunities from "./pages/Opportunities";
@@ -57,6 +58,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/clients" element={
                     <ProtectedRoute>
                       <Clients />
