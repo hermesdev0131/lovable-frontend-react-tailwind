@@ -1,14 +1,29 @@
 
 import React from 'react';
-import { WebsitePage } from '@/types/website';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, Settings, Activity, LinkIcon } from 'lucide-react';
 
+interface PageData {
+  id: string;
+  title: string;
+  slug: string;
+  url?: string;
+  status: 'published' | 'draft' | 'scheduled';
+  type: 'landing' | 'content' | 'blog' | 'product' | 'other';
+  visits: number;
+  views: number;
+  conversions: number;
+  bounceRate: number;
+  lastUpdated: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
 interface AllPagesTabProps {
-  websitePages: WebsitePage[];
+  websitePages: PageData[];
   openEditDialog: (pageId: string) => void;
   deletePage: (pageId: string) => void;
   startTracking: (pageId: string) => void;

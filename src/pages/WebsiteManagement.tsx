@@ -9,7 +9,7 @@ import { Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 // Import website types
-import { PageFormValues, WebsitePage } from '@/types/website';
+import { PageFormValues } from '@/types/website';
 
 // Import refactored components
 import WebsiteStats from '@/components/website/WebsiteStats';
@@ -25,8 +25,8 @@ const WebsiteManagement = () => {
   const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage, currentClientId } = useMasterAccount();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingPageId, setEditingPageId] = useState<string | null>(null);
-  const [selectedPage, setSelectedPage] = useState<string | null>(null);
+  const [editingPageId, setEditingPageId] = useState<number | null>(null);
+  const [selectedPage, setSelectedPage] = useState<number | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   
   // Calculate page stats
@@ -62,16 +62,18 @@ const WebsiteManagement = () => {
   });
   
   const handleAddPage = (data: PageFormValues) => {
-    const newPage: Omit<WebsitePage, 'id'> = {
-      ...data,
-      visits: 0,
+    // Convert form data to the context's WebsitePage type format
+    const newPage = {
+      title: data.title,
+      url: data.slug, // map slug to url
+      status: data.status as 'published' | 'draft' | 'scheduled',
+      type: data.type as 'landing' | 'blog' | 'product' | 'other',
       views: 0,
       conversions: 0,
       bounceRate: 0,
-      clientId: currentClientId || '',
+      clientId: currentClientId || null,
       createdAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     
     addWebsitePage(newPage);
@@ -79,17 +81,14 @@ const WebsiteManagement = () => {
     setIsAddDialogOpen(false);
   };
   
-  const openEditDialog = (pageId: string) => {
+  const openEditDialog = (pageId: number) => {
     const page = websitePages.find(p => p.id === pageId);
     if (page) {
       editForm.reset({
         title: page.title,
-        slug: page.slug,
-        url: page.url,
+        slug: page.url || '', // map url to slug
         status: page.status,
         type: page.type,
-        content: page.content,
-        template: page.template
       });
       setEditingPageId(pageId);
       setIsEditDialogOpen(true);
@@ -99,8 +98,10 @@ const WebsiteManagement = () => {
   const handleEditPage = (data: PageFormValues) => {
     if (editingPageId) {
       updateWebsitePage(editingPageId, {
-        ...data,
-        lastUpdated: new Date().toISOString(),
+        title: data.title,
+        url: data.slug, // map slug to url
+        status: data.status as 'published' | 'draft' | 'scheduled',
+        type: data.type as 'landing' | 'blog' | 'product' | 'other',
         updatedAt: new Date().toISOString(),
       });
       setIsEditDialogOpen(false);
@@ -108,7 +109,7 @@ const WebsiteManagement = () => {
     }
   };
   
-  const deletePage = (pageId: string) => {
+  const deletePage = (pageId: number) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
       removeWebsitePage(pageId);
     }
@@ -135,7 +136,7 @@ const WebsiteManagement = () => {
     });
   };
   
-  const startTracking = (pageId: string) => {
+  const startTracking = (pageId: number) => {
     setSelectedPage(pageId);
     
     if (!isTracking) {
@@ -185,10 +186,16 @@ const WebsiteManagement = () => {
         
         <TabsContent value="all" className="mt-4">
           <AllPagesTab 
-            websitePages={websitePages}
-            openEditDialog={openEditDialog}
-            deletePage={deletePage}
-            startTracking={startTracking}
+            websitePages={websitePages.map(page => ({
+              ...page,
+              id: String(page.id), // Convert to string for component compatibility
+              slug: page.url || '', // Map url to slug for component compatibility
+              lastUpdated: page.updatedAt, // Map updatedAt to lastUpdated for component compatibility
+              visits: page.views || 0 // Map views to visits for component compatibility
+            }))}
+            openEditDialog={(pageId) => openEditDialog(Number(pageId))}
+            deletePage={(pageId) => deletePage(Number(pageId))}
+            startTracking={(pageId) => startTracking(Number(pageId))}
             formatDate={formatDate}
             getStatusBadgeVariant={getStatusBadgeVariant}
           />
@@ -196,21 +203,35 @@ const WebsiteManagement = () => {
         
         <TabsContent value="landing" className="mt-4">
           <LandingPagesTab 
-            landingPages={landingPages}
+            landingPages={landingPages.map(page => ({
+              ...page,
+              id: String(page.id), // Convert to string for component compatibility
+              slug: page.url || '', // Map url to slug for component compatibility
+              lastUpdated: page.updatedAt, // Map updatedAt to lastUpdated for component compatibility
+              visits: page.views || 0 // Map views to visits for component compatibility
+            }))}
             landingPageViews={landingPageViews}
             landingPageConversions={landingPageConversions}
-            openEditDialog={openEditDialog}
-            deletePage={deletePage}
+            openEditDialog={(pageId) => openEditDialog(Number(pageId))}
+            deletePage={(pageId) => deletePage(Number(pageId))}
             getStatusBadgeVariant={getStatusBadgeVariant}
           />
         </TabsContent>
         
         <TabsContent value="realtime" className="mt-4">
-          <RealTimeTab selectedPage={selectedPage} />
+          <RealTimeTab selectedPage={selectedPage ? String(selectedPage) : null} />
         </TabsContent>
         
         <TabsContent value="insights" className="mt-4">
-          <InsightsTab websitePages={websitePages} />
+          <InsightsTab 
+            websitePages={websitePages.map(page => ({
+              ...page,
+              id: String(page.id), // Convert to string for component compatibility
+              slug: page.url || '', // Map url to slug for component compatibility
+              lastUpdated: page.updatedAt, // Map updatedAt to lastUpdated for component compatibility
+              visits: page.views || 0 // Map views to visits for component compatibility
+            }))}
+          />
         </TabsContent>
         
         <TabsContent value="devices" className="mt-4">
