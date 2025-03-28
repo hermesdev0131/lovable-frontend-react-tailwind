@@ -47,6 +47,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   const {
     contentItems,
     addContentItem,
+    updateContentItem,
+    deleteContentItem,
     updateContentStatus,
     getContentItems
   } = useContentItems(isInMasterMode, currentClientId, clients, addNotification);
@@ -85,6 +87,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         removeWebsitePage,
         updateWebsitePage,
         addContentItem,
+        updateContentItem,
+        deleteContentItem,
         updateContentStatus,
         getContentItems,
         addNotification,

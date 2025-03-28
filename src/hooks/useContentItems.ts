@@ -51,6 +51,53 @@ export function useContentItems(
     });
   };
 
+  const updateContentItem = (id: number, updatedData: Partial<ContentItem>) => {
+    const contentItem = contentItems.find(item => item.id === id);
+    if (!contentItem) return;
+    
+    if (!isInMasterMode && contentItem.clientId !== currentClientId && contentItem.createdBy !== currentClientId) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to update this content.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const updatedContentItems = contentItems.map(item => 
+      item.id === id ? { ...item, ...updatedData } : item
+    );
+    
+    setContentItems(updatedContentItems);
+    
+    toast({
+      title: "Content Updated",
+      description: `${contentItem.title} has been updated.`
+    });
+  };
+
+  const deleteContentItem = (id: number) => {
+    const contentItem = contentItems.find(item => item.id === id);
+    if (!contentItem) return;
+    
+    if (!isInMasterMode && contentItem.clientId !== currentClientId && contentItem.createdBy !== currentClientId) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to delete this content.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const filteredContentItems = contentItems.filter(item => item.id !== id);
+    setContentItems(filteredContentItems);
+    
+    toast({
+      title: "Content Deleted",
+      description: `${contentItem.title} has been deleted.`
+    });
+  };
+
   const updateContentStatus = (id: number, status: 'approved' | 'rejected', reason?: string) => {
     const contentItem = contentItems.find(item => item.id === id);
     if (!contentItem) return;
@@ -112,6 +159,8 @@ export function useContentItems(
   return {
     contentItems,
     addContentItem,
+    updateContentItem,
+    deleteContentItem,
     updateContentStatus,
     getContentItems
   };

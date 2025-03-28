@@ -88,6 +88,8 @@ export interface MasterAccountContextType {
   removeWebsitePage: (id: number) => void;
   updateWebsitePage: (id: number, data: Partial<WebsitePage>) => void;
   addContentItem: (item: Omit<ContentItem, 'id' | 'createdAt' | 'status'>) => void;
+  updateContentItem: (id: number, data: Partial<ContentItem>) => void;
+  deleteContentItem: (id: number) => void;
   updateContentStatus: (id: number, status: 'approved' | 'rejected', reason?: string) => void;
   getContentItems: (clientId?: number | null, status?: string) => ContentItem[];
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
