@@ -14,7 +14,7 @@ export interface ReviewFilter {
 }
 
 export interface WebsitePage {
-  id: string;  // Changed from number to string to match usage in components
+  id: string;  // Ensuring this is consistently a string type
   title: string;
   slug: string;
   url: string;

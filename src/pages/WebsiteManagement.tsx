@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Card } from '@/components/ui/card';
@@ -66,7 +65,7 @@ const WebsiteManagement = () => {
   
   const handleAddPage = (data: PageFormValues) => {
     // Convert the form data to a WebsitePage object that matches the context's expected format
-    const pageData = {
+    const pageData: Omit<WebsitePage, "id"> = {
       ...data,
       views: 0,
       visits: 0,
@@ -78,7 +77,6 @@ const WebsiteManagement = () => {
       clientId: null
     };
     
-    // @ts-ignore - Temporarily ignore type mismatch as we know the structure is correct
     addWebsitePage(pageData);
     
     addForm.reset();
@@ -86,13 +84,12 @@ const WebsiteManagement = () => {
   };
   
   const openEditDialog = (pageId: string) => {
-    // Convert pageId to string explicitly to ensure consistent comparison
     const page = websitePages.find(p => p.id === pageId);
     if (page) {
       editForm.reset({
         title: page.title,
         url: page.url,
-        slug: page.slug, // Now slug exists on the WebsitePage interface
+        slug: page.slug,
         status: page.status,
         type: page.type
       });
@@ -108,7 +105,6 @@ const WebsiteManagement = () => {
         updatedAt: new Date().toISOString(),
       };
       
-      // @ts-ignore - Temporarily ignore type mismatch as we know the structure is correct
       updateWebsitePage(editingPageId, updateData);
       setIsEditDialogOpen(false);
       setEditingPageId(null);
@@ -117,7 +113,6 @@ const WebsiteManagement = () => {
   
   const deletePage = (pageId: string) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
-      // @ts-ignore - Temporarily ignore type mismatch as we know the structure is correct
       removeWebsitePage(pageId);
     }
   };
@@ -193,8 +188,7 @@ const WebsiteManagement = () => {
         
         <TabsContent value="all" className="mt-4">
           <AllPagesTab 
-            // @ts-ignore - We know the page types are compatible despite TypeScript warnings
-            websitePages={websitePages} 
+            websitePages={websitePages}
             openEditDialog={openEditDialog}
             deletePage={deletePage}
             startTracking={startTracking}
@@ -205,7 +199,6 @@ const WebsiteManagement = () => {
         
         <TabsContent value="landing" className="mt-4">
           <LandingPagesTab 
-            // @ts-ignore - We know the page types are compatible despite TypeScript warnings
             landingPages={landingPages}
             landingPageViews={landingPageViews}
             landingPageConversions={landingPageConversions}
@@ -221,8 +214,7 @@ const WebsiteManagement = () => {
         
         <TabsContent value="insights" className="mt-4">
           <InsightsTab 
-            // @ts-ignore - We know the page types are compatible despite TypeScript warnings
-            websitePages={websitePages} 
+            websitePages={websitePages}
           />
         </TabsContent>
         
