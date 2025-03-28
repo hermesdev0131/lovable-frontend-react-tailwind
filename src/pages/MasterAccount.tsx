@@ -1,17 +1,37 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
-import { Building2, Settings, BarChart3 } from "lucide-react";
+import { Building2, Settings, BarChart3, AlertTriangle } from "lucide-react";
 import SalesSummaryCards from "@/components/master-account/SalesSummaryCards";
 import ClientSalesChart from "@/components/master-account/ClientSalesChart";
 import ClientPerformanceTable from "@/components/master-account/ClientPerformanceTable";
 import AddClientForm from "@/components/master-account/AddClientForm";
 import ClientDirectory from "@/components/master-account/ClientDirectory";
+import { logError } from "@/lib/errorHandling";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const MasterAccount = () => {
   const { clients } = useMasterAccount();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
+        setError(errorMessage);
+        logError(err, "Error loading master account dashboard");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
   
   const clientSalesData = clients.map(client => ({
     name: client.name,
@@ -24,6 +44,27 @@ const MasterAccount = () => {
   const averageSales = clients.length > 0 ? totalSales / clients.length : 0;
   const totalLeads = clientSalesData.reduce((sum, client) => sum + client.leads, 0);
   const totalConversions = clientSalesData.reduce((sum, client) => sum + client.conversions, 0);
+  
+  if (error) {
+    return (
+      <div className="container mx-auto py-6">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            {error}
+            <Button 
+              variant="outline" 
+              className="mt-2" 
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
   
   return (
     <div className="container mx-auto py-6 space-y-6">

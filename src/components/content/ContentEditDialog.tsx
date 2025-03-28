@@ -1,11 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import ContentCreationForm from './ContentCreationForm';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ContentItem } from "@/types/masterAccount";
+import { toast } from "@/hooks/use-toast";
+import { logError } from "@/lib/errorHandling";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface ContentEditDialogProps {
   isOpen: boolean;
@@ -19,33 +22,51 @@ const ContentEditDialog: React.FC<ContentEditDialogProps> = ({
   contentItem
 }) => {
   const isMobile = useIsMobile();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   if (!contentItem) return null;
   
+  const handleSuccess = () => {
+    toast({
+      title: "Content Updated",
+      description: "Your content has been updated successfully."
+    });
+    onClose();
+  };
+  
+  const handleError = (error: unknown) => {
+    setIsSubmitting(false);
+    logError(error, "Failed to update content");
+  };
+  
+  // Use Sheet component for tablet-sized devices
   if (isMobile) {
     return (
-      <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="px-4 pb-4">
-          <DrawerHeader>
-            <DrawerTitle>Edit Content</DrawerTitle>
-            <DrawerDescription>
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent size="xl" className="px-0 sm:max-w-md w-full">
+          <SheetHeader className="px-4">
+            <SheetTitle>Edit Content</SheetTitle>
+            <SheetDescription>
               Make changes to your content
-            </DrawerDescription>
-          </DrawerHeader>
-          <ContentCreationForm 
-            initialData={contentItem}
-            isEditing={true}
-            onSuccess={onClose}
-          />
-          <div className="pt-4 px-4">
-            <DrawerClose asChild>
-              <Button variant="outline" className="w-full">
-                Cancel
-              </Button>
-            </DrawerClose>
+            </SheetDescription>
+          </SheetHeader>
+          <div className="px-4 py-2">
+            <ContentCreationForm 
+              initialData={contentItem}
+              isEditing={true}
+              onSuccess={handleSuccess}
+              onError={handleError}
+              isSubmitting={isSubmitting}
+              setIsSubmitting={setIsSubmitting}
+            />
           </div>
-        </DrawerContent>
-      </Drawer>
+          <div className="sticky bottom-0 bg-background p-4 border-t">
+            <Button variant="outline" className="w-full" onClick={onClose}>
+              Cancel
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
   
@@ -61,7 +82,10 @@ const ContentEditDialog: React.FC<ContentEditDialogProps> = ({
         <ContentCreationForm 
           initialData={contentItem}
           isEditing={true}
-          onSuccess={onClose}
+          onSuccess={handleSuccess}
+          onError={handleError}
+          isSubmitting={isSubmitting}
+          setIsSubmitting={setIsSubmitting}
         />
       </DialogContent>
     </Dialog>
