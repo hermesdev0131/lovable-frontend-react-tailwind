@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, MessageCircle, Trash2, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { useActivityTracker } from '@/hooks/useActivityTracker';
 
 export interface Message {
   id: string;
@@ -36,6 +36,7 @@ export function ChatbotUI({ knowledgeBase, onAddKnowledge, className }: ChatbotU
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedText, setSelectedText] = useState('');
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const { trackChatbotInteraction } = useActivityTracker();
 
   useEffect(() => {
     scrollToBottom();
@@ -60,13 +61,12 @@ export function ChatbotUI({ knowledgeBase, onAddKnowledge, className }: ChatbotU
     setIsProcessing(true);
     
     try {
-      // Simulate AI processing with knowledge base
+      trackChatbotInteraction(input);
+      
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Basic response generation based on knowledge base
       let response = "I'm not sure about that based on my current knowledge.";
       
-      // Simple keyword matching from knowledge base
       for (const knowledge of knowledgeBase) {
         const keywords = input.toLowerCase().split(' ');
         if (keywords.some(keyword => 

@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { useDeals } from '@/contexts/DealsContext';
 import { contacts, opportunities } from '@/lib/data';
+import { TasksProvider } from '@/contexts/TasksContext';
 
-// Import the new components
+// Import the components
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import DealsOverview from '@/components/dashboard/DealsOverview';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
@@ -64,38 +65,40 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
-        {/* Stats Cards */}
-        <DashboardStats 
-          totalContacts={totalContacts}
-          openDeals={openDeals}
-          totalDealValue={totalDealValue}
-          onCardClick={handleCardClick}
-        />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Deal Overview Chart */}
-          <DealsOverview 
-            dealStageData={dealStageData} 
-            hasDeals={userDeals.length > 0} 
+    <TasksProvider>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
+          {/* Stats Cards */}
+          <DashboardStats 
+            totalContacts={totalContacts}
+            openDeals={openDeals}
+            totalDealValue={totalDealValue}
+            onCardClick={handleCardClick}
           />
           
-          {/* Activity Feed */}
-          <ActivityFeed activities={recentActivity} />
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Tasks Panel */}
-          <div className="lg:col-span-2">
-            <TasksPanel onCreateTask={handleCreateTask} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Deal Overview Chart */}
+            <DealsOverview 
+              dealStageData={dealStageData} 
+              hasDeals={userDeals.length > 0} 
+            />
+            
+            {/* Activity Feed */}
+            <ActivityFeed activities={recentActivity} />
           </div>
           
-          {/* Opportunities Panel */}
-          <OpportunitiesPanel />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Tasks Panel */}
+            <div className="lg:col-span-2">
+              <TasksPanel onCreateTask={handleCreateTask} />
+            </div>
+            
+            {/* Opportunities Panel */}
+            <OpportunitiesPanel />
+          </div>
         </div>
       </div>
-    </div>
+    </TasksProvider>
   );
 };
 

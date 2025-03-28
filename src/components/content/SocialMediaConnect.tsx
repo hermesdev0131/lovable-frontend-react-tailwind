@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, X, Facebook, Twitter, Instagram, Linkedin, RefreshCw } from "lucide-react";
 import { SocialMediaPlatform, socialMediaService } from '@/services/socialMedia';
 import { useToast } from "@/hooks/use-toast";
+import { useActivityTracker } from '@/hooks/useActivityTracker';
 
 const PLATFORMS = [
   { id: "facebook", name: "Facebook", icon: Facebook, color: "bg-blue-600 hover:bg-blue-700" },
@@ -27,6 +27,7 @@ interface PlatformCredentialsProps {
 
 const PlatformCredentials = ({ platformId, name, icon: Icon, color }: PlatformCredentialsProps) => {
   const { toast } = useToast();
+  const { trackChatbotInteraction } = useActivityTracker();
   const [isConnected, setIsConnected] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
@@ -35,7 +36,6 @@ const PlatformCredentials = ({ platformId, name, icon: Icon, color }: PlatformCr
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Load existing credentials
     const creds = socialMediaService.getCredentials(platformId);
     if (creds) {
       setIsConnected(creds.isConnected);
@@ -49,7 +49,6 @@ const PlatformCredentials = ({ platformId, name, icon: Icon, color }: PlatformCr
   const handleConnect = () => {
     setIsLoading(true);
     
-    // Simulate connection process
     setTimeout(() => {
       socialMediaService.setCredentials(platformId, {
         apiKey,
@@ -67,6 +66,8 @@ const PlatformCredentials = ({ platformId, name, icon: Icon, color }: PlatformCr
           title: "Connected Successfully",
           description: `Your ${name} account has been connected.`
         });
+        
+        trackChatbotInteraction(`Connected ${name} account`);
       } else {
         toast({
           title: "Connection Required",
@@ -80,7 +81,6 @@ const PlatformCredentials = ({ platformId, name, icon: Icon, color }: PlatformCr
   const handleDisconnect = () => {
     setIsLoading(true);
     
-    // Simulate disconnection process
     setTimeout(() => {
       socialMediaService.setCredentials(platformId, {
         accessToken: "",
