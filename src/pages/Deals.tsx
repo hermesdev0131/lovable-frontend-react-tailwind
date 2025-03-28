@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Filter, MoreHorizontal, DollarSign, Calendar, Users, Edit, Trash2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -371,31 +372,37 @@ const Deals = () => {
                         size="icon" 
                         className="h-8 w-8" 
                         onClick={() => {
-                          const newDeal = {
+                          const now = new Date().toISOString();
+                          const newDealData: Omit<Deal, "id"> = {
                             name: "New Deal",
-                            clientId: clients.length > 0 ? clients[0].id : 1,
+                            company: "Example Company",
                             stage: column.id,
                             value: 5000,
                             currency: "USD",
                             closingDate: new Date().toISOString().split('T')[0],
                             probability: 50,
-                            createdAt: new Date().toISOString(),
+                            description: "New deal description",
                             assignedTo: "account-owner",
-                            description: "New deal description"
+                            contactId: "contact1",
+                            createdAt: now,
+                            updatedAt: now
                           };
                           
-                          // Add to dealsByStage
-                          const newDealsByStage = {...dealsByStage};
-                          newDealsByStage[column.id] = [...(newDealsByStage[column.id] || []), newDeal];
+                          // Add the deal to context which will give it an ID
+                          addDealToContext(newDealData);
                           
-                          // Update state
-                          setDealsByStage(newDealsByStage);
-                          
-                          // Update the main deals array
-                          setDeals([...deals, newDeal]);
-                          
-                          // Edit the newly created deal
-                          handleEditDeal(newDeal);
+                          // Find the newly added deal to edit it
+                          setTimeout(() => {
+                            const addedDeal = existingDeals.find(d => 
+                              d.name === newDealData.name && 
+                              d.company === newDealData.company && 
+                              d.stage === column.id
+                            );
+                            
+                            if (addedDeal) {
+                              handleEditDeal(addedDeal);
+                            }
+                          }, 100);
                         }}
                       >
                         <Plus className="h-4 w-4" />
@@ -461,10 +468,11 @@ const Deals = () => {
                                       <div className="flex items-center my-3">
                                         <Avatar className="h-7 w-7 mr-2">
                                           <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                            {getClientInitials(deal.clientId)}
+                                            {/* Show company initials instead of client initials */}
+                                            {deal.company.substring(0, 2).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>
-                                        <span className="text-sm">{getClientName(deal.clientId)}</span>
+                                        <span className="text-sm">{deal.company}</span>
                                       </div>
                                       
                                       <p className="text-sm text-muted-foreground mb-4">{deal.description}</p>
@@ -491,7 +499,7 @@ const Deals = () => {
                                           <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                                           <div>
                                             <div className="text-sm text-muted-foreground">Assigned To</div>
-                                            <div className="font-medium">{getAssignedPersonName(deal.assignedTo)}</div>
+                                            <div className="font-medium">{getAssignedPersonName(deal.assignedTo || '')}</div>
                                           </div>
                                         </div>
                                         
@@ -566,10 +574,11 @@ const Deals = () => {
                   <div className="flex items-center my-3">
                     <Avatar className="h-7 w-7 mr-2">
                       <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {getClientInitials(deal.clientId)}
+                        {/* Show company initials instead of client initials */}
+                        {deal.company.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm">{getClientName(deal.clientId)}</span>
+                    <span className="text-sm">{deal.company}</span>
                   </div>
                   
                   <p className="text-sm text-muted-foreground mb-4">{deal.description}</p>
@@ -596,7 +605,7 @@ const Deals = () => {
                       <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                       <div>
                         <div className="text-sm text-muted-foreground">Assigned To</div>
-                        <div className="font-medium">{getAssignedPersonName(deal.assignedTo)}</div>
+                        <div className="font-medium">{getAssignedPersonName(deal.assignedTo || '')}</div>
                       </div>
                     </div>
                     
