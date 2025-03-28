@@ -9,9 +9,9 @@ import { Edit, Settings, Activity, LinkIcon } from 'lucide-react';
 
 interface AllPagesTabProps {
   websitePages: WebsitePage[];
-  openEditDialog: (pageId: number) => void;
-  deletePage: (pageId: number) => void;
-  startTracking: (pageId: number) => void;
+  openEditDialog: (pageId: string) => void;
+  deletePage: (pageId: string) => void;
+  startTracking: (pageId: string) => void;
   formatDate: (dateString: string) => string;
   getStatusBadgeVariant: (status: string) => string;
 }

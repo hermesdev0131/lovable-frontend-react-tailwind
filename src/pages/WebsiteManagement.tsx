@@ -65,7 +65,7 @@ const WebsiteManagement = () => {
   });
   
   const handleAddPage = (data: PageFormValues) => {
-    const newPage = {
+    const newPage: Omit<WebsitePage, 'id'> = {
       ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -74,7 +74,6 @@ const WebsiteManagement = () => {
       visits: 0,
       conversions: 0,
       bounceRate: 0,
-      clientId: currentClientId,
     };
     
     addWebsitePage(newPage);

@@ -17,14 +17,14 @@ export interface WebsitePage {
   id: string;
   title: string;
   slug: string;
-  url: string; // Added missing url property
-  status: 'published' | 'draft' | 'scheduled'; // Added 'scheduled' option
-  type: 'landing' | 'content' | 'blog' | 'product' | 'other'; // Added 'product' option
+  url: string;
+  status: 'published' | 'draft' | 'scheduled';
+  type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   visits: number;
-  views: number; // Added views property
-  conversions: number; // Added conversions property
-  bounceRate: number; // Added bounceRate property
-  updatedAt: string; // Added updatedAt property
+  views: number;
+  conversions: number;
+  bounceRate: number;
+  updatedAt: string;
   lastUpdated: string;
   createdAt: string;
 }
@@ -32,7 +32,7 @@ export interface WebsitePage {
 export interface PageFormValues {
   title: string;
   slug: string;
-  url: string; // Added url field to match the forms
+  url: string;
   type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   template?: string;
   content?: string;
