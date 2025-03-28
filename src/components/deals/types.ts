@@ -10,8 +10,10 @@ export interface Deal {
   closingDate: string;
   description: string;
   assignedTo?: string;
-  contactId?: string; // Adding contactId property
-  expectedCloseDate?: string; // Adding expectedCloseDate property
+  contactId?: string;
+  expectedCloseDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Stage {

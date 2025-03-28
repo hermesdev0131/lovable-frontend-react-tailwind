@@ -17,8 +17,9 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useToast } from "@/hooks/use-toast";
 import EditDealDialog from '@/components/deals/EditDealDialog';
 import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
-import { DEFAULT_COLUMNS, STORAGE_KEYS } from '@/components/deals/types';
+import { DEFAULT_COLUMNS, STORAGE_KEYS, Deal } from '@/components/deals/types';
 import { TeamMember } from '@/components/settings/TeamMembers';
+import { useDeals } from "@/contexts/DealsContext";
 
 // Sample team members data for demo purposes
 const demoTeamMembers: TeamMember[] = [
@@ -64,7 +65,12 @@ const getInitialDealsByStage = (deals: any[], columns: Column[]) => {
 const Deals = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { clients } = useMasterAccount();
-  const [deals, setDeals] = useState(initialDeals);
+  const { deals: existingDeals, addDeal: addDealToContext, updateDeal: updateDealInContext, deleteDeal: deleteDealFromContext } = useDeals();
+  
+  // Initialize deals from context 
+  const [deals, setDeals] = useState<Deal[]>(() => {
+    return existingDeals || [];
+  });
   const [columns, setColumns] = useState<Column[]>(() => {
     const savedColumns = localStorage.getItem(STORAGE_KEYS.DEALS_COLUMNS);
     return savedColumns ? JSON.parse(savedColumns) : DEFAULT_COLUMNS;
@@ -76,6 +82,12 @@ const Deals = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
   const [teamMembers] = useState<TeamMember[]>(demoTeamMembers); // Using demo data
+  
+  // Update local deals when context deals change
+  useEffect(() => {
+    setDeals(existingDeals);
+    setDealsByStage(getInitialDealsByStage(existingDeals, columns));
+  }, [existingDeals, columns]);
   
   // Update dealsByStage when columns change
   useEffect(() => {
@@ -211,50 +223,20 @@ const Deals = () => {
 
   // Handle save edited deal
   const handleSaveEditedDeal = (updatedDeal: any) => {
-    // Update the deal in the dealsByStage
-    const newDealsByStage = {...dealsByStage};
+    // Update the deal in the context
+    updateDealInContext(updatedDeal);
     
-    // If stage has changed, we need to move the deal
-    if (updatedDeal.stage !== editingDeal.stage) {
-      // Remove from the old stage
-      newDealsByStage[editingDeal.stage] = newDealsByStage[editingDeal.stage].filter(
-        d => d.id !== updatedDeal.id
-      );
-      
-      // Add to the new stage
-      newDealsByStage[updatedDeal.stage] = [
-        ...newDealsByStage[updatedDeal.stage] || [],
-        updatedDeal
-      ];
-    } else {
-      // Update in the same stage
-      newDealsByStage[updatedDeal.stage] = newDealsByStage[updatedDeal.stage].map(
-        d => d.id === updatedDeal.id ? updatedDeal : d
-      );
-    }
-    
-    // Update state
-    setDealsByStage(newDealsByStage);
-    
-    // Update the main deals array
-    setDeals(getAllDeals());
+    // Show toast notification
+    toast({
+      title: "Deal Updated",
+      description: `${updatedDeal.name} has been updated successfully`
+    });
   };
 
   // Handle delete deal
   const handleDeleteDeal = (deal: any) => {
-    // Create new dealsByStage object
-    const newDealsByStage = {...dealsByStage};
-    
-    // Remove the deal from its stage
-    newDealsByStage[deal.stage] = newDealsByStage[deal.stage].filter(
-      d => d.id !== deal.id
-    );
-    
-    // Update state
-    setDealsByStage(newDealsByStage);
-    
-    // Update the main deals array
-    setDeals(getAllDeals());
+    // Delete the deal from context
+    deleteDealFromContext(deal.id);
     
     // Show toast notification
     toast({
@@ -268,28 +250,20 @@ const Deals = () => {
     const defaultStage = columns.length > 0 ? columns[0].id : "discovery";
     
     const newDeal = {
-      id: Date.now(),
       name: "New Deal",
-      clientId: clients.length > 0 ? clients[0].id : 1,
+      company: "Example Company",
       stage: defaultStage,
       value: 5000,
       currency: "USD",
       closingDate: new Date().toISOString().split('T')[0],
       probability: 50,
-      createdAt: new Date().toISOString(),
+      description: "New deal description",
       assignedTo: "account-owner",
-      description: "New deal description"
+      contactId: "contact1"
     };
     
-    // Add to dealsByStage
-    const newDealsByStage = {...dealsByStage};
-    newDealsByStage[defaultStage] = [...(newDealsByStage[defaultStage] || []), newDeal];
-    
-    // Update state
-    setDealsByStage(newDealsByStage);
-    
-    // Update the main deals array
-    setDeals([...deals, newDeal]);
+    // Add to context
+    addDealToContext(newDeal);
     
     // Show toast notification
     const stageColumn = columns.find(col => col.id === defaultStage);
@@ -299,7 +273,16 @@ const Deals = () => {
     });
     
     // Edit the newly created deal
-    handleEditDeal(newDeal);
+    // Need to find the deal with the correct ID after it was added
+    const addedDeal = existingDeals.find(d => 
+      d.name === newDeal.name && 
+      d.company === newDeal.company && 
+      d.stage === newDeal.stage
+    );
+    
+    if (addedDeal) {
+      handleEditDeal(addedDeal);
+    }
   };
 
   // Handle saving columns from the customizer
@@ -387,7 +370,6 @@ const Deals = () => {
                         className="h-8 w-8" 
                         onClick={() => {
                           const newDeal = {
-                            id: Date.now(),
                             name: "New Deal",
                             clientId: clients.length > 0 ? clients[0].id : 1,
                             stage: column.id,
