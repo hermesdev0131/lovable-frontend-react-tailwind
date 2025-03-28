@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import {
   Toast,
@@ -161,7 +162,9 @@ function toast(props: Toast) {
       ...props,
       open: true,
       onOpenChange: (open) => {
-        if (!open) dismiss()
+        if (!open) {
+          dismiss();
+        }
       },
     },
   })
@@ -173,6 +176,7 @@ function toast(props: Toast) {
   }
 }
 
+// Add the dismiss method directly to the toast function
 toast.dismiss = (toastId?: string) => {
   dispatch({
     type: "DISMISS_TOAST",

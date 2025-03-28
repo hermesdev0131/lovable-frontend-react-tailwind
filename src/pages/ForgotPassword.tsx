@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, X, ExternalLink } from 'lucide-react';
+import { Mail, ArrowLeft, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ForgotPassword = () => {
