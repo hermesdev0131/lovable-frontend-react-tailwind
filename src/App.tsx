@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom"
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider"
@@ -181,7 +182,7 @@ function App() {
                 path="/social-media-integration" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout isExpanded={sidebarExpanded} onToggle={toggleSidebar}>
                       <SocialMediaIntegration />
                     </Layout>
                   </ProtectedRoute>
