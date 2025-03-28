@@ -9,9 +9,9 @@ import { Edit, Settings, Activity, LinkIcon } from 'lucide-react';
 
 interface AllPagesTabProps {
   websitePages: WebsitePage[];
-  openEditDialog: (pageId: number) => void;
-  deletePage: (pageId: number) => void;
-  startTracking: (pageId: number) => void;
+  openEditDialog: (pageId: string) => void;
+  deletePage: (pageId: string) => void;
+  startTracking: (pageId: string) => void;
   formatDate: (dateString: string) => string;
   getStatusBadgeVariant: (status: string) => string;
 }
@@ -50,7 +50,7 @@ const AllPagesTab = ({
                 <TableCell>
                   <div className="flex items-center">
                     <LinkIcon className="h-4 w-4 mr-1 text-gray-500" />
-                    {page.url}
+                    {page.slug || page.url}
                   </div>
                 </TableCell>
                 <TableCell>{page.type.charAt(0).toUpperCase() + page.type.slice(1)}</TableCell>
@@ -59,8 +59,8 @@ const AllPagesTab = ({
                     {page.status.charAt(0).toUpperCase() + page.status.slice(1)}
                   </Badge>
                 </TableCell>
-                <TableCell>{formatDate(page.updatedAt)}</TableCell>
-                <TableCell>{page.views.toLocaleString()}</TableCell>
+                <TableCell>{formatDate(page.lastUpdated || page.updatedAt || page.createdAt)}</TableCell>
+                <TableCell>{(page.views || page.visits || 0).toLocaleString()}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button 

@@ -26,28 +26,28 @@ const WebsiteManagement = () => {
   const { websitePages, addWebsitePage, removeWebsitePage, updateWebsitePage, currentClientId } = useMasterAccount();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingPageId, setEditingPageId] = useState<number | null>(null);
-  const [selectedPage, setSelectedPage] = useState<number | null>(null);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   
   // Calculate page stats
   const totalPages = websitePages.length;
   const publishedPages = websitePages.filter(page => page.status === 'published').length;
-  const totalViews = websitePages.reduce((sum, page) => sum + page.views, 0);
-  const totalConversions = websitePages.reduce((sum, page) => sum + page.conversions, 0);
+  const totalViews = websitePages.reduce((sum, page) => sum + (page.views || page.visits || 0), 0);
+  const totalConversions = websitePages.reduce((sum, page) => sum + (page.conversions || 0), 0);
   const avgBounceRate = websitePages.length > 0 
-    ? websitePages.reduce((sum, page) => sum + page.bounceRate, 0) / websitePages.length 
+    ? websitePages.reduce((sum, page) => sum + (page.bounceRate || 0), 0) / websitePages.length 
     : 0;
   
   // Landing pages specifically
   const landingPages = websitePages.filter(page => page.type === 'landing');
-  const landingPageViews = landingPages.reduce((sum, page) => sum + page.views, 0);
-  const landingPageConversions = landingPages.reduce((sum, page) => sum + page.conversions, 0);
+  const landingPageViews = landingPages.reduce((sum, page) => sum + (page.views || page.visits || 0), 0);
+  const landingPageConversions = landingPages.reduce((sum, page) => sum + (page.conversions || 0), 0);
   
   const addForm = useForm<PageFormValues>({
     defaultValues: {
       title: '',
-      url: '',
+      slug: '',
       status: 'draft',
       type: 'landing'
     }
@@ -56,7 +56,7 @@ const WebsiteManagement = () => {
   const editForm = useForm<PageFormValues>({
     defaultValues: {
       title: '',
-      url: '',
+      slug: '',
       status: 'published',
       type: 'landing'
     }
@@ -65,12 +65,14 @@ const WebsiteManagement = () => {
   const handleAddPage = (data: PageFormValues) => {
     const newPage = {
       ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      visits: 0,
       views: 0,
       conversions: 0,
       bounceRate: 0,
       clientId: currentClientId,
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     
     addWebsitePage(newPage);
@@ -78,14 +80,16 @@ const WebsiteManagement = () => {
     setIsAddDialogOpen(false);
   };
   
-  const openEditDialog = (pageId: number) => {
+  const openEditDialog = (pageId: string) => {
     const page = websitePages.find(p => p.id === pageId);
     if (page) {
       editForm.reset({
         title: page.title,
-        url: page.url,
+        slug: page.slug || page.url,
         status: page.status,
-        type: page.type
+        type: page.type,
+        content: page.content,
+        template: page.template
       });
       setEditingPageId(pageId);
       setIsEditDialogOpen(true);
@@ -94,13 +98,17 @@ const WebsiteManagement = () => {
   
   const handleEditPage = (data: PageFormValues) => {
     if (editingPageId) {
-      updateWebsitePage(editingPageId, data);
+      updateWebsitePage(editingPageId, {
+        ...data,
+        lastUpdated: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
       setIsEditDialogOpen(false);
       setEditingPageId(null);
     }
   };
   
-  const deletePage = (pageId: number) => {
+  const deletePage = (pageId: string) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
       removeWebsitePage(pageId);
     }
@@ -127,7 +135,7 @@ const WebsiteManagement = () => {
     });
   };
   
-  const startTracking = (pageId: number) => {
+  const startTracking = (pageId: string) => {
     setSelectedPage(pageId);
     
     if (!isTracking) {

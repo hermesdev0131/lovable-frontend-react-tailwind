@@ -42,14 +42,14 @@ const InsightsTab = ({ websitePages }: InsightsTabProps) => {
             </TableHeader>
             <TableBody>
               {websitePages
-                .sort((a, b) => b.views - a.views)
+                .sort((a, b) => (b.views || b.visits || 0) - (a.views || a.visits || 0))
                 .slice(0, 5)
                 .map((page) => (
                   <TableRow key={page.id}>
                     <TableCell className="font-medium">{page.title}</TableCell>
-                    <TableCell>{page.views.toLocaleString()}</TableCell>
-                    <TableCell>{page.conversions.toLocaleString()}</TableCell>
-                    <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
+                    <TableCell>{(page.views || page.visits || 0).toLocaleString()}</TableCell>
+                    <TableCell>{(page.conversions || 0).toLocaleString()}</TableCell>
+                    <TableCell>{(page.bounceRate || 0).toFixed(1)}%</TableCell>
                     <TableCell>2m 34s</TableCell>
                   </TableRow>
                 ))}

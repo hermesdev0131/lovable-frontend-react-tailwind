@@ -41,7 +41,7 @@ const EditPageDialog = ({ isOpen, onOpenChange, form, onSubmit }: EditPageDialog
             />
             <FormField
               control={form.control}
-              name="url"
+              name="slug"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>URL Path</FormLabel>
@@ -90,6 +90,7 @@ const EditPageDialog = ({ isOpen, onOpenChange, form, onSubmit }: EditPageDialog
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="landing">Landing Page</SelectItem>
+                        <SelectItem value="content">Content</SelectItem>
                         <SelectItem value="blog">Blog</SelectItem>
                         <SelectItem value="product">Product</SelectItem>
                         <SelectItem value="other">Other</SelectItem>

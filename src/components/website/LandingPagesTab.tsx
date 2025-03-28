@@ -11,8 +11,8 @@ interface LandingPagesTabProps {
   landingPages: WebsitePage[];
   landingPageViews: number;
   landingPageConversions: number;
-  openEditDialog: (pageId: number) => void;
-  deletePage: (pageId: number) => void;
+  openEditDialog: (pageId: string) => void;
+  deletePage: (pageId: string) => void;
   getStatusBadgeVariant: (status: string) => string;
 }
 
@@ -77,12 +77,12 @@ const LandingPagesTab = ({
                     {page.status.charAt(0).toUpperCase() + page.status.slice(1)}
                   </Badge>
                 </TableCell>
-                <TableCell>{page.views.toLocaleString()}</TableCell>
-                <TableCell>{page.conversions.toLocaleString()}</TableCell>
+                <TableCell>{(page.views || page.visits || 0).toLocaleString()}</TableCell>
+                <TableCell>{(page.conversions || 0).toLocaleString()}</TableCell>
                 <TableCell>
-                  {page.views > 0 ? ((page.conversions / page.views) * 100).toFixed(1) : 0}%
+                  {(page.views || page.visits) > 0 ? (((page.conversions || 0) / (page.views || page.visits || 1)) * 100).toFixed(1) : 0}%
                 </TableCell>
-                <TableCell>{page.bounceRate.toFixed(1)}%</TableCell>
+                <TableCell>{(page.bounceRate || 0).toFixed(1)}%</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button 

@@ -17,22 +17,29 @@ export interface WebsitePage {
   id: string;
   title: string;
   slug: string;
-  status: 'published' | 'draft';
-  type: 'landing' | 'content' | 'blog' | 'other';
+  url?: string; // Added for backward compatibility
+  status: 'published' | 'draft' | 'scheduled';
+  type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   visits: number;
+  views?: number; // Added for backward compatibility 
+  conversions?: number;
+  bounceRate?: number;
   lastUpdated: string;
+  updatedAt?: string; // Added for backward compatibility
   createdAt: string;
   content?: string;
   template?: string;
+  clientId?: number;
 }
 
 export interface PageFormValues {
   title: string;
   slug: string;
-  type: 'landing' | 'content' | 'blog' | 'other';
+  url?: string; // Added for backward compatibility
+  type: 'landing' | 'content' | 'blog' | 'product' | 'other';
   template?: string;
   content?: string;
-  status: 'published' | 'draft';
+  status: 'published' | 'draft' | 'scheduled';
 }
 
 // Adding integration interfaces
