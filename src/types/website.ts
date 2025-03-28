@@ -13,7 +13,6 @@ export interface ReviewFilter {
   keyword?: string;
 }
 
-// Updated type definition to match what's used in the application
 export interface WebsitePage {
   id: string;
   title: string;
@@ -23,6 +22,8 @@ export interface WebsitePage {
   visits: number;
   lastUpdated: string;
   createdAt: string;
+  content?: string;
+  template?: string;
 }
 
 export interface PageFormValues {

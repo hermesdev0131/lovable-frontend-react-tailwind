@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { integrations } from '@/lib/data';
 import { YextConnect } from "@/components/integrations/YextConnect";
-import { MailchimpConnect } from "@/components/email/MailchimpConnect";
+import MailchimpConnect from "@/components/email/MailchimpConnect";
 import { GoogleCalendarConnect } from "@/components/integrations/GoogleCalendarConnect";
 import { ZapierConnect } from "@/components/integrations/ZapierConnect";
 import { CustomWebhookConnect } from "@/components/integrations/CustomWebhookConnect";
