@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,27 +16,53 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [token, setToken] = useState('');
+  const [email, setEmail] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { resetPassword } = useAuth();
   
-  // Check if we have a valid hash for password reset
+  // Extract token and email from URL
   useEffect(() => {
-    const checkHashParam = async () => {
-      // Supabase automatically handles the hash parameter
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error || !data.session) {
-        toast({
-          title: "Invalid Request",
-          description: "This password reset link is invalid or has expired. Please request a new password reset.",
-          variant: "destructive"
-        });
-        navigate('/forgot-password');
-      }
-    };
+    const searchParams = new URLSearchParams(location.search);
+    const tokenParam = searchParams.get('token');
+    const emailParam = searchParams.get('email');
     
-    checkHashParam();
-  }, [navigate]);
+    if (tokenParam) setToken(tokenParam);
+    if (emailParam) setEmail(emailParam);
+    
+    // For demo mode, we don't need to validate the token
+    const isDemoMode = !import.meta.env.VITE_SUPABASE_URL;
+    
+    if (!isDemoMode) {
+      // Check if we have a valid hash for password reset (for real Supabase)
+      const checkHashParam = async () => {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error || !data.session) {
+            // Only show error in non-demo mode
+            if (!isDemoMode && (!tokenParam || !emailParam)) {
+              toast({
+                title: "Invalid Request",
+                description: "This password reset link is invalid or has expired. Please request a new password reset.",
+                variant: "destructive"
+              });
+              navigate('/forgot-password');
+            }
+          }
+        } catch (error) {
+          console.error("Error checking session:", error);
+          // Only redirect in non-demo mode
+          if (!isDemoMode) {
+            navigate('/forgot-password');
+          }
+        }
+      };
+      
+      checkHashParam();
+    }
+  }, [navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,8 +100,8 @@ const ResetPassword = () => {
     setIsLoading(true);
     
     try {
-      // In Supabase flow, we don't need the token parameter
-      const success = await resetPassword("", password);
+      // In demo mode, we don't need to use the token
+      const success = await resetPassword(token, password);
       
       if (success) {
         setIsSuccess(true);
@@ -116,6 +143,11 @@ const ResetPassword = () => {
                 ? "Your password has been reset successfully" 
                 : "Enter your new password below"}
             </CardDescription>
+            {email && (
+              <div className="pt-2">
+                <p className="text-sm text-zinc-400">Resetting password for: <span className="text-white">{email}</span></p>
+              </div>
+            )}
           </CardHeader>
           
           {isSuccess ? (

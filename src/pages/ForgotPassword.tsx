@@ -1,19 +1,39 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, X } from 'lucide-react';
+import { Mail, ArrowLeft, X, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [demoResetLink, setDemoResetLink] = useState<string | null>(null);
   const { requestPasswordReset } = useAuth();
+
+  // Listen for demo console logs to extract reset link
+  useEffect(() => {
+    if (import.meta.env.DEV || !import.meta.env.VITE_SUPABASE_URL) {
+      const originalConsoleLog = console.log;
+      console.log = function(...args) {
+        originalConsoleLog.apply(console, args);
+        
+        // Look for reset link in console logs
+        if (args.length >= 2 && args[0] === 'Reset link:' && typeof args[1] === 'string') {
+          setDemoResetLink(args[1]);
+        }
+      };
+      
+      return () => {
+        console.log = originalConsoleLog;
+      };
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +109,23 @@ const ForgotPassword = () => {
                     Check your email inbox for the password reset link. If you don't see it, check your spam folder.
                   </p>
                 </div>
+                
+                {/* Show demo reset link if available */}
+                {demoResetLink && (
+                  <div className="mt-4 p-3 rounded-md bg-blue-900/30 border border-blue-800">
+                    <p className="text-sm text-blue-200 font-medium mb-2">DEMO MODE</p>
+                    <p className="text-sm text-zinc-300 mb-3">
+                      Since this is a demo, click the link below to reset your password:
+                    </p>
+                    <a 
+                      href={demoResetLink}
+                      className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors"
+                    >
+                      <ExternalLink size={16} />
+                      Open Reset Link
+                    </a>
+                  </div>
+                )}
               </div>
               
               <Button

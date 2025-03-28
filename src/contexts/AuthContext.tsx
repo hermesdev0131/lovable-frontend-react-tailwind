@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
@@ -30,45 +29,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check for existing session on load
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        const { user } = data.session;
-        if (user) {
-          // Get user profile data from Supabase if needed
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('name, role')
-            .eq('id', user.id)
-            .single();
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          const { user } = data.session;
+          if (user) {
+            const profileData = { name: user.user_metadata?.name, role: 'user' };
 
-          const authUser: User = {
-            id: user.id,
-            email: user.email || '',
-            name: profileData?.name || user.email?.split('@')[0] || 'User',
-            role: profileData?.role || 'user',
-          };
-          
-          setCurrentUser(authUser);
+            const authUser: User = {
+              id: user.id,
+              email: user.email || '',
+              name: profileData?.name || user.email?.split('@')[0] || 'User',
+              role: profileData?.role || 'user',
+            };
+            
+            setCurrentUser(authUser);
+          }
         }
+      } catch (error) {
+        console.error('Error checking session:', error);
       }
     };
     
     checkSession();
     
-    // Set up auth state change listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           const user = session.user;
           
-          // Get user profile data if available
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('name, role')
-            .eq('id', user.id)
-            .single();
+          const profileData = { name: user.user_metadata?.name, role: 'user' };
           
           const authUser: User = {
             id: user.id,
@@ -85,12 +76,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 
     return () => {
-      // Clean up the subscription
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  // Legacy client sync (can be removed once fully migrated to Supabase)
   useEffect(() => {
     if (currentClientId) {
       const client = clients.find(c => c.id === currentClientId);
@@ -109,7 +98,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // First try Supabase authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -118,7 +106,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (error) {
         console.error('Supabase login error:', error);
         
-        // Fallback to legacy login if Supabase auth fails
         const success = loginToAccount(email, password);
         
         if (success) {
@@ -144,7 +131,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }
       
-      // If Supabase login succeeded
       if (data.user) {
         toast({
           title: "Login Successful",
@@ -222,9 +208,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
     try {
-      // In Supabase, password reset is handled differently
-      // The token is already in the URL and managed by Supabase
-      // We just need to update the password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
