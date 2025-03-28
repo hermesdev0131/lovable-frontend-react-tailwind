@@ -2,8 +2,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMasterAccount } from './MasterAccountContext';
 import { toast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 interface User {
@@ -134,7 +132,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             title: "Login Failed",
             description: "Invalid email or password. Please try again.",
             variant: "destructive",
-            action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
           });
           return false;
         }
@@ -144,7 +141,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast({
           title: "Login Successful",
           description: "Welcome back!",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
         return true;
       }
@@ -156,7 +152,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return false;
     } finally {
@@ -174,7 +169,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Logout Failed",
         description: "An error occurred during logout. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
     }
   };
@@ -191,7 +185,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           title: "Password Reset Failed",
           description: error.message,
           variant: "destructive",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
         return false;
       }
@@ -199,7 +192,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast({
         title: "Password Reset Email Sent",
         description: "Check your email for a link to reset your password.",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       
       return true;
@@ -209,7 +201,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Password Reset Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return false;
     }
@@ -227,7 +218,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           title: "Password Reset Failed",
           description: error.message,
           variant: "destructive",
-          action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
         });
         return false;
       }
@@ -235,7 +225,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast({
         title: "Password Reset Successful",
         description: "Your password has been updated. You can now log in with your new password.",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       
       return true;
@@ -245,7 +234,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         title: "Password Reset Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return false;
     }

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, LogIn, X } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -27,7 +27,6 @@ export const LoginForm = () => {
         title: "Error",
         description: "Please enter both email and password",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
       return;
     }
@@ -47,7 +46,6 @@ export const LoginForm = () => {
         title: "Login Failed",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
-        action: <Button variant="ghost" size="sm" className="h-8 px-2"><X size={16} /></Button>
       });
     } finally {
       setIsLoading(false);
