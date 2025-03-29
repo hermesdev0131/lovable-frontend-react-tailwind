@@ -16,14 +16,20 @@ interface EnvironmentConfig {
 // Determine the current environment
 const isProduction = import.meta.env.PROD;
 
+// Get environment variables with fallbacks
+const getEnvVar = (key: string, fallback: string = ''): string => {
+  const value = import.meta.env[key];
+  return value !== undefined ? String(value) : fallback;
+};
+
 // Development configuration (local development)
 const developmentConfig: EnvironmentConfig = {
   apiUrl: 'http://localhost:8000',
   appName: 'CRM System (Development)',
   isProduction: false,
   analyticsEnabled: false,
-  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
-  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+  supabaseUrl: getEnvVar('VITE_SUPABASE_URL'),
+  supabaseAnonKey: getEnvVar('VITE_SUPABASE_ANON_KEY'),
 };
 
 // Production configuration
@@ -32,8 +38,8 @@ const productionConfig: EnvironmentConfig = {
   appName: 'CRM System',
   isProduction: true,
   analyticsEnabled: true,
-  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
-  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+  supabaseUrl: getEnvVar('VITE_SUPABASE_URL'),
+  supabaseAnonKey: getEnvVar('VITE_SUPABASE_ANON_KEY'),
 };
 
 // Export the appropriate config based on the environment
