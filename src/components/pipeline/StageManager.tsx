@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Plus, GripVertical, Edit, Save, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -97,7 +98,7 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
         <h3 className="text-lg font-medium">Current Stages</h3>
         <div className="border rounded-md divide-y">
           {localStages.map((stageId, index) => (
-            <div key={stageId} className="flex items-center p-2 group hover:bg-muted/50">
+            <div key={stageId} className="flex items-center p-2 group hover:bg-[#D35400]/5">
               <div className="text-muted-foreground cursor-move">
                 <GripVertical size={16} />
               </div>
@@ -113,7 +114,7 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
                     <Button 
                       size="icon" 
                       variant="ghost" 
-                      className="h-7 w-7" 
+                      className="h-7 w-7 hover:bg-[#D35400]/10 hover:text-[#D35400]" 
                       onClick={() => handleEditLabel(stageId, localLabels[stageId])}
                     >
                       <Save size={14} />
@@ -131,7 +132,7 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
                 <Button 
                   size="icon" 
                   variant="ghost" 
-                  className="h-7 w-7" 
+                  className="h-7 w-7 hover:bg-[#D35400]/10 hover:text-[#D35400]" 
                   onClick={() => setEditingStage(stageId === editingStage ? null : stageId)}
                 >
                   <Edit size={14} />
@@ -140,7 +141,7 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
                 <Button 
                   size="icon" 
                   variant="ghost" 
-                  className="h-7 w-7" 
+                  className="h-7 w-7 hover:bg-[#D35400]/10 hover:text-[#D35400]" 
                   onClick={() => handleMoveStage(index, 'up')}
                   disabled={index === 0}
                 >
@@ -150,7 +151,7 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
                 <Button 
                   size="icon" 
                   variant="ghost" 
-                  className="h-7 w-7" 
+                  className="h-7 w-7 hover:bg-[#D35400]/10 hover:text-[#D35400]" 
                   onClick={() => handleMoveStage(index, 'down')}
                   disabled={index === localStages.length - 1}
                 >
@@ -160,7 +161,7 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
                 <Button 
                   size="icon" 
                   variant="ghost" 
-                  className="h-7 w-7 text-destructive hover:text-destructive" 
+                  className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" 
                   onClick={() => handleRemoveStage(stageId)}
                   disabled={['closed-won', 'closed-lost'].includes(stageId)}
                 >
@@ -193,17 +194,17 @@ const StageManager: React.FC<StageManagerProps> = ({ stages, stageLabels, onStag
               placeholder="e.g. initial-contact"
             />
           </div>
-          <Button onClick={handleAddStage} className="flex items-center">
+          <Button onClick={handleAddStage} className="flex items-center bg-[#D35400] hover:bg-[#B74600]">
             <Plus size={16} className="mr-1" /> Add Stage
           </Button>
         </div>
       </div>
       
       <div className="flex justify-between pt-4 border-t">
-        <Button variant="outline" onClick={handleReset}>
+        <Button variant="outline" onClick={handleReset} className="hover:border-[#D35400]/30 hover:text-[#D35400]">
           Reset to Defaults
         </Button>
-        <Button onClick={handleSave}>
+        <Button onClick={handleSave} className="bg-[#D35400] hover:bg-[#B74600]">
           Save Changes
         </Button>
       </div>

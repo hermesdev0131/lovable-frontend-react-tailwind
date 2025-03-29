@@ -346,7 +346,7 @@ const Deals = () => {
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4" /> Filter
             </Button>
-            <Button size="sm" className="flex items-center gap-1" onClick={handleAddDeal}>
+            <Button size="sm" className="flex items-center gap-1 bg-[#D35400] hover:bg-[#B74600]" onClick={handleAddDeal}>
               <Plus className="h-4 w-4" /> New Deal
             </Button>
           </div>
@@ -370,7 +370,7 @@ const Deals = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8" 
+                        className="h-8 w-8 hover:bg-[#D35400]/10 hover:text-[#D35400]" 
                         onClick={() => {
                           const now = new Date().toISOString();
                           const newDealData: Omit<Deal, "id"> = {
@@ -435,7 +435,7 @@ const Deals = () => {
                                     snapshot.isDragging ? "opacity-75" : ""
                                   )}
                                 >
-                                  <Card className="hover:shadow-md transition-all duration-300">
+                                  <Card className="hover:shadow-md transition-all duration-300 hover:border-[#D35400]/30">
                                     <CardContent className="p-6">
                                       <div className="flex justify-between items-start mb-4">
                                         <div>
@@ -448,7 +448,7 @@ const Deals = () => {
                                         </div>
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-[#D35400]">
                                               <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                           </DropdownMenuTrigger>
@@ -457,7 +457,7 @@ const Deals = () => {
                                               <Edit className="h-4 w-4 mr-2" />
                                               Edit Deal
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleDeleteDeal(deal)}>
+                                            <DropdownMenuItem onClick={() => handleDeleteDeal(deal)} className="text-destructive">
                                               <Trash2 className="h-4 w-4 mr-2" />
                                               Delete Deal
                                             </DropdownMenuItem>
@@ -467,8 +467,7 @@ const Deals = () => {
                                       
                                       <div className="flex items-center my-3">
                                         <Avatar className="h-7 w-7 mr-2">
-                                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                            {/* Show company initials instead of client initials */}
+                                          <AvatarFallback className="text-xs bg-[#D35400]/10 text-[#D35400]">
                                             {deal.company.substring(0, 2).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>
@@ -509,7 +508,7 @@ const Deals = () => {
                                             <div 
                                               className={cn(
                                                 "h-2 rounded-full",
-                                                deal.probability >= 70 ? "bg-primary" : 
+                                                deal.probability >= 70 ? "bg-[#D35400]" : 
                                                 deal.probability >= 40 ? "bg-amber-500" : "bg-destructive"
                                               )}
                                               style={{ width: `${deal.probability}%` }}
@@ -526,8 +525,42 @@ const Deals = () => {
                           {provided.placeholder}
                           
                           {stageDeals.length === 0 && (
-                            <div className="flex items-center justify-center h-24 border border-dashed rounded-md">
-                              <span className="text-sm text-muted-foreground">No deals in this stage</span>
+                            <div className="flex items-center justify-center h-24 border border-dashed rounded-md hover:border-[#D35400]/30 hover:bg-[#D35400]/5 cursor-pointer transition-colors"
+                              onClick={() => {
+                                const now = new Date().toISOString();
+                                const newDealData: Omit<Deal, "id"> = {
+                                  name: "New Deal",
+                                  company: "Example Company",
+                                  stage: column.id,
+                                  value: 5000,
+                                  currency: "USD",
+                                  closingDate: new Date().toISOString().split('T')[0],
+                                  probability: 50,
+                                  description: "New deal description",
+                                  assignedTo: "account-owner",
+                                  contactId: "contact1",
+                                  createdAt: now,
+                                  updatedAt: now
+                                };
+                                
+                                addDealToContext(newDealData);
+                                
+                                setTimeout(() => {
+                                  const addedDeal = existingDeals.find(d => 
+                                    d.name === newDealData.name && 
+                                    d.company === newDealData.company && 
+                                    d.stage === column.id
+                                  );
+                                  
+                                  if (addedDeal) {
+                                    handleEditDeal(addedDeal);
+                                  }
+                                }, 100);
+                              }}
+                            >
+                              <span className="text-sm text-muted-foreground flex items-center">
+                                <Plus className="h-4 w-4 mr-1" /> Add a deal
+                              </span>
                             </div>
                           )}
                         </div>
@@ -541,7 +574,7 @@ const Deals = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {getFilteredDeals().map((deal) => (
-              <Card key={deal.id} className="hover:shadow-md transition-all duration-300">
+              <Card key={deal.id} className="hover:shadow-md transition-all duration-300 hover:border-[#D35400]/30">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -554,7 +587,7 @@ const Deals = () => {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-[#D35400]">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -563,7 +596,7 @@ const Deals = () => {
                           <Edit className="h-4 w-4 mr-2" />
                           Edit Deal
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteDeal(deal)}>
+                        <DropdownMenuItem onClick={() => handleDeleteDeal(deal)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete Deal
                         </DropdownMenuItem>
@@ -573,8 +606,7 @@ const Deals = () => {
                   
                   <div className="flex items-center my-3">
                     <Avatar className="h-7 w-7 mr-2">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {/* Show company initials instead of client initials */}
+                      <AvatarFallback className="text-xs bg-[#D35400]/10 text-[#D35400]">
                         {deal.company.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -615,7 +647,7 @@ const Deals = () => {
                         <div 
                           className={cn(
                             "h-2 rounded-full",
-                            deal.probability >= 70 ? "bg-primary" : 
+                            deal.probability >= 70 ? "bg-[#D35400]" : 
                             deal.probability >= 40 ? "bg-amber-500" : "bg-destructive"
                           )}
                           style={{ width: `${deal.probability}%` }}
@@ -631,7 +663,7 @@ const Deals = () => {
               <div className="col-span-full text-center py-12">
                 <h3 className="text-lg font-medium mb-2">No deals found</h3>
                 <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
-                <Button onClick={handleAddDeal}>Create New Deal</Button>
+                <Button onClick={handleAddDeal} className="bg-[#D35400] hover:bg-[#B74600]">Create New Deal</Button>
               </div>
             )}
           </div>

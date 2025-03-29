@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move, Settings } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -191,16 +192,16 @@ const Pipeline = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 hover:text-[#D35400] hover:border-[#D35400]/30"
               onClick={() => setStageManagerOpen(true)}
             >
               <Settings className="h-4 w-4" /> Customize Stages
             </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="flex items-center gap-1 hover:text-[#D35400] hover:border-[#D35400]/30">
               <Filter className="h-4 w-4" /> Filter
             </Button>
             <Button 
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 shadow-md" 
+              className="flex items-center gap-1 bg-[#D35400] hover:bg-[#B74600] shadow-md" 
               onClick={() => setAddDealOpen(true)}
             >
               <Plus className="h-4 w-4" /> Add Deal
@@ -210,10 +211,10 @@ const Pipeline = () => {
         
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'kanban' | 'list')} className="mb-6">
           <TabsList className="grid w-[200px] grid-cols-2 mb-8">
-            <TabsTrigger value="kanban" className="flex items-center gap-1">
+            <TabsTrigger value="kanban" className="flex items-center gap-1 data-[state=active]:bg-[#D35400] data-[state=active]:text-white">
               <Kanban className="h-4 w-4" /> Kanban
             </TabsTrigger>
-            <TabsTrigger value="list" className="flex items-center gap-1">
+            <TabsTrigger value="list" className="flex items-center gap-1 data-[state=active]:bg-[#D35400] data-[state=active]:text-white">
               <List className="h-4 w-4" /> List
             </TabsTrigger>
           </TabsList>
@@ -233,7 +234,7 @@ const Pipeline = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-7 w-7 rounded-full"
+                        className="h-7 w-7 rounded-full hover:bg-[#D35400]/10 hover:text-[#D35400]"
                         onClick={() => {
                           setNewDeal({...newDeal, stage: stage});
                           setAddDealOpen(true);
@@ -249,7 +250,7 @@ const Pipeline = () => {
                           {...provided.droppableProps}
                           ref={provided.innerRef}
                           className="space-y-3 min-h-[200px] p-1 rounded-md transition-colors"
-                          style={{ background: provided.isDraggingOver ? 'rgba(0, 0, 0, 0.03)' : 'transparent' }}
+                          style={{ background: provided.isDraggingOver ? 'rgba(211, 84, 0, 0.05)' : 'transparent' }}
                         >
                           {(dealsByStage[stage] || []).map((deal, index) => (
                             <Draggable key={deal.id} draggableId={deal.id} index={index}>
@@ -263,8 +264,8 @@ const Pipeline = () => {
                                   }}
                                 >
                                   <Card 
-                                    className={`border hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-move ${
-                                      snapshot.isDragging ? 'shadow-lg border-primary/30' : ''
+                                    className={`border hover:border-[#D35400]/30 hover:shadow-md transition-all duration-300 cursor-move ${
+                                      snapshot.isDragging ? 'shadow-lg border-[#D35400]/40' : ''
                                     }`}
                                     style={{ animationDelay: `${index * 0.05}s` }}
                                   >
@@ -280,7 +281,7 @@ const Pipeline = () => {
                                           </div>
                                           <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                              <Button variant="ghost" size="icon" className="h-6 w-6 hover:text-[#D35400]">
                                                 <MoreHorizontal className="h-3 w-3" />
                                               </Button>
                                             </DropdownMenuTrigger>
@@ -302,7 +303,7 @@ const Pipeline = () => {
                                         <div className="bg-muted/20 rounded p-1.5">
                                           <div 
                                             className={`font-medium ${
-                                              deal.probability >= 70 ? 'text-green-600' : 
+                                              deal.probability >= 70 ? 'text-[#D35400]' : 
                                               deal.probability >= 40 ? 'text-amber-600' : 
                                               'text-red-600'
                                             }`}
@@ -316,7 +317,7 @@ const Pipeline = () => {
                                       <div className="flex justify-between items-center pt-1 border-t border-border/40">
                                         <div className="flex items-center gap-1">
                                           <Avatar className="h-5 w-5">
-                                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                                            <AvatarFallback className="text-[10px] bg-[#D35400]/10 text-[#D35400]">
                                               {getInitials(deal.contactId)}
                                             </AvatarFallback>
                                           </Avatar>
@@ -331,7 +332,7 @@ const Pipeline = () => {
                                         </div>
                                         <div 
                                           className={`w-2 h-2 rounded-full ${
-                                            deal.probability >= 70 ? 'bg-green-500' : 
+                                            deal.probability >= 70 ? 'bg-[#D35400]' : 
                                             deal.probability >= 40 ? 'bg-amber-500' : 
                                             'bg-red-500'
                                           }`}
@@ -347,7 +348,7 @@ const Pipeline = () => {
                           
                           {(!dealsByStage[stage] || dealsByStage[stage].length === 0) && (
                             <div 
-                              className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground hover:bg-accent/10 hover:border-accent transition-colors" 
+                              className="h-24 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground hover:bg-[#D35400]/5 hover:border-[#D35400]/30 transition-colors cursor-pointer" 
                               onClick={() => {
                                 setNewDeal({...newDeal, stage: stage});
                                 setAddDealOpen(true);
@@ -397,12 +398,12 @@ const Pipeline = () => {
                   </TableHeader>
                   <TableBody>
                     {getSortedDeals().map((deal) => (
-                      <TableRow key={deal.id}>
+                      <TableRow key={deal.id} className="hover:bg-[#D35400]/5">
                         <TableCell>
                           <div className="font-medium">{deal.name}</div>
                           <div className="flex items-center mt-1">
                             <Avatar className="h-5 w-5 mr-2">
-                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                              <AvatarFallback className="text-xs bg-[#D35400]/10 text-[#D35400]">
                                 {getInitials(deal.contactId)}
                               </AvatarFallback>
                             </Avatar>
@@ -413,7 +414,7 @@ const Pipeline = () => {
                         </TableCell>
                         <TableCell>{deal.company}</TableCell>
                         <TableCell>
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted">
+                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[#D35400]/10 text-[#D35400]">
                             {getStageLabel(deal.stage, stageLabels)}
                           </span>
                         </TableCell>
@@ -421,8 +422,8 @@ const Pipeline = () => {
                         <TableCell>
                           <div 
                             className={`text-xs px-2 py-1 rounded-full inline-block ${
-                              deal.probability >= 70 ? 'bg-green-100 text-green-800' : 
-                              deal.probability >= 40 ? 'bg-yellow-100 text-yellow-800' : 
+                              deal.probability >= 70 ? 'bg-[#D35400]/10 text-[#D35400]' : 
+                              deal.probability >= 40 ? 'bg-amber-100 text-amber-800' : 
                               'bg-red-100 text-red-800'
                             }`}
                           >
@@ -432,7 +433,7 @@ const Pipeline = () => {
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-[#D35400]">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -552,7 +553,7 @@ const Pipeline = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDealOpen(false)}>Cancel</Button>
-            <Button type="submit" onClick={handleAddDeal} disabled={!newDeal.name || !newDeal.company}>
+            <Button type="submit" onClick={handleAddDeal} disabled={!newDeal.name || !newDeal.company} className="bg-[#D35400] hover:bg-[#B74600]">
               Add Deal
             </Button>
           </DialogFooter>
