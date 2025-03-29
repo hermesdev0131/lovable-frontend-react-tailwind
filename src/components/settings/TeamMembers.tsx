@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trackEmailAction, trackError } from "@/lib/analytics";
+import { sendInvitationEmail } from "@/services/supabase";
 
 export interface TeamMember {
   id: string;
@@ -179,14 +180,25 @@ const TeamMembers = () => {
     setShowInviteDialog(true);
   };
 
-  const sendInvitationEmail = async () => {
+  const sendInvitationEmailWithSupabase = async () => {
     if (!selectedMember) return;
     
     setIsSending(true);
     
     try {
       trackEmailAction('send_invitation', selectedMember.email);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const result = await sendInvitationEmail({
+        to: selectedMember.email,
+        subject: `Invitation to join our portal as a ${selectedMember.role}`,
+        message: inviteMessage,
+        name: selectedMember.name,
+        role: selectedMember.role
+      });
+      
+      if (!result.success) {
+        throw new Error('Failed to send email through Supabase');
+      }
       
       setTeamMembers(
         teamMembers.map(member => 
@@ -211,10 +223,13 @@ const TeamMembers = () => {
         description: "Failed to send the invitation email. Please try again.",
         variant: "destructive"
       });
+      console.error('Error sending invitation:', error);
     } finally {
       setIsSending(false);
     }
   };
+
+  const sendInvitationEmail = sendInvitationEmailWithSupabase;
 
   return (
     <Card>

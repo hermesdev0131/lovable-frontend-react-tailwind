@@ -9,6 +9,8 @@ interface EnvironmentConfig {
   appName: string;
   isProduction: boolean;
   analyticsEnabled: boolean;
+  supabaseUrl: string;
+  supabaseAnonKey: string;
 }
 
 // Determine the current environment
@@ -20,6 +22,8 @@ const developmentConfig: EnvironmentConfig = {
   appName: 'CRM System (Development)',
   isProduction: false,
   analyticsEnabled: false,
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
 };
 
 // Production configuration
@@ -28,6 +32,8 @@ const productionConfig: EnvironmentConfig = {
   appName: 'CRM System',
   isProduction: true,
   analyticsEnabled: true,
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
 };
 
 // Export the appropriate config based on the environment
@@ -36,3 +42,5 @@ export const config: EnvironmentConfig = isProduction ? productionConfig : devel
 // Export useful environment checks
 export const IS_PRODUCTION = config.isProduction;
 export const ANALYTICS_ENABLED = config.analyticsEnabled;
+export const SUPABASE_URL = config.supabaseUrl;
+export const SUPABASE_ANON_KEY = config.supabaseAnonKey;
