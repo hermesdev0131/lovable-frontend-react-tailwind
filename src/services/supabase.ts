@@ -22,7 +22,7 @@ export const sendInvitationEmail = async ({
   message,
   name,
   role
-}: SendEmailParams) => {
+}: SendEmailParams): Promise<{ success: boolean; data?: any; error?: any }> => {
   try {
     const { data, error } = await supabase.functions.invoke('send-invitation-email', {
       body: {
