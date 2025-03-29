@@ -64,6 +64,17 @@ export const trackFeatureUsage = (featureName: string): void => {
 };
 
 /**
+ * Track email actions
+ */
+export const trackEmailAction = (actionType: string, email: string): void => {
+  trackEvent({
+    category: 'Email',
+    action: actionType,
+    label: email
+  });
+};
+
+/**
  * Track errors for monitoring
  */
 export const trackError = (errorMessage: string, errorSource: string): void => {

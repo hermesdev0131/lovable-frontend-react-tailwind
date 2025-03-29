@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X } from "lucide-react";
+import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { trackEmailAction, trackError } from "@/lib/analytics";
 
 export interface TeamMember {
   id: string;
@@ -59,6 +61,10 @@ const TeamMembers = () => {
   });
 
   const [inviteMode, setInviteMode] = useState(true);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   const handleAddMember = () => {
     if (!newMember.name || !newMember.email) {
@@ -164,6 +170,52 @@ const TeamMembers = () => {
     }
   };
 
+  const openInviteDialog = (member: TeamMember) => {
+    setSelectedMember(member);
+    const roleText = member.role === "admin" ? "administrator" : member.role;
+    setInviteMessage(
+      `Hello ${member.name},\n\nYou have been invited to join our portal as a ${roleText}. Please click the link below to create your account and get started.\n\nThank you!`
+    );
+    setShowInviteDialog(true);
+  };
+
+  const sendInvitationEmail = async () => {
+    if (!selectedMember) return;
+    
+    setIsSending(true);
+    
+    try {
+      trackEmailAction('send_invitation', selectedMember.email);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setTeamMembers(
+        teamMembers.map(member => 
+          member.id === selectedMember.id 
+            ? { ...member, status: "pending" } 
+            : member
+        )
+      );
+      
+      toast({
+        title: "Invitation Sent",
+        description: `An invitation email has been sent to ${selectedMember.email}.`,
+      });
+      
+      setShowInviteDialog(false);
+      setSelectedMember(null);
+      setInviteMessage("");
+    } catch (error) {
+      trackError('Failed to send invitation email', 'TeamMembers');
+      toast({
+        title: "Error",
+        description: "Failed to send the invitation email. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -197,7 +249,7 @@ const TeamMembers = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {teamMembers.map(member => (
+                {teamMembers.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -246,6 +298,14 @@ const TeamMembers = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openInviteDialog(member)}
+                        >
+                          <Send className="h-4 w-4 mr-1" />
+                          Invite
+                        </Button>
                         {member.status === "pending" && (
                           <Button 
                             variant="outline" 
@@ -329,6 +389,68 @@ const TeamMembers = () => {
           Add Team Member
         </Button>
       </CardFooter>
+
+      <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Send Invitation Email</DialogTitle>
+            <DialogDescription>
+              Customize the invitation message for {selectedMember?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="invite-email" className="text-right">
+                Recipient
+              </Label>
+              <Input
+                id="invite-email"
+                value={selectedMember?.email || ''}
+                readOnly
+                className="col-span-3 bg-muted"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="invite-message" className="text-right mt-2">
+                Message
+              </Label>
+              <div className="col-span-3">
+                <textarea
+                  id="invite-message"
+                  rows={6}
+                  value={inviteMessage}
+                  onChange={(e) => setInviteMessage(e.target.value)}
+                  className="w-full p-2 rounded-md border border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This message will be included in the invitation email.
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInviteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={sendInvitationEmail}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <>Sending...</>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Invitation
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
