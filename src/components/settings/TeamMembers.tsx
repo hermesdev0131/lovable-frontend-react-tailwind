@@ -229,7 +229,7 @@ const TeamMembers = () => {
     }
   };
 
-  const sendInvitationEmail = sendInvitationEmailWithSupabase;
+  const handleInvitationEmail = sendInvitationEmailWithSupabase;
 
   return (
     <Card>
@@ -451,7 +451,7 @@ const TeamMembers = () => {
               Cancel
             </Button>
             <Button 
-              onClick={sendInvitationEmail}
+              onClick={handleInvitationEmail}
               disabled={isSending}
             >
               {isSending ? (
