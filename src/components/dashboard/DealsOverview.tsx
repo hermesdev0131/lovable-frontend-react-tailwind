@@ -47,8 +47,11 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
   
   return (
     <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
-      <CardHeader>
-        <CardTitle>Deal Overview</CardTitle>
+      <CardHeader className="border-b border-muted/20">
+        <CardTitle className="text-lg font-medium flex items-center">
+          <div className="w-1 h-6 bg-[#D35400] mr-2 rounded-full"></div>
+          Deal Overview
+        </CardTitle>
       </CardHeader>
       <CardContent className="h-[300px] flex items-center justify-center">
         {hasDeals ? (
@@ -97,10 +100,10 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
           </ResponsiveContainer>
         ) : (
           <div className="text-center text-muted-foreground">
-            <PieChart className="h-16 w-16 mx-auto mb-4 text-primary/40" />
+            <PieChart className="h-16 w-16 mx-auto mb-4 text-[#D35400]/40" />
             <p>Add deals to see your deal overview</p>
             <Button 
-              className="mt-4"
+              className="mt-4 bg-[#D35400] hover:bg-[#B74600]"
               onClick={() => navigate('/deals')}
             >
               View Deals
