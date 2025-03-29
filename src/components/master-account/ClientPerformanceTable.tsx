@@ -71,10 +71,10 @@ const ClientPerformanceTable = ({ clientSalesData }: ClientPerformanceTableProps
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       client.subscription === 'Enterprise' 
-                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100' 
+                        ? 'bg-orange-900/20 text-orange-900 dark:bg-orange-800/30 dark:text-orange-200' 
                         : client.subscription === 'Professional'
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100'
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+                        ? 'bg-amber-900/20 text-amber-900 dark:bg-amber-800/30 dark:text-amber-200'
+                        : 'bg-yellow-900/20 text-yellow-900 dark:bg-yellow-800/30 dark:text-yellow-200'
                     }`}>
                       {client.subscription}
                     </span>

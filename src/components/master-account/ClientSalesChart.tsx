@@ -38,7 +38,7 @@ const ClientSalesChart = ({ clientSalesData }: ClientSalesChartProps) => {
               <YAxis />
               <Tooltip formatter={(value) => ['$' + value.toLocaleString(), 'Sales']} />
               <Legend />
-              <Bar dataKey="sales" fill="#f97316" name="Sales ($)" />
+              <Bar dataKey="sales" fill="#D35400" name="Sales ($)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

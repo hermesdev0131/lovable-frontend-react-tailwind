@@ -66,7 +66,7 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
                 label={renderCustomizedLabel}
               >
                 {dealStageData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color === '#f97316' ? '#D35400' : entry.color} />
                 ))}
               </Pie>
               <Tooltip 
