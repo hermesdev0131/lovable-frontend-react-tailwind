@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PieChart } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -33,7 +34,7 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
       <text 
         x={x} 
         y={y} 
-        fill="#fff" 
+        fill="#000000" 
         textAnchor="middle" 
         dominantBaseline="central"
         fontSize="12"
