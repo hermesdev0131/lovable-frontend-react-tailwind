@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,7 +24,7 @@ import TeamMembers from "@/components/settings/TeamMembers";
 
 const SettingsPage = () => {
   const location = useLocation();
-  const { webhooks, addWebhook, removeWebhook, updateWebhook, triggerWebhook } = useMasterAccount();
+  const { webhooks, addWebhook, removeWebhook, updateWebhook, triggerWebhook, isInMasterMode } = useMasterAccount();
   const [generalSettings, setGeneralSettings] = useState({
     companyName: "",
     email: "",
@@ -159,6 +160,12 @@ const SettingsPage = () => {
             <Users className="h-4 w-4 mr-2" />
             Team
           </TabsTrigger>
+          {isInMasterMode && (
+            <>
+              <TabsTrigger value="integrations">Integrations</TabsTrigger>
+              <TabsTrigger value="make">Make.com</TabsTrigger>
+            </>
+          )}
         </TabsList>
         
         <TabsContent value="general">
@@ -323,6 +330,43 @@ const SettingsPage = () => {
         <TabsContent value="team">
           <TeamMembers />
         </TabsContent>
+
+        {isInMasterMode && (
+          <>
+            <TabsContent value="integrations">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Integrations</CardTitle>
+                  <CardDescription>
+                    Connect and manage your external service integrations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Integration content only for master account */}
+                  <YextConnect />
+                  <GoogleCalendarConnect />
+                  <ZapierConnect />
+                  <CustomWebhookConnect />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="make">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Make.com Integration</CardTitle>
+                  <CardDescription>
+                    Configure your Make.com webhooks and integrations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Make.com content only for master account */}
+                  <MakeConnect />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
   );

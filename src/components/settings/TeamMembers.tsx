@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trackEmailAction, trackError } from "@/lib/analytics";
 import { sendInvitationEmail } from "@/services/supabase";
@@ -25,31 +25,8 @@ export interface TeamMember {
 }
 
 const TeamMembers = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    {
-      id: "1",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "admin",
-      status: "active",
-      lastActive: "Today at 2:34 PM"
-    },
-    {
-      id: "2",
-      name: "John Doe",
-      email: "john@example.com",
-      role: "editor",
-      status: "active",
-      lastActive: "Yesterday at 5:12 PM"
-    },
-    {
-      id: "3",
-      name: "Alex Johnson",
-      email: "alex@example.com",
-      role: "viewer",
-      status: "pending",
-    }
-  ]);
+  // Remove sample data
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   const [newMember, setNewMember] = useState<{
     name: string;
@@ -61,7 +38,6 @@ const TeamMembers = () => {
     role: "editor"
   });
 
-  const [inviteMode, setInviteMode] = useState(true);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [inviteMessage, setInviteMessage] = useState("");
@@ -173,11 +149,24 @@ const TeamMembers = () => {
 
   const openInviteDialog = (member: TeamMember) => {
     setSelectedMember(member);
-    const roleText = member.role === "admin" ? "administrator" : member.role;
+    const roleText = getRoleDescription(member.role);
     setInviteMessage(
       `Hello ${member.name},\n\nYou have been invited to join our portal as a ${roleText}. Please click the link below to create your account and get started.\n\nThank you!`
     );
     setShowInviteDialog(true);
+  };
+
+  const getRoleDescription = (role: string) => {
+    switch(role) {
+      case "admin":
+        return "administrator (can make changes like delete items)";
+      case "editor":
+        return "editor (able to input things and view all content, and only delete items they added)";
+      case "viewer":
+        return "viewer (can only view content, not input or delete)";
+      default:
+        return role;
+    }
   };
 
   const sendInvitationEmailWithSupabase = async () => {
@@ -243,14 +232,6 @@ const TeamMembers = () => {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium">Current Team</h3>
-            <div className="flex gap-2 items-center">
-              <Label htmlFor="invite-mode" className="text-sm">Send invite emails</Label>
-              <Switch 
-                id="invite-mode" 
-                checked={inviteMode} 
-                onCheckedChange={setInviteMode} 
-              />
-            </div>
           </div>
           
           <div className="rounded-md border">
@@ -264,84 +245,92 @@ const TeamMembers = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {teamMembers.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={member.avatar} alt={member.name} />
-                          <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{member.name}</div>
-                          <div className="text-sm text-muted-foreground">{member.email}</div>
+                {teamMembers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                      No team members added yet. Add your first team member below.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  teamMembers.map((member) => (
+                    <TableRow key={member.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={member.avatar} alt={member.name} />
+                            <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-sm text-muted-foreground">{member.email}</div>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Select 
-                        defaultValue={member.role}
-                        onValueChange={(value) => handleRoleChange(member.id, value as "admin" | "editor" | "viewer")}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">
-                            <div className="flex items-center">
-                              <Shield className="h-4 w-4 mr-2" />
-                              Admin
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="editor">
-                            <div className="flex items-center">
-                              <UserCog className="h-4 w-4 mr-2" />
-                              Editor
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      {renderStatusBadge(member.status)}
-                      {member.lastActive && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Last active: {member.lastActive}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openInviteDialog(member)}
+                      </TableCell>
+                      <TableCell>
+                        <Select 
+                          defaultValue={member.role}
+                          onValueChange={(value) => handleRoleChange(member.id, value as "admin" | "editor" | "viewer")}
                         >
-                          <Send className="h-4 w-4 mr-1" />
-                          Invite
-                        </Button>
-                        {member.status === "pending" && (
+                          <SelectTrigger className="w-[130px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">
+                              <div className="flex items-center">
+                                <Shield className="h-4 w-4 mr-2" />
+                                Admin
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="editor">
+                              <div className="flex items-center">
+                                <UserCog className="h-4 w-4 mr-2" />
+                                Editor
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="viewer">Viewer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        {renderStatusBadge(member.status)}
+                        {member.lastActive && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Last active: {member.lastActive}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleResendInvite(member.email)}
+                            onClick={() => openInviteDialog(member)}
                           >
-                            <Mail className="h-4 w-4 mr-1" />
-                            Resend
+                            <Send className="h-4 w-4 mr-1" />
+                            Invite
                           </Button>
-                        )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleRemoveMember(member.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {member.status === "pending" && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleResendInvite(member.email)}
+                            >
+                              <Mail className="h-4 w-4 mr-1" />
+                              Resend
+                            </Button>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleRemoveMember(member.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

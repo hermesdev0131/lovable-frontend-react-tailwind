@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useDeals } from '@/contexts/DealsContext';
-import { contacts, opportunities } from '@/lib/data';
+import { contacts } from '@/lib/data';
 import { TasksProvider } from '@/contexts/TasksContext';
 
 // Import the components
@@ -34,7 +34,7 @@ const Index = () => {
   
   // Create data for the pie chart
   const dealStageData = [
-    { name: 'Open', value: openDeals, color: '#4f46e5' },
+    { name: 'Open', value: openDeals, color: '#D35400' },
     { name: 'Won', value: wonDeals, color: '#10b981' },
     { name: 'Lost', value: lostDeals, color: '#ef4444' }
   ].filter(item => item.value > 0);
@@ -73,19 +73,19 @@ const Index = () => {
             onCardClick={handleCardClick}
           />
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Deal Overview Chart */}
-            <DealsOverview 
-              dealStageData={dealStageData} 
-              hasDeals={userDeals.length > 0} 
-            />
+          <div className="grid grid-cols-1 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Deal Overview Chart */}
+              <DealsOverview 
+                dealStageData={dealStageData} 
+                hasDeals={userDeals.length > 0} 
+              />
+              
+              {/* Tasks Panel */}
+              <TasksPanel onCreateTask={handleCreateTask} />
+            </div>
             
-            {/* Tasks Panel */}
-            <TasksPanel onCreateTask={handleCreateTask} />
-          </div>
-          
-          {/* Activity Feed - Full Width at Bottom */}
-          <div>
+            {/* Activity Feed - Full Width at Bottom */}
             <ActivityFeed activities={recentActivity} />
           </div>
         </div>
