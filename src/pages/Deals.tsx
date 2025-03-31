@@ -67,9 +67,9 @@ const getInitialDealsByStage = (deals: Deal[], columns: Column[]) => {
 
 const Deals = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { clients, currentAccount } = useMasterAccount();
+  const { clients } = useMasterAccount();
   const { deals: existingDeals, addDeal: addDealToContext, updateDeal: updateDealInContext, deleteDeal: deleteDealFromContext } = useDeals();
-  const { trackDealActivity } = useActivityTracker();
+  const { trackChatbotInteraction, trackEmailSent, trackCall, trackTextMessage, trackIntegrationEvent, trackReviewActivity, trackDealActivity } = useActivityTracker();
   const { dealFields, updateDealFields } = useCustomFields();
   
   // Initialize deals from context 
@@ -272,12 +272,23 @@ const Deals = () => {
   const handleSaveNewDeal = (dealData: Partial<Deal>) => {
     const now = new Date().toISOString();
     
-    // Add the deal to context
-    addDealToContext({
+    // Make sure required fields are present
+    const newDeal = {
       ...dealData,
+      name: dealData.name || "Unnamed Deal",
+      company: dealData.company || "",
+      value: dealData.value || 0,
+      currency: dealData.currency || "USD",
+      probability: dealData.probability || 0,
+      stage: dealData.stage || "",
+      closingDate: dealData.closingDate || now,
+      description: dealData.description || "",
       createdAt: now,
       updatedAt: now
-    });
+    };
+    
+    // Add the deal to context
+    addDealToContext(newDeal as Omit<Deal, 'id'>);
     
     // Track the activity
     trackDealActivity(dealData.name || "New Deal", "created deal", 

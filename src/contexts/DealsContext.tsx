@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface DealsContextType {
   deals: Deal[];
-  addDeal: (deal: Omit<Deal, 'id'>) => void;
+  addDeal: (deal: Omit<Deal, 'id'> & { id?: string }) => void;
   updateDeal: (deal: Deal) => void;
   deleteDeal: (id: string) => void;
   getDealById: (id: string) => Deal | null;
@@ -17,11 +17,11 @@ const DealsContext = createContext<DealsContextType | undefined>(undefined);
 export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { deals, addDeal: addDealToStorage, updateDeal, deleteDeal, getDealById } = useDealsStorage();
 
-  const addDeal = (dealData: Omit<Deal, 'id'>) => {
+  const addDeal = (dealData: Omit<Deal, 'id'> & { id?: string }) => {
     const now = new Date().toISOString();
     const newDeal: Deal = {
       ...dealData,
-      id: uuidv4(),
+      id: dealData.id || uuidv4(),
       createdAt: dealData.createdAt || now,
       updatedAt: dealData.updatedAt || now
     };

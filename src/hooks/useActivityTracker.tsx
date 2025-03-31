@@ -66,7 +66,18 @@ export function useActivityTracker() {
     });
   }, [addActivityAsTask]);
 
-  // NEW: Function to track deal activities
+  // Function to track integration events
+  const trackIntegrationEvent = useCallback((integration: string, event: string, details?: string) => {
+    addActivityAsTask({
+      title: details
+        ? `${integration}: ${event} - ${details.substring(0, 30)}${details.length > 30 ? '...' : ''}`
+        : `${integration}: ${event}`,
+      type: 'integration',
+      source: integration
+    });
+  }, [addActivityAsTask]);
+
+  // Function to track deal activities
   const trackDealActivity = useCallback((dealName: string, action: string, details?: string) => {
     addActivityAsTask({
       title: details
@@ -78,7 +89,7 @@ export function useActivityTracker() {
     });
   }, [addActivityAsTask]);
 
-  // NEW: Function to track document activities
+  // Function to track document activities
   const trackDocumentActivity = useCallback((documentName: string, action: string, dealName?: string) => {
     addActivityAsTask({
       title: dealName
@@ -90,7 +101,7 @@ export function useActivityTracker() {
     });
   }, [addActivityAsTask]);
 
-  // NEW: Function to track appointment scheduling
+  // Function to track appointment scheduling
   const trackAppointmentScheduled = useCallback((contactName: string, dealName: string, dateTime: string) => {
     addActivityAsTask({
       title: `Appointment scheduled with ${contactName} for deal "${dealName}" on ${dateTime}`,
@@ -107,6 +118,7 @@ export function useActivityTracker() {
     trackTextMessage,
     trackSocialActivity,
     trackReviewActivity,
+    trackIntegrationEvent,
     trackDealActivity,
     trackDocumentActivity,
     trackAppointmentScheduled

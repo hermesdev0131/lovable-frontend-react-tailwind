@@ -1,4 +1,3 @@
-
 export interface Deal {
   id: string;
   name: string;
@@ -14,6 +13,17 @@ export interface Deal {
   expectedCloseDate?: string;
   createdAt: string;
   updatedAt: string;
+  customFields?: Record<string, any>;
+  attachments?: Array<{
+    name: string;
+    size: number;
+    type: string;
+    lastModified: number;
+  }>;
+  appointments?: Array<{
+    title: string;
+    datetime: string;
+  }>;
 }
 
 export interface Stage {
@@ -26,7 +36,6 @@ export interface Column {
   label: string;
 }
 
-// Adding DealStage type
 export type DealStage = string;
 
 export const DEFAULT_COLUMNS: Column[] = [
