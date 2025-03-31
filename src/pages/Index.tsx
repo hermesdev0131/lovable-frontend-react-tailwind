@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useDeals } from '@/contexts/DealsContext';
 import { contacts } from '@/lib/data';
+import { useTasks } from '@/contexts/TasksContext';
 
 // Import the components
 import DashboardStats from '@/components/dashboard/DashboardStats';
@@ -15,6 +16,7 @@ import { useExternalIntegrations } from '@/hooks/useExternalIntegrations';
 const Index = () => {
   const navigate = useNavigate();
   const { deals: userDeals } = useDeals();
+  const { tasks } = useTasks();
   const { integrations } = useExternalIntegrations();
   const [recentActivity, setRecentActivity] = useState<{
     id: number;
@@ -26,6 +28,37 @@ const Index = () => {
     const savedActivities = localStorage.getItem('dashboard_activities');
     return savedActivities ? JSON.parse(savedActivities) : [];
   });
+  
+  // Convert tasks to activity format and combine with manual activities
+  useEffect(() => {
+    const taskActivities = tasks
+      .filter(task => task.completed)
+      .slice(0, 10)
+      .map(task => ({
+        id: parseInt(task.id.replace(/-/g, '').substring(0, 8), 16), // Convert UUID to number for consistency
+        action: task.title,
+        time: new Date(task.createdAt).toLocaleString('en-US', {
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        }),
+        name: task.source || 'Manual',
+      }));
+
+    const combinedActivities = [...taskActivities, ...recentActivity]
+      .sort((a, b) => {
+        // If we have timestamps, sort by them
+        const timeA = a.time === 'Just now' ? new Date() : new Date();
+        const timeB = b.time === 'Just now' ? new Date() : new Date();
+        return timeB.getTime() - timeA.getTime();
+      })
+      .slice(0, 20); // Keep only the most recent 20 activities
+
+    // Only update if there's an actual change
+    if (JSON.stringify(combinedActivities) !== JSON.stringify(recentActivity)) {
+      setRecentActivity(combinedActivities);
+    }
+  }, [tasks]);
   
   // Save activities to localStorage whenever they change
   useEffect(() => {

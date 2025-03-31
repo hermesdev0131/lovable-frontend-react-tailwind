@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Trash2, Calendar, Mail, MessageCircle, Phone, Send, Globe, Star, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTasks } from '@/contexts/TasksContext';
 
 interface ActivityItem {
   id: number;
@@ -17,6 +18,32 @@ interface ActivityFeedProps {
 }
 
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity }) => {
+  const { clearCompletedTasks } = useTasks();
+
+  // Function to get icon based on activity type
+  const getActivityIcon = (action: string) => {
+    if (action.includes("Email") || action.includes("email")) return <Mail className="h-4 w-4" />;
+    if (action.includes("Call") || action.includes("call")) return <Phone className="h-4 w-4" />;
+    if (action.includes("Task") || action.includes("task")) return <Calendar className="h-4 w-4" />;
+    if (action.includes("Text") || action.includes("text")) return <Send className="h-4 w-4" />;
+    if (action.includes("Chat") || action.includes("chat")) return <MessageCircle className="h-4 w-4" />;
+    if (action.includes("review") || action.includes("Review")) return <Star className="h-4 w-4" />;
+    if (action.includes("Posted") || action.includes("Social")) return <Globe className="h-4 w-4" />;
+    return <PenLine className="h-4 w-4" />;
+  };
+
+  const handleClearAll = () => {
+    // Clear all completed tasks from TasksContext
+    clearCompletedTasks();
+    
+    // If using the local activities state (from dashboard)
+    if (activities.length > 0 && onClearActivity) {
+      activities.forEach(activity => {
+        onClearActivity(activity.id);
+      });
+    }
+  };
+
   return (
     <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
       <CardHeader className="border-b border-muted/20 flex flex-row items-center justify-between">
@@ -24,14 +51,30 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
           <div className="w-1 h-6 bg-[#D35400] mr-2 rounded-full"></div>
           Recent Activity
         </CardTitle>
+        {activities.length > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleClearAll}
+            className="text-sm"
+          >
+            Clear All
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-4">
         {activities.length > 0 ? (
           <div className="space-y-4">
             {activities.map((item, i) => (
-              <div key={item.id} className="flex items-start justify-between space-x-3 animate-slide-in-right p-3 rounded-lg hover:bg-muted/20 transition-colors" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div 
+                key={item.id} 
+                className="flex items-start justify-between space-x-3 group animate-slide-in-right p-3 rounded-lg hover:bg-muted/20 transition-colors" 
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
                 <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                  <div className="mt-1">
+                    {getActivityIcon(item.action)}
+                  </div>
                   <div>
                     <div className="font-medium">{item.action}</div>
                     <div className="text-sm text-muted-foreground">

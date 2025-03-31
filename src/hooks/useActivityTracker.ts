@@ -34,6 +34,17 @@ export function useActivityTracker() {
     };
   }, [addActivityAsTask]);
 
+  // Track integration events (new)
+  const trackIntegrationEvent = (integration: string, event: string, details?: string) => {
+    addActivityAsTask({
+      title: details 
+        ? `${integration}: ${event} - ${details.substring(0, 30)}${details.length > 30 ? '...' : ''}`
+        : `${integration}: ${event}`,
+      type: 'integration',
+      source: integration
+    });
+  };
+
   // Function to track chatbot interactions
   const trackChatbotInteraction = (message: string) => {
     addActivityAsTask({
@@ -73,10 +84,23 @@ export function useActivityTracker() {
     });
   };
 
+  // Function to track review activity (new)
+  const trackReviewActivity = (platform: string, action: string, customerName?: string) => {
+    addActivityAsTask({
+      title: customerName 
+        ? `${action} on ${platform} from ${customerName}`
+        : `${action} on ${platform}`,
+      type: 'review',
+      source: platform
+    });
+  };
+
   return {
     trackChatbotInteraction,
     trackEmailSent,
     trackCall,
-    trackTextMessage
+    trackTextMessage,
+    trackIntegrationEvent,
+    trackReviewActivity
   };
 }

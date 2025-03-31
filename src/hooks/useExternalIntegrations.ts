@@ -1,150 +1,131 @@
 
-import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
 
-// Integration types for better TypeScript support
-export type IntegrationType = 'mailchimp' | 'twilio' | 'make' | 'vapi' | 'calendly' | 'yext';
+export type IntegrationType = 'email' | 'sms' | 'chatbot' | 'calendar' | 'mailchimp' | 'twilio' | 'vapi' | 'make' | 'yext';
 
-interface Integration {
+export interface Integration {
   type: IntegrationType;
   name: string;
-  isConnected: boolean;
-  apiKey?: string;
-  lastSynced?: string;
+  connected: boolean;
+  lastSync?: string;
+  status: 'active' | 'disconnected' | 'error' | 'pending';
+  details?: Record<string, any>;
 }
+
+export interface YextIntegration extends Integration {
+  type: 'yext';
+  details: {
+    reviewsUrl?: string;
+    apiKey?: string;
+    locationId?: string;
+  };
+}
+
+export interface MailchimpIntegration extends Integration {
+  type: 'mailchimp';
+  details: {
+    audienceId?: string;
+    apiKey?: string;
+    serverPrefix?: string;
+  };
+}
+
+export interface TwilioIntegration extends Integration {
+  type: 'twilio';
+  details: {
+    accountSid?: string;
+    fromNumber?: string;
+  };
+}
+
+export interface VapiIntegration extends Integration {
+  type: 'vapi';
+  details: {
+    apiKey?: string;
+    assistantId?: string;
+  };
+}
+
+export interface MakeIntegration extends Integration {
+  type: 'make';
+  details: {
+    webhookUrls?: Record<string, string>;
+  };
+}
+
+const LOCAL_STORAGE_KEY = 'crm_integrations';
 
 export function useExternalIntegrations() {
   const [integrations, setIntegrations] = useState<Integration[]>(() => {
-    const savedIntegrations = localStorage.getItem('user_integrations');
-    return savedIntegrations ? JSON.parse(savedIntegrations) : [];
+    const savedIntegrations = localStorage.getItem(LOCAL_STORAGE_KEY);
+    
+    if (savedIntegrations) {
+      return JSON.parse(savedIntegrations);
+    }
+    
+    // Default empty integrations
+    return [
+      { type: 'email', name: 'Email Provider', connected: false, status: 'disconnected' },
+      { type: 'sms', name: 'SMS Provider', connected: false, status: 'disconnected' },
+      { type: 'chatbot', name: 'Chatbot', connected: false, status: 'disconnected' },
+      { type: 'calendar', name: 'Calendar', connected: false, status: 'disconnected' },
+      { type: 'mailchimp', name: 'Mailchimp', connected: false, status: 'disconnected' },
+      { type: 'twilio', name: 'Twilio', connected: false, status: 'disconnected' },
+      { type: 'vapi', name: 'Vapi', connected: false, status: 'disconnected' },
+      { type: 'make', name: 'Make.com', connected: false, status: 'disconnected' },
+      { type: 'yext', name: 'Yext', connected: false, status: 'disconnected' },
+    ];
   });
 
-  const saveIntegrations = (updatedIntegrations: Integration[]) => {
-    localStorage.setItem('user_integrations', JSON.stringify(updatedIntegrations));
-    setIntegrations(updatedIntegrations);
+  // Persist integrations to local storage
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(integrations));
+  }, [integrations]);
+
+  // Get a specific integration
+  const getIntegration = (type: IntegrationType): Integration | undefined => {
+    return integrations.find(integration => integration.type === type);
   };
 
-  const addIntegration = (integrationType: IntegrationType, apiKey: string, name: string = '') => {
-    // Check if integration already exists
-    const exists = integrations.some(int => int.type === integrationType);
-    
-    if (exists) {
-      // Update existing integration
-      const updated = integrations.map(int => 
-        int.type === integrationType 
-          ? { 
-              ...int, 
-              apiKey, 
-              isConnected: true, 
-              lastSynced: new Date().toISOString(),
-              name: name || int.name
-            } 
-          : int
-      );
-      
-      saveIntegrations(updated);
-      
-      toast({
-        title: "Integration Updated",
-        description: `Your ${integrationType} integration has been updated`,
-      });
-      
-      return true;
-    } else {
-      // Add new integration
-      const newIntegration: Integration = {
-        type: integrationType,
-        name: name || getDefaultIntegrationName(integrationType),
-        isConnected: true,
-        apiKey,
-        lastSynced: new Date().toISOString()
-      };
-      
-      saveIntegrations([...integrations, newIntegration]);
-      
-      toast({
-        title: "Integration Connected",
-        description: `Successfully connected to ${integrationType}`,
-      });
-      
-      return true;
-    }
-  };
-
-  const removeIntegration = (integrationType: IntegrationType) => {
-    const updated = integrations.filter(int => int.type !== integrationType);
-    saveIntegrations(updated);
-    
-    toast({
-      title: "Integration Removed",
-      description: `Your ${integrationType} integration has been removed`,
-    });
-    
-    return true;
-  };
-
-  const getIntegration = (integrationType: IntegrationType): Integration | undefined => {
-    return integrations.find(int => int.type === integrationType);
-  };
-
-  const isIntegrationConnected = (integrationType: IntegrationType): boolean => {
-    const integration = getIntegration(integrationType);
-    return !!integration?.isConnected;
-  };
-
-  // Helper function to get default integration display name
-  const getDefaultIntegrationName = (type: IntegrationType): string => {
-    const names: Record<IntegrationType, string> = {
-      mailchimp: 'Mailchimp',
-      twilio: 'Twilio',
-      make: 'Make.com',
-      vapi: 'Vapi',
-      calendly: 'Calendly',
-      yext: 'Yext'
-    };
-    return names[type] || type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
-  // Simulate syncing with external service
-  const syncWithService = async (integrationType: IntegrationType): Promise<boolean> => {
-    // In a real app, this would be an API call to the external service
-    const integration = getIntegration(integrationType);
-    
-    if (!integration || !integration.isConnected) {
-      toast({
-        title: "Sync Failed",
-        description: `${getDefaultIntegrationName(integrationType)} is not connected`,
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    // Mock API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Update last synced time
-    const updated = integrations.map(int => 
-      int.type === integrationType 
-        ? { ...int, lastSynced: new Date().toISOString() } 
-        : int
+  // Update an integration
+  const updateIntegration = (
+    type: IntegrationType,
+    updates: Partial<Omit<Integration, 'type'>>
+  ) => {
+    setIntegrations(prev => 
+      prev.map(integration => 
+        integration.type === type 
+          ? { ...integration, ...updates, lastSync: new Date().toISOString() }
+          : integration
+      )
     );
-    
-    saveIntegrations(updated);
-    
-    toast({
-      title: "Sync Complete",
-      description: `Successfully synced with ${getDefaultIntegrationName(integrationType)}`,
+  };
+
+  // Connect an integration
+  const connectIntegration = (
+    type: IntegrationType,
+    details?: Record<string, any>
+  ) => {
+    updateIntegration(type, {
+      connected: true,
+      status: 'active',
+      details: details
     });
-    
-    return true;
+  };
+
+  // Disconnect an integration
+  const disconnectIntegration = (type: IntegrationType) => {
+    updateIntegration(type, {
+      connected: false,
+      status: 'disconnected'
+    });
   };
 
   return {
     integrations,
-    addIntegration,
-    removeIntegration,
     getIntegration,
-    isIntegrationConnected,
-    syncWithService
+    updateIntegration,
+    connectIntegration,
+    disconnectIntegration
   };
 }

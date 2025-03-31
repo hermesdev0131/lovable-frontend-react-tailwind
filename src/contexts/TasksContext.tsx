@@ -8,7 +8,7 @@ export interface Task {
   title: string;
   date: string;
   completed: boolean;
-  type: 'manual' | 'call' | 'email' | 'social' | 'chat' | 'text';
+  type: 'manual' | 'call' | 'email' | 'social' | 'chat' | 'text' | 'integration' | 'review';
   source?: string;
   relatedTo?: string;
   createdAt: string;
@@ -25,6 +25,7 @@ interface TasksContextType {
     source?: string;
     relatedTo?: string;
   }) => void;
+  clearCompletedTasks: () => void;
 }
 
 const STORAGE_KEY = 'crm_tasks';
@@ -76,6 +77,11 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       relatedTo: activity.relatedTo
     });
   };
+  
+  // New function to clear completed tasks
+  const clearCompletedTasks = () => {
+    setTasks(prev => prev.filter(task => !task.completed));
+  };
 
   return (
     <TasksContext.Provider
@@ -84,7 +90,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addTask,
         updateTask,
         deleteTask,
-        addActivityAsTask
+        addActivityAsTask,
+        clearCompletedTasks
       }}
     >
       {children}
