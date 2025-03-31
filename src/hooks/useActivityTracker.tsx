@@ -66,12 +66,49 @@ export function useActivityTracker() {
     });
   }, [addActivityAsTask]);
 
+  // NEW: Function to track deal activities
+  const trackDealActivity = useCallback((dealName: string, action: string, details?: string) => {
+    addActivityAsTask({
+      title: details
+        ? `${action} for deal "${dealName}": ${details.substring(0, 30)}${details.length > 30 ? '...' : ''}`
+        : `${action} for deal "${dealName}"`,
+      type: 'deal',
+      source: 'crm',
+      relatedTo: dealName
+    });
+  }, [addActivityAsTask]);
+
+  // NEW: Function to track document activities
+  const trackDocumentActivity = useCallback((documentName: string, action: string, dealName?: string) => {
+    addActivityAsTask({
+      title: dealName
+        ? `${action} document "${documentName}" for deal "${dealName}"`
+        : `${action} document "${documentName}"`,
+      type: 'document',
+      source: 'files',
+      relatedTo: dealName
+    });
+  }, [addActivityAsTask]);
+
+  // NEW: Function to track appointment scheduling
+  const trackAppointmentScheduled = useCallback((contactName: string, dealName: string, dateTime: string) => {
+    addActivityAsTask({
+      title: `Appointment scheduled with ${contactName} for deal "${dealName}" on ${dateTime}`,
+      type: 'calendar',
+      source: 'scheduler',
+      relatedTo: dealName
+    });
+  }, [addActivityAsTask]);
+
   return {
     trackChatbotInteraction,
     trackEmailSent,
     trackCall,
     trackTextMessage,
     trackSocialActivity,
-    trackReviewActivity
+    trackReviewActivity,
+    trackDealActivity,
+    trackDocumentActivity,
+    trackAppointmentScheduled
   };
 }

@@ -1,11 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import DealFormFields from './DealFormFields';
+import React from 'react';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Deal, Stage } from './types';
 import { TeamMember } from '@/components/settings/TeamMembers';
+import DealForm, { DealFormField } from './DealForm';
 
 interface EditDealDialogProps {
   isOpen: boolean;
@@ -14,6 +12,7 @@ interface EditDealDialogProps {
   onSave: (updatedDeal: Deal) => void;
   stages: Stage[];
   teamMembers: TeamMember[];
+  customFields?: DealFormField[];
 }
 
 const EditDealDialog: React.FC<EditDealDialogProps> = ({ 
@@ -22,64 +21,32 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
   deal, 
   onSave,
   stages,
-  teamMembers 
+  teamMembers,
+  customFields = []
 }) => {
-  const [editedDeal, setEditedDeal] = useState<Deal | null>(null);
-  const { toast } = useToast();
+  if (!deal) return null;
 
-  // Reset editedDeal when dialog opens with a new deal
-  useEffect(() => {
-    if (deal) {
-      setEditedDeal({ ...deal });
-    }
-  }, [deal, isOpen]);
-
-  const handleChange = (field: string, value: any) => {
-    if (editedDeal) {
-      setEditedDeal({ ...editedDeal, [field]: value });
-    }
+  const handleSave = (updatedDealData: Partial<Deal>) => {
+    const updatedDeal = {
+      ...deal,
+      ...updatedDealData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    onSave(updatedDeal);
   };
-
-  const handleSave = () => {
-    if (editedDeal) {
-      // Ensure all required fields are present
-      const updatedDeal = {
-        ...editedDeal,
-        updatedAt: new Date().toISOString()
-      };
-      
-      onSave(updatedDeal);
-      
-      toast({
-        title: "Deal Updated",
-        description: `${updatedDeal.name} has been updated successfully.`
-      });
-      
-      onClose();
-    }
-  };
-
-  if (!editedDeal) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>Edit Deal</DialogTitle>
-          <DialogDescription>
-            Update the details for this deal. Click save when you're done.
-          </DialogDescription>
-        </DialogHeader>
-        <DealFormFields 
-          deal={editedDeal}
+      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+        <DealForm
+          deal={deal}
           stages={stages}
           teamMembers={teamMembers}
-          onChange={handleChange}
+          customFields={customFields}
+          onSave={handleSave}
+          onCancel={onClose}
         />
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit" onClick={handleSave}>Save Changes</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

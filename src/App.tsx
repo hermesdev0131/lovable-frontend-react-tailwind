@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
 import { TasksProvider } from '@/contexts/TasksContext';
 import { MasterAccountProvider } from '@/contexts/MasterAccountContext';
+import { CustomFieldsProvider } from '@/contexts/CustomFieldsContext';
 import { Toaster } from "@/components/ui/toaster";
 import BrowserCompatibilityCheck from '@/components/compatibility/BrowserCompatibilityCheck';
 import Index from './pages/Index';
@@ -56,51 +58,53 @@ function App() {
           <MasterAccountProvider>
             <DealsProvider>
               <TasksProvider>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/login" element={<Login />} />
-                  
-                  {/* Layout Route */}
-                  <Route 
-                    element={
-                      <ProtectedRoute>
-                        <Sidebar 
-                          isExpanded={sidebarExpanded} 
-                          onToggle={toggleSidebar}
-                        >
-                          <Outlet />
-                        </Sidebar>
-                      </ProtectedRoute>
-                    }
-                  >
-                    {/* Protected routes inside layout */}
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<Index />} />
-                    <Route path="/deals" element={<Deals />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/opportunities" element={<Opportunities />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/social-media" element={<SocialMediaIntegration />} />
-                    <Route path="/integrations" element={<Integrations />} />
-                    <Route path="/website" element={<WebsiteManagement />} />
-                    <Route path="/email" element={<EmailMarketing />} />
-                    <Route path="/social" element={<Socials />} />
-                    <Route path="/reputation" element={<Reputation />} />
-                    <Route path="/chatbot" element={
-                      <ChatbotManagement 
-                        knowledgeBase={knowledgeBase} 
-                        onAddKnowledge={handleAddKnowledge} 
-                      />
-                    } />
-                    <Route path="/calendar" element={<CalendarPage />} />
-                    <Route path="/clients" element={<Clients />} />
-                    <Route path="/master-account" element={<MasterAccount />} />
-                  </Route>
-                  
-                  {/* Catch-all route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <CustomFieldsProvider>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/login" element={<Login />} />
+                    
+                    {/* Layout Route */}
+                    <Route 
+                      element={
+                        <ProtectedRoute>
+                          <Sidebar 
+                            isExpanded={sidebarExpanded} 
+                            onToggle={toggleSidebar}
+                          >
+                            <Outlet />
+                          </Sidebar>
+                        </ProtectedRoute>
+                      }
+                    >
+                      {/* Protected routes inside layout */}
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      <Route path="/dashboard" element={<Index />} />
+                      <Route path="/deals" element={<Deals />} />
+                      <Route path="/contacts" element={<Contacts />} />
+                      <Route path="/opportunities" element={<Opportunities />} />
+                      <Route path="/reports" element={<Reports />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/social-media" element={<SocialMediaIntegration />} />
+                      <Route path="/integrations" element={<Integrations />} />
+                      <Route path="/website" element={<WebsiteManagement />} />
+                      <Route path="/email" element={<EmailMarketing />} />
+                      <Route path="/social" element={<Socials />} />
+                      <Route path="/reputation" element={<Reputation />} />
+                      <Route path="/chatbot" element={
+                        <ChatbotManagement 
+                          knowledgeBase={knowledgeBase} 
+                          onAddKnowledge={handleAddKnowledge} 
+                        />
+                      } />
+                      <Route path="/calendar" element={<CalendarPage />} />
+                      <Route path="/clients" element={<Clients />} />
+                      <Route path="/master-account" element={<MasterAccount />} />
+                    </Route>
+                    
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </CustomFieldsProvider>
               </TasksProvider>
             </DealsProvider>
           </MasterAccountProvider>
