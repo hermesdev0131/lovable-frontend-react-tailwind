@@ -1,112 +1,77 @@
 
 import React from 'react';
-import { PieChart } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { PieChart as RechartsChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 
-interface DealStageData {
+interface ChartData {
   name: string;
   value: number;
   color: string;
 }
 
 interface DealsOverviewProps {
-  dealStageData: DealStageData[];
+  dealStageData: ChartData[];
   hasDeals: boolean;
 }
 
 const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }) => {
   const navigate = useNavigate();
-  
-  // Custom rendering for labels to control their size and prevent overflow
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name, value }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    
-    // Only display label if the segment is large enough (more than 10%)
-    if (percent < 0.1) return null;
-    
-    return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor="middle" 
-        dominantBaseline="central"
-        fontSize="12"
-        fontWeight="500"
-      >
-        {`${name}`}
-      </text>
-    );
-  };
-  
+
   return (
     <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
-      <CardHeader className="border-b border-muted/20">
-        <CardTitle className="text-lg font-medium flex items-center">
-          <div className="w-1 h-6 bg-[#D35400] mr-2 rounded-full"></div>
-          Deal Overview
-        </CardTitle>
+      <CardHeader>
+        <CardTitle>Deals Overview</CardTitle>
       </CardHeader>
-      <CardContent className="h-[300px] flex items-center justify-center">
+      <CardContent>
         {hasDeals ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <RechartsChart>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
               <Pie
                 data={dealStageData}
                 cx="50%"
                 cy="50%"
+                labelLine={false}
                 innerRadius={60}
                 outerRadius={80}
                 paddingAngle={5}
                 dataKey="value"
-                labelLine={false}
-                label={renderCustomizedLabel}
               >
                 {dealStageData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
+              <Legend
+                layout="vertical"
+                verticalAlign="middle"
+                align="right"
+                formatter={(value, entry, index) => (
+                  <span className="text-sm text-muted-foreground">{value}</span>
+                )}
+              />
               <Tooltip 
-                formatter={(value) => [`${value} deals`, '']}
-                contentStyle={{ 
+                formatter={(value, name, props) => [value, name]}
+                contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  border: '1px solid #f0f0f0',
-                  borderRadius: '6px',
-                  padding: '8px 12px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  padding: '8px'
                 }}
               />
-              <Legend 
-                layout="horizontal" 
-                verticalAlign="bottom" 
-                align="center"
-                wrapperStyle={{ 
-                  paddingTop: '15px',
-                  fontSize: '12px'
-                }}
-                formatter={(value, entry, index) => {
-                  // Format the legend text to include the count and use dark text color
-                  const item = dealStageData[index];
-                  return <span style={{ color: '#333' }}>{value} ({item.value})</span>;
-                }}
-              />
-            </RechartsChart>
+            </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-center text-muted-foreground">
-            <PieChart className="h-16 w-16 mx-auto mb-4 text-[#D35400]/40" />
-            <p>Add deals to see your deal overview</p>
-            <Button 
-              className="mt-4 bg-[#D35400] hover:bg-[#B74600]"
+          <div className="h-[200px] flex flex-col items-center justify-center">
+            <p className="text-muted-foreground mb-4">No deals data available</p>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate('/deals')}
+              className="flex items-center gap-1"
             >
-              View Deals
+              <Plus className="h-4 w-4" /> Create Deal
             </Button>
           </div>
         )}

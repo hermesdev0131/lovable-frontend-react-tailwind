@@ -6,7 +6,7 @@ import { LucideIcon } from 'lucide-react';
 interface StatCardProps {
   title: string;
   value: number | string;
-  icon: LucideIcon;
+  icon: React.ElementType;
   subtitle: string;
   onClick?: () => void;
 }

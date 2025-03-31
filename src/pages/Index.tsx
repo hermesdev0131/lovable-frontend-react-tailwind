@@ -120,7 +120,7 @@ const Index = () => {
         />
         
         {/* Two-column layout for Deals Overview and Tasks */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Deal Overview Chart */}
           <DealsOverview 
             dealStageData={dealStageData} 

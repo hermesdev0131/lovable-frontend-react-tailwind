@@ -9,7 +9,6 @@ import BrowserCompatibilityCheck from '@/components/compatibility/BrowserCompati
 import Index from './pages/Index';
 import Deals from './pages/Deals';
 import Contacts from './pages/Contacts';
-import Opportunities from './pages/Opportunities';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import SocialMediaIntegration from './pages/SocialMediaIntegration';
@@ -26,8 +25,9 @@ import Sidebar from '@/components/layout/Sidebar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import WebsiteManagement from './pages/WebsiteManagement';
 import EmailMarketing from './pages/EmailMarketing';
-import Content from './pages/Content';
+import Socials from './pages/Content';
 import Reputation from './pages/Reputation';
+import Projects from './pages/Projects';
 
 function App() {
   // State for chatbot knowledge base
@@ -79,14 +79,13 @@ function App() {
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/deals" element={<Deals />} />
                     <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/opportunities" element={<Opportunities />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/social-media" element={<SocialMediaIntegration />} />
                     <Route path="/integrations" element={<Integrations />} />
                     <Route path="/website" element={<WebsiteManagement />} />
                     <Route path="/email" element={<EmailMarketing />} />
-                    <Route path="/content" element={<Content />} />
+                    <Route path="/socials" element={<Socials />} />
                     <Route path="/reputation" element={<Reputation />} />
                     <Route path="/chatbot" element={
                       <ChatbotManagement 
@@ -97,6 +96,7 @@ function App() {
                     <Route path="/calendar" element={<CalendarPage />} />
                     <Route path="/clients" element={<Clients />} />
                     <Route path="/master-account" element={<MasterAccount />} />
+                    <Route path="/projects" element={<Projects />} />
                   </Route>
                   
                   {/* Catch-all route */}

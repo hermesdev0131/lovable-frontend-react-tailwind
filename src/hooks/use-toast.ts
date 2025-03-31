@@ -1,4 +1,4 @@
-import * as React from "react"
+import { useState } from "react"
 
 import type {
   ToastActionElement,
@@ -8,7 +8,7 @@ import type {
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 5000
 
-type ToasterToast = ToastProps & {
+export type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
@@ -64,7 +64,7 @@ const addToRemoveQueue = (toastId: string) => {
     toastTimeouts.delete(toastId)
     dispatch({
       type: actionTypes.REMOVE_TOAST,
-      toastId,
+      toastId: toastId,
     })
   }, TOAST_REMOVE_DELAY)
 
@@ -126,7 +126,7 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: ((state: State) => void)[] = []
+const listeners: Array<(state: State) => void> = []
 
 let memoryState: State = { toasts: [] }
 
@@ -137,12 +137,12 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
-
-function toast({ ...props }: Toast) {
+export function toast({
+  ...props
+}: Omit<ToasterToast, "id">) {
   const id = genId()
 
-  const update = (props: ToasterToast) =>
+  const update = (props: Omit<ToasterToast, "id">) =>
     dispatch({
       type: actionTypes.UPDATE_TOAST,
       toast: { ...props, id },
@@ -168,10 +168,10 @@ function toast({ ...props }: Toast) {
   }
 }
 
-function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+export function useToast() {
+  const [state, setState] = useState<State>(memoryState)
 
-  React.useEffect(() => {
+  useState(() => {
     listeners.push(setState)
     return () => {
       const index = listeners.indexOf(setState)
@@ -179,7 +179,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  })
 
   return {
     ...state,
@@ -187,5 +187,3 @@ function useToast() {
     dismiss: (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
   }
 }
-
-export { useToast, toast }
