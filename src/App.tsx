@@ -20,6 +20,7 @@ import Clients from './pages/Clients';
 import MasterAccount from './pages/MasterAccount';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
+import Booking from './pages/Booking';
 import CustomErrorBoundary from '@/components/CustomErrorBoundary';
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import Sidebar from '@/components/layout/Sidebar';
@@ -61,6 +62,7 @@ function App() {
                   <Routes>
                     {/* Public routes */}
                     <Route path="/login" element={<Login />} />
+                    <Route path="/booking/:bookingTypeId" element={<Booking />} />
                     
                     {/* Layout Route */}
                     <Route 

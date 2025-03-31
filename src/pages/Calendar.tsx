@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, Clock, Copy, ExternalLink, Info, Link, Plus, Share2, CalendarIcon, RefreshCw, Pencil, Trash } from 'lucide-react';
@@ -15,6 +16,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CalendarIntegration from '@/components/calendar/CalendarIntegration';
 import EditBookingTypeDialog, { BookingType } from '@/components/calendar/EditBookingTypeDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import MakeCalendarIntegration from '@/components/calendar/MakeCalendarIntegration';
+import CalendarContacts from '@/components/calendar/CalendarContacts';
+import CalendlyBookingSystem from '@/components/calendar/CalendlyBookingSystem';
+import { useExternalIntegrations } from '@/hooks/useExternalIntegrations';
 
 const sampleEvents: {
   id: number;
@@ -22,6 +27,8 @@ const sampleEvents: {
   start: Date;
   end: Date;
   type: string;
+  contactId?: string;
+  dealId?: string;
 }[] = [];
 
 const eventTypes = {
@@ -50,7 +57,10 @@ const Calendar = () => {
   const [activeCalendarType, setActiveCalendarType] = useState<string>("");
   const [editingBookingType, setEditingBookingType] = useState<BookingType | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showContactsTab, setShowContactsTab] = useState(false);
   const { toast } = useToast();
+  const { getIntegration, connectIntegration, disconnectIntegration } = useExternalIntegrations();
+  const makeIntegration = getIntegration('make');
 
   const prevMonth = () => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   const nextMonth = () => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
@@ -172,6 +182,37 @@ const Calendar = () => {
     handleSyncCalendar();
   };
 
+  const handleMakeIntegrationChange = (connected: boolean) => {
+    if (connected) {
+      connectIntegration('make', { 
+        webhookUrls: { calendar: 'https://hook.make.com/example' } 
+      });
+      
+      toast({
+        title: "Make.com Integration Enabled",
+        description: "Calendar events will now sync with Make.com"
+      });
+    } else {
+      disconnectIntegration('make');
+      
+      toast({
+        title: "Make.com Integration Disabled",
+        description: "Calendar events will no longer sync with Make.com"
+      });
+    }
+  };
+
+  const handleContactAdded = () => {
+    // Refresh calendar events when a contact is added
+    toast({
+      title: "Calendar Updated",
+      description: "Contact has been linked to your calendar"
+    });
+    
+    // For demo purposes, this would typically reload events
+    handleSyncCalendar();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -183,6 +224,7 @@ const Calendar = () => {
                 <TabsTrigger value="week">Week</TabsTrigger>
                 <TabsTrigger value="booking">Booking Links</TabsTrigger>
                 <TabsTrigger value="integrations">Integrations</TabsTrigger>
+                <TabsTrigger value="contacts" onClick={() => setShowContactsTab(true)}>Contacts</TabsTrigger>
               </TabsList>
             </div>
             
@@ -326,8 +368,14 @@ const Calendar = () => {
           </TabsContent>
           
           <TabsContent value="booking">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
+            <div className="grid grid-cols-1 gap-8">
+              <CalendlyBookingSystem 
+                bookingTypes={bookingTypes}
+                onAddBookingType={handleAddBookingType}
+                onEditBookingType={handleEditBookingType}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <div>
@@ -383,9 +431,7 @@ const Calendar = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-              
-              <div>
+                
                 <Card>
                   <CardHeader>
                     <CardTitle>Booking Settings</CardTitle>
@@ -444,22 +490,42 @@ const Calendar = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
-                <div className="mt-6">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Need Help?</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">
-                        Learn how to use booking links effectively to schedule meetings with your clients and prospects.
-                      </p>
-                      <Button variant="link" className="p-0 h-auto mt-1">
-                        <Info className="h-3.5 w-3.5 mr-1" /> View Tutorial
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="contacts" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <CalendarContacts onContactAdded={handleContactAdded} />
+              </div>
+              
+              <div className="md:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Connected Deals</CardTitle>
+                    <CardDescription>
+                      Manage meetings associated with your deals
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {events.filter(e => e.dealId).length > 0 ? (
+                      <div className="space-y-4">
+                        {/* Deal-related events would be shown here */}
+                        <p>Deal-related meetings would appear here.</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-10 text-muted-foreground">
+                        <CalendarIcon className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                        <p>No deal meetings found</p>
+                        <p className="text-sm mb-4">Meetings related to your deals will appear here</p>
+                        <Button variant="outline">
+                          <Plus className="h-4 w-4 mr-1" /> Schedule Deal Meeting
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </TabsContent>
@@ -543,6 +609,11 @@ const Calendar = () => {
                             Connect
                           </Button>
                         </div>
+
+                        {/* Make.com Integration */}
+                        <MakeCalendarIntegration 
+                          onIntegrationChange={handleMakeIntegrationChange} 
+                        />
                       </div>
                     )}
                   </CardContent>
