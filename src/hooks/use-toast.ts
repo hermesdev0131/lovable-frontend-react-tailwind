@@ -1,4 +1,5 @@
-import { useState } from "react"
+
+import { useState, useEffect } from "react"
 
 import type {
   ToastActionElement,
@@ -171,7 +172,7 @@ export function toast({
 export function useToast() {
   const [state, setState] = useState<State>(memoryState)
 
-  useState(() => {
+  useEffect(() => {
     listeners.push(setState)
     return () => {
       const index = listeners.indexOf(setState)
@@ -179,7 +180,7 @@ export function useToast() {
         listeners.splice(index, 1)
       }
     }
-  })
+  }, [])
 
   return {
     ...state,
