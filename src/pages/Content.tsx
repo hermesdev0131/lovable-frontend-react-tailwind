@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ContentScheduling from '@/components/content/ContentScheduling';
 import ContentList from '@/components/content/ContentList';
-import { FileEdit, Calendar } from 'lucide-react';
+import { FileEdit, Calendar, CheckCircle } from 'lucide-react';
 
 const Socials = () => {
   return (
@@ -27,7 +27,9 @@ const Socials = () => {
               <TabsTrigger value="content">
                 <FileEdit className="h-4 w-4 mr-2" /> Content Library
               </TabsTrigger>
-              <TabsTrigger value="approvals">Approvals</TabsTrigger>
+              <TabsTrigger value="approvals">
+                <CheckCircle className="h-4 w-4 mr-2" /> Approvals
+              </TabsTrigger>
             </TabsList>
           </CardContent>
         </Card>
