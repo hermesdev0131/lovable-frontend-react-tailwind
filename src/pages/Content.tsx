@@ -9,20 +9,20 @@ import { FileEdit, Calendar, CheckCircle } from 'lucide-react';
 const Socials = () => {
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <h1 className="text-2xl font-bold">Socials Management</h1>
+      <h1 className="text-2xl font-bold">Social Content</h1>
       
       <Tabs defaultValue="schedule" className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Social Media Tools</CardTitle>
+            <CardTitle>Social Media Management</CardTitle>
             <CardDescription>
-              Create, manage and schedule your content across multiple platforms
+              Create, manage and schedule your social media content
             </CardDescription>
           </CardHeader>
           <CardContent>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="schedule">
-                <Calendar className="h-4 w-4 mr-2" /> Content Scheduling
+                <Calendar className="h-4 w-4 mr-2" /> Content Calendar
               </TabsTrigger>
               <TabsTrigger value="content">
                 <FileEdit className="h-4 w-4 mr-2" /> Content Library

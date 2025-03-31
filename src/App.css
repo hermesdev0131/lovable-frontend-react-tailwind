@@ -1,8 +1,8 @@
+
 #root {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  overflow-x: hidden;
 }
 
 .logo {
@@ -41,4 +41,20 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Animation for activity feed items */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
 }

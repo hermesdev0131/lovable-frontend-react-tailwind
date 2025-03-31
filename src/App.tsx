@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { DealsProvider } from '@/contexts/DealsContext';
@@ -86,7 +85,7 @@ function App() {
                     <Route path="/integrations" element={<Integrations />} />
                     <Route path="/website" element={<WebsiteManagement />} />
                     <Route path="/email" element={<EmailMarketing />} />
-                    <Route path="/socials" element={<Socials />} />
+                    <Route path="/social" element={<Socials />} />
                     <Route path="/reputation" element={<Reputation />} />
                     <Route path="/chatbot" element={
                       <ChatbotManagement 

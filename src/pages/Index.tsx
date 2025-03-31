@@ -5,6 +5,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import DealsOverview from '@/components/dashboard/DealsOverview';
 import TasksPanel from '@/components/dashboard/TasksPanel';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import OpportunitiesPanel from '@/components/dashboard/OpportunitiesPanel';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
@@ -50,7 +51,7 @@ const Index = () => {
         onCardClick={handleCardClick}
       />
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Deals Overview */}
         <DealsOverview 
           dealStageData={dealStageData}
@@ -59,6 +60,9 @@ const Index = () => {
         
         {/* Tasks Panel */}
         <TasksPanel />
+        
+        {/* Opportunities Panel */}
+        <OpportunitiesPanel />
       </div>
       
       {/* Activity Feed - Full width at the bottom */}
