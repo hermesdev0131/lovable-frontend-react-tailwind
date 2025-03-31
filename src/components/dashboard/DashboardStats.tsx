@@ -1,46 +1,71 @@
 
 import React from 'react';
-import { Users, LineChart, PieChart } from 'lucide-react';
-import StatCard from './StatCard';
+import { Card, CardContent } from '@/components/ui/card';
+import { Users, DollarSign, Briefcase, BarChart2 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import StatCard from './StatCard';
 
 interface DashboardStatsProps {
   totalContacts: number;
   openDeals: number;
   totalDealValue: number;
-  onCardClick: (title: string, path: string) => void;
+  totalProjects?: number;
+  onCardClick?: (title: string, path: string) => void;
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
   totalContacts,
   openDeals,
   totalDealValue,
+  totalProjects = 0,
   onCardClick
 }) => {
+  const handleCardClick = (title: string, path: string) => {
+    if (onCardClick) {
+      onCardClick(title, path);
+    }
+  };
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <StatCard
         title="Total Contacts"
-        value={totalContacts}
-        icon={Users}
-        subtitle={totalContacts === 0 ? "No contacts added yet" : `${totalContacts} total contacts`}
-        onClick={() => onCardClick("Contacts", "/contacts")}
+        value={totalContacts.toString()}
+        icon={<Users className="h-6 w-6 text-blue-500" />}
+        description="Active contacts in your CRM"
+        onClick={() => handleCardClick("Contacts", "/contacts")}
+        color="bg-blue-50 dark:bg-blue-900"
+        className="cursor-pointer hover:shadow-md transition-all"
       />
       
       <StatCard
-        title="Active Deals"
-        value={openDeals}
-        icon={LineChart}
-        subtitle={openDeals === 0 ? "No active deals" : `${openDeals} active deals in progress`}
-        onClick={() => onCardClick("Deals", "/deals")}
+        title="Open Deals"
+        value={openDeals.toString()}
+        icon={<Briefcase className="h-6 w-6 text-amber-500" />}
+        description="Deals currently in progress"
+        onClick={() => handleCardClick("Deals", "/deals")}
+        color="bg-amber-50 dark:bg-amber-900"
+        className="cursor-pointer hover:shadow-md transition-all"
       />
       
       <StatCard
-        title="Pipeline Value"
+        title="Total Deal Value"
         value={formatCurrency(totalDealValue)}
-        icon={PieChart}
-        subtitle={totalDealValue === 0 ? "No value in pipeline yet" : `${formatCurrency(totalDealValue)} total pipeline value`}
-        onClick={() => onCardClick("Opportunities", "/opportunities")}
+        icon={<DollarSign className="h-6 w-6 text-emerald-500" />}
+        description="Sum of all deal values"
+        onClick={() => handleCardClick("Reports", "/reports")}
+        color="bg-emerald-50 dark:bg-emerald-900"
+        className="cursor-pointer hover:shadow-md transition-all"
+      />
+      
+      <StatCard
+        title="Projects"
+        value={totalProjects.toString()}
+        icon={<BarChart2 className="h-6 w-6 text-purple-500" />}
+        description="Active and completed projects"
+        onClick={() => handleCardClick("Projects", "/projects")}
+        color="bg-purple-50 dark:bg-purple-900"
+        className="cursor-pointer hover:shadow-md transition-all"
       />
     </div>
   );

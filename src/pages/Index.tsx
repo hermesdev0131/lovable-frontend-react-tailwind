@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { useDeals } from '@/contexts/DealsContext';
 import { contacts } from '@/lib/data';
 import { useTasks } from '@/contexts/TasksContext';
+import { useProjects } from '@/contexts/ProjectsContext';
 
 // Import the components
 import DashboardStats from '@/components/dashboard/DashboardStats';
@@ -17,6 +18,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { deals: userDeals } = useDeals();
   const { tasks } = useTasks();
+  const { projects } = useProjects();
   const { integrations } = useExternalIntegrations();
   const [recentActivity, setRecentActivity] = useState<{
     id: number;
@@ -68,6 +70,7 @@ const Index = () => {
   // Compute statistics for the dashboard
   const totalContacts = contacts.length;
   const totalDeals = userDeals.length;
+  const totalProjects = projects.length;
   
   const openDeals = userDeals.filter(deal => !['closed-won', 'closed-lost'].includes(deal.stage)).length;
   const wonDeals = userDeals.filter(deal => deal.stage === 'closed-won').length;
@@ -117,6 +120,7 @@ const Index = () => {
           openDeals={openDeals}
           totalDealValue={totalDealValue}
           onCardClick={handleCardClick}
+          totalProjects={totalProjects}
         />
         
         {/* Two-column layout for Deals Overview and Tasks */}
