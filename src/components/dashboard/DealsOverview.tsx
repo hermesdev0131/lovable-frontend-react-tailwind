@@ -91,7 +91,7 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
                   fontSize: '12px'
                 }}
                 formatter={(value, entry, index) => {
-                  // Format the legend text to include the count
+                  // Format the legend text to include the count and use dark text color
                   const item = dealStageData[index];
                   return <span style={{ color: '#333' }}>{value} ({item.value})</span>;
                 }}

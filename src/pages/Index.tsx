@@ -1,26 +1,36 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useDeals } from '@/contexts/DealsContext';
 import { contacts } from '@/lib/data';
-import { TasksProvider } from '@/contexts/TasksContext';
 
 // Import the components
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import DealsOverview from '@/components/dashboard/DealsOverview';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import TasksPanel from '@/components/dashboard/TasksPanel';
+import { useExternalIntegrations } from '@/hooks/useExternalIntegrations';
 
 const Index = () => {
   const navigate = useNavigate();
   const { deals: userDeals } = useDeals();
+  const { integrations } = useExternalIntegrations();
   const [recentActivity, setRecentActivity] = useState<{
     id: number;
     action: string;
     time: string;
     name: string;
-  }[]>([]);
+  }[]>(() => {
+    // Load activities from localStorage on initial mount
+    const savedActivities = localStorage.getItem('dashboard_activities');
+    return savedActivities ? JSON.parse(savedActivities) : [];
+  });
+  
+  // Save activities to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('dashboard_activities', JSON.stringify(recentActivity));
+  }, [recentActivity]);
   
   // Compute statistics for the dashboard
   const totalContacts = contacts.length;
@@ -60,37 +70,41 @@ const Index = () => {
       ...prev,
     ]);
   };
+  
+  const handleClearActivity = (id: number) => {
+    setRecentActivity(prev => prev.filter(activity => activity.id !== id));
+  };
 
   return (
-    <TasksProvider>
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
-          {/* Stats Cards */}
-          <DashboardStats 
-            totalContacts={totalContacts}
-            openDeals={openDeals}
-            totalDealValue={totalDealValue}
-            onCardClick={handleCardClick}
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
+        {/* Stats Cards */}
+        <DashboardStats 
+          totalContacts={totalContacts}
+          openDeals={openDeals}
+          totalDealValue={totalDealValue}
+          onCardClick={handleCardClick}
+        />
+        
+        {/* Two-column layout for Deals Overview and Tasks */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Deal Overview Chart */}
+          <DealsOverview 
+            dealStageData={dealStageData} 
+            hasDeals={userDeals.length > 0} 
           />
           
-          <div className="grid grid-cols-1 gap-6 mb-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Deal Overview Chart */}
-              <DealsOverview 
-                dealStageData={dealStageData} 
-                hasDeals={userDeals.length > 0} 
-              />
-              
-              {/* Tasks Panel */}
-              <TasksPanel onCreateTask={handleCreateTask} />
-            </div>
-            
-            {/* Activity Feed - Full Width at Bottom */}
-            <ActivityFeed activities={recentActivity} />
-          </div>
+          {/* Tasks Panel */}
+          <TasksPanel onCreateTask={handleCreateTask} />
         </div>
+        
+        {/* Activity Feed - Full Width at Bottom */}
+        <ActivityFeed 
+          activities={recentActivity} 
+          onClearActivity={handleClearActivity}
+        />
       </div>
-    </TasksProvider>
+    </div>
   );
 };
 
