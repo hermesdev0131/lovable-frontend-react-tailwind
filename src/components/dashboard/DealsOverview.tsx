@@ -34,7 +34,7 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
       <text 
         x={x} 
         y={y} 
-        fill="#000000" 
+        fill="white" 
         textAnchor="middle" 
         dominantBaseline="central"
         fontSize="12"

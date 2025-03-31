@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Calendar, Plus, Check, X, Mail, MessageCircle, Phone, Send, ExternalLink } from 'lucide-react';
+import { Plus, Check, X, Mail, MessageCircle, Phone, Send, ExternalLink } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -9,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import { useTasks, Task } from '@/contexts/TasksContext';
 
 interface TaskFormValues {
@@ -34,7 +32,7 @@ const getTaskIcon = (type: Task['type']) => {
     case 'text':
       return <Send className="h-4 w-4" />;
     default:
-      return <Calendar className="h-4 w-4" />;
+      return <Plus className="h-4 w-4" />;
   }
 };
 
@@ -56,7 +54,6 @@ const getTaskColor = (type: Task['type']) => {
 };
 
 const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
-  const navigate = useNavigate();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
   const [open, setOpen] = useState(false);
   
@@ -92,11 +89,9 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   };
 
   const sortedTasks = [...tasks].sort((a, b) => {
-    // First by completion status
     if (a.completed !== b.completed) {
       return a.completed ? 1 : -1;
     }
-    // Then by date
     return new Date(a.date).getTime() - new Date(b.date).getTime();
   });
 
@@ -112,7 +107,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   return (
     <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
       <CardHeader>
-        <CardTitle>Tasks & Activities</CardTitle>
+        <CardTitle>Tasks</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="mb-4">
@@ -163,17 +158,6 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
               </Form>
             </DialogContent>
           </Dialog>
-          
-          <div className="flex items-center justify-center space-x-3 mt-2">
-            <Button 
-              variant="outline" 
-              className="flex items-center" 
-              onClick={() => navigate('/calendar')}
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              View Calendar
-            </Button>
-          </div>
         </div>
         
         <ScrollArea className="h-[300px] pr-3">

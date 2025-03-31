@@ -11,7 +11,6 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import DealsOverview from '@/components/dashboard/DealsOverview';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import TasksPanel from '@/components/dashboard/TasksPanel';
-import OpportunitiesPanel from '@/components/dashboard/OpportunitiesPanel';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -26,14 +25,12 @@ const Index = () => {
   // Compute statistics for the dashboard
   const totalContacts = contacts.length;
   const totalDeals = userDeals.length;
-  const totalOpportunities = opportunities.length;
   
   const openDeals = userDeals.filter(deal => !['closed-won', 'closed-lost'].includes(deal.stage)).length;
   const wonDeals = userDeals.filter(deal => deal.stage === 'closed-won').length;
   const lostDeals = userDeals.filter(deal => deal.stage === 'closed-lost').length;
   
   const totalDealValue = userDeals.reduce((sum, deal) => sum + deal.value, 0);
-  const potentialValue = opportunities.reduce((sum, opp) => sum + opp.potentialValue, 0);
   
   // Create data for the pie chart
   const dealStageData = [
@@ -83,18 +80,13 @@ const Index = () => {
               hasDeals={userDeals.length > 0} 
             />
             
-            {/* Activity Feed */}
-            <ActivityFeed activities={recentActivity} />
+            {/* Tasks Panel */}
+            <TasksPanel onCreateTask={handleCreateTask} />
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Tasks Panel */}
-            <div className="lg:col-span-2">
-              <TasksPanel onCreateTask={handleCreateTask} />
-            </div>
-            
-            {/* Opportunities Panel */}
-            <OpportunitiesPanel />
+          {/* Activity Feed - Full Width at Bottom */}
+          <div>
+            <ActivityFeed activities={recentActivity} />
           </div>
         </div>
       </div>
