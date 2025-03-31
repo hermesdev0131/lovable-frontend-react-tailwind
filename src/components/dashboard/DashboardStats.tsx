@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Users, DollarSign, Briefcase, BarChart2 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import StatCard from './StatCard';
