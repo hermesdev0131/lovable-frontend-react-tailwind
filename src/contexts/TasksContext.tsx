@@ -12,6 +12,7 @@ export interface Task {
   source?: string;
   relatedTo?: string;
   createdAt: string;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 interface TasksContextType {
@@ -26,6 +27,8 @@ interface TasksContextType {
     relatedTo?: string;
   }) => void;
   clearCompletedTasks: () => void;
+  setPriority: (id: string, priority: Task['priority']) => void;
+  filterTasks: (filters: { status?: 'all' | 'completed' | 'active', type?: Task['type'] }) => Task[];
 }
 
 const STORAGE_KEY = 'crm_tasks';
@@ -78,7 +81,26 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     });
   };
   
-  // New function to clear completed tasks
+  // Set priority for a task
+  const setPriority = (id: string, priority: Task['priority']) => {
+    updateTask(id, { priority });
+  };
+  
+  // Filter tasks based on provided filters
+  const filterTasks = (filters: { status?: 'all' | 'completed' | 'active', type?: Task['type'] }) => {
+    return tasks.filter(task => {
+      // Filter by status
+      if (filters.status === 'completed' && !task.completed) return false;
+      if (filters.status === 'active' && task.completed) return false;
+      
+      // Filter by type
+      if (filters.type && task.type !== filters.type) return false;
+      
+      return true;
+    });
+  };
+  
+  // Clear completed tasks
   const clearCompletedTasks = () => {
     setTasks(prev => prev.filter(task => !task.completed));
   };
@@ -91,7 +113,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         updateTask,
         deleteTask,
         addActivityAsTask,
-        clearCompletedTasks
+        clearCompletedTasks,
+        setPriority,
+        filterTasks
       }}
     >
       {children}
