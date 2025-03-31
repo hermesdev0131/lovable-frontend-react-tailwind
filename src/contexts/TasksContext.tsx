@@ -8,7 +8,7 @@ export interface Task {
   title: string;
   date: string;
   completed: boolean;
-  type: 'manual' | 'call' | 'email' | 'social' | 'chat' | 'text' | 'integration' | 'review';
+  type: 'manual' | 'call' | 'email' | 'social' | 'chat' | 'text' | 'integration' | 'review' | 'deal' | 'document' | 'calendar';
   source?: string;
   relatedTo?: string;
   createdAt: string;
