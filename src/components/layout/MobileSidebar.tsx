@@ -12,7 +12,6 @@ import {
   Building2,
   Globe,
   Mail,
-  Lightbulb,
   Star,
   X
 } from 'lucide-react';
@@ -89,17 +88,6 @@ const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
               >
                 <PieChart className="h-5 w-5 mr-2" />
                 <span>Deals</span>
-              </Link>
-              <Link
-                to="/opportunities"
-                className={cn(
-                  "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                  isActive("/opportunities") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary"
-                )}
-                onClick={onClose}
-              >
-                <Lightbulb className="h-5 w-5 mr-2" />
-                <span>Opportunities</span>
               </Link>
               <Link
                 to="/calendar"

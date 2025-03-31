@@ -28,7 +28,6 @@ import WebsiteManagement from './pages/WebsiteManagement';
 import EmailMarketing from './pages/EmailMarketing';
 import Socials from './pages/Content';
 import Reputation from './pages/Reputation';
-import Opportunities from './pages/Opportunities';
 
 function App() {
   // State for chatbot knowledge base
@@ -81,7 +80,6 @@ function App() {
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/deals" element={<Deals />} />
                       <Route path="/contacts" element={<Contacts />} />
-                      <Route path="/opportunities" element={<Opportunities />} />
                       <Route path="/reports" element={<Reports />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/social-media" element={<SocialMediaIntegration />} />
