@@ -51,8 +51,10 @@ const Clients = () => {
       return;
     }
     
+    // Call the addClient function from the MasterAccountContext
     addClient(newClient);
     
+    // Reset the form
     setShowAddClientForm(false);
     setNewClient({
       name: '',
