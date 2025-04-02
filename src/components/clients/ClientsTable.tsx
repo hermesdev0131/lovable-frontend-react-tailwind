@@ -3,30 +3,36 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-// Sample data - would be replaced by actual client data
-const sampleClients = [
-  { id: '1', name: 'Acme Inc', email: 'contact@acmeinc.com', address: '123 Business Ave, Tech City', tags: ['enterprise', 'tech'] },
-  { id: '2', name: 'Beta Corp', email: 'info@betacorp.com', address: '456 Market St, Commerce Town', tags: ['retail', 'small-business'] },
-  { id: '3', name: 'Delta Dynamics', email: 'sales@deltadynamics.com', address: '789 Innovation Lane, Progress City', tags: ['manufacturing', 'enterprise'] },
-  { id: '4', name: 'Creative Solutions', email: 'hello@creativesolutions.com', address: '1010 Design Blvd, Artville', tags: ['creative', 'small-business'] },
-];
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
 
 const ClientsTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { clients } = useMasterAccount();
   
-  // Get all unique tags
-  const allTags = Array.from(
-    new Set(sampleClients.flatMap(client => client.tags))
-  );
+  // Demo tags for filtering - in a real app these would be dynamically generated
+  // from actual client data
+  const allTags = ['enterprise', 'retail', 'small-business', 'tech', 'manufacturing', 'creative'];
+  
+  // Map clients to format needed by the table
+  const clientsWithTags = clients.map(client => ({
+    id: client.id.toString(),
+    name: client.name,
+    email: client.email,
+    address: 'No address provided', // This field isn't in the Client type, using placeholder
+    // Demo tags based on subscription type to show filtering functionality
+    tags: [
+      client.subscription.toLowerCase(),
+      client.subscription === 'Enterprise' ? 'large-business' : 
+      client.subscription === 'Professional' ? 'medium-business' : 'small-business'
+    ]
+  }));
   
   // Filter clients based on search and tags
-  const filteredClients = sampleClients.filter(client => {
+  const filteredClients = clientsWithTags.filter(client => {
     const matchesSearch = 
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
