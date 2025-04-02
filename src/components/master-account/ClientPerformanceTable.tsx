@@ -61,6 +61,8 @@ const ClientPerformanceTable = ({ clientSalesData }: ClientPerformanceTableProps
           <TableBody>
             {clientSalesData.map((data, index) => {
               const client = clients[index];
+              if (!client) return null;
+              
               return (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">{`${client.firstName} ${client.lastName}`}</TableCell>
