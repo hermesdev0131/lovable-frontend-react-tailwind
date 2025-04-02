@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +26,6 @@ const ContentList = () => {
   
   const isMobile = useIsMobile();
   
-  // Get content items from context
   const contentItems = getContentItems(currentClientId);
   
   const handleCloseCreationForm = () => {
@@ -48,7 +46,6 @@ const ContentList = () => {
   
   const confirmDeleteContent = () => {
     if (contentToDelete) {
-      // TODO: Implement delete functionality when available in context
       toast({
         title: "Content Deleted",
         description: `${contentToDelete.title} has been successfully deleted.`
@@ -82,7 +79,7 @@ const ContentList = () => {
   
   const getClientName = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
-    return client ? client.name : "Unknown";
+    return client ? `${client.firstName} ${client.lastName}` : "Unknown";
   };
   
   const getContentTypeBadge = (type: string) => {
@@ -111,7 +108,6 @@ const ContentList = () => {
     }
   };
 
-  // Mobile view card for each content item
   const ContentCard = ({ content }: { content: ContentItem }) => (
     <Card className="mb-4">
       <CardHeader className="pb-2">
@@ -262,7 +258,6 @@ const ContentList = () => {
         </Card>
       )}
       
-      {/* Content Creation Dialog/Drawer */}
       {isMobile ? (
         <Drawer open={isCreatingContent} onOpenChange={setIsCreatingContent}>
           <DrawerContent className="px-4 pb-4">
@@ -289,14 +284,12 @@ const ContentList = () => {
         </Dialog>
       )}
       
-      {/* Edit Content Dialog */}
       <ContentEditDialog 
         isOpen={contentToEdit !== null}
         onClose={() => setContentToEdit(null)}
         contentItem={contentToEdit}
       />
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={contentToDelete !== null} onOpenChange={() => setContentToDelete(null)}>
         <DialogContent>
           <DialogHeader>
@@ -312,7 +305,6 @@ const ContentList = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Content Review Dialog */}
       <Dialog open={contentToReview !== null} onOpenChange={() => setContentToReview(null)}>
         <DialogContent>
           <DialogHeader>

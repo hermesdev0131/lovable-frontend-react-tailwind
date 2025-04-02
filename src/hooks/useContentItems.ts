@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ContentItem, Client, Notification } from '@/types/masterAccount';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
@@ -35,7 +34,7 @@ export function useContentItems(
       if (client) {
         addNotification({
           title: "Content Approval",
-          message: `${client.name} has submitted ${item.type} content for approval`,
+          message: `${client.firstName} ${client.lastName} has submitted ${item.type} content for approval`,
           type: "approval",
           relatedContentId: newItem.id,
           forClientId: null

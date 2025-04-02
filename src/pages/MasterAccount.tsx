@@ -1,173 +1,94 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Building2, Users, LayoutDashboard, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { toast } from "@/hooks/use-toast";
+import ClientDirectory from '@/components/master-account/ClientDirectory';
+import ClientPerformanceTable from '@/components/master-account/ClientPerformanceTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMasterAccount } from "@/contexts/MasterAccountContext";
-import { Building2, Settings, BarChart3, AlertTriangle, Loader2 } from "lucide-react";
-import SalesSummaryCards from "@/components/master-account/SalesSummaryCards";
-import ClientSalesChart from "@/components/master-account/ClientSalesChart";
-import ClientPerformanceTable from "@/components/master-account/ClientPerformanceTable";
-import AddClientForm from "@/components/master-account/AddClientForm";
-import ClientDirectory from "@/components/master-account/ClientDirectory";
-import { logError } from "@/lib/errorHandling";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const MasterAccount = () => {
-  const { clients } = useMasterAccount();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        // Simulate data loading
-        await new Promise(resolve => setTimeout(resolve, 800));
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
-        setError(errorMessage);
-        logError(err, "Error loading master account dashboard");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadData();
-  }, []);
+  const navigate = useNavigate();
+  const { clients, switchToClient } = useMasterAccount();
   
   const clientSalesData = clients.map(client => ({
-    name: client.name,
-    sales: Math.floor(Math.random() * 10000) + 2000,
-    leads: Math.floor(Math.random() * 50) + 10,
-    conversions: Math.floor(Math.random() * 30) + 5,
+    name: `${client.firstName} ${client.lastName}`,
+    sales: Math.floor(Math.random() * 500000),
+    leads: Math.floor(Math.random() * 500),
+    conversions: Math.floor(Math.random() * 100)
   }));
   
-  const totalSales = clientSalesData.reduce((sum, client) => sum + client.sales, 0);
-  const averageSales = clients.length > 0 ? totalSales / clients.length : 0;
-  const totalLeads = clientSalesData.reduce((sum, client) => sum + client.leads, 0);
-  const totalConversions = clientSalesData.reduce((sum, client) => sum + client.conversions, 0);
-  
-  if (error) {
-    return (
-      <div className="container mx-auto py-6">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            {error}
-            <Button 
-              variant="outline" 
-              className="mt-2" 
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </Button>
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-  
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center mb-8">
-          <Skeleton className="h-10 w-64" />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-lg" />
-          ))}
-        </div>
-        
-        <Skeleton className="h-80 w-full rounded-lg" />
-        
-        <Skeleton className="h-96 w-full rounded-lg" />
-      </div>
-    );
-  }
+  const handleClientClick = (clientId: number) => {
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      switchToClient(client.id);
+      navigate('/');
+      toast({
+        title: `Switched to ${client.firstName} ${client.lastName}`,
+        description: `You are now viewing ${client.firstName} ${client.lastName}'s account`,
+      });
+    }
+  };
   
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Master Account Dashboard</h1>
-      </div>
+      <h1 className="text-2xl font-bold">Master Account Dashboard</h1>
       
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="mb-4 flex justify-start">
-          <TabsTrigger value="dashboard" className="flex items-center">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Client Sales Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </TabsTrigger>
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Manage clients and access client accounts</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Button onClick={() => navigate('/clients')}>
+            <Users className="h-4 w-4 mr-2" /> Manage Clients
+          </Button>
+          <Button onClick={() => navigate('/settings')}>
+            <Settings className="h-4 w-4 mr-2" /> Account Settings
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/')}>
+            <LayoutDashboard className="h-4 w-4 mr-2" /> Back to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+      
+      <Tabs defaultValue="performance" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="directory">Client Directory</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="dashboard" className="space-y-6">
-          {clients.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                You don't have any clients yet. Add clients in the Settings tab to see your dashboard.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <>
-              <SalesSummaryCards 
-                totalSales={totalSales} 
-                averageSales={averageSales} 
-                totalLeads={totalLeads} 
-                totalConversions={totalConversions} 
-              />
-              
-              <ClientSalesChart clientSalesData={clientSalesData} />
-              
-              <ClientPerformanceTable clientSalesData={clientSalesData} />
-            </>
-          )}
+        <TabsContent value="performance">
+          <ClientPerformanceTable clientSalesData={clientSalesData} />
         </TabsContent>
-        
-        <TabsContent value="settings" className="space-y-6" id="settings-tab">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Building2 className="h-5 w-5 mr-2" /> Add New Client
-              </CardTitle>
-              <CardDescription>Create a new client account in the system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AddClientForm />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Client Directory</CardTitle>
-              <CardDescription>View and manage all client accounts</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ClientDirectory />
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Master Account Settings</CardTitle>
-              <CardDescription>Configure your master account preferences</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Settings options will appear here in future updates.
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="directory">
+          <ClientDirectory />
         </TabsContent>
       </Tabs>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Client List</CardTitle>
+          <CardDescription>Quickly access client accounts</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {clients.map(client => (
+            <Button 
+              key={client.id} 
+              variant="secondary" 
+              className="flex flex-col items-start p-4 rounded-md shadow-sm hover:bg-secondary/80 transition-colors"
+              onClick={() => handleClientClick(client.id)}
+            >
+              <Building2 className="h-5 w-5 mb-2 text-muted-foreground" />
+              <div className="text-left">
+                <h3 className="text-sm font-semibold">{client.firstName} {client.lastName}</h3>
+                <p className="text-xs text-muted-foreground">{client.company}</p>
+              </div>
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 };

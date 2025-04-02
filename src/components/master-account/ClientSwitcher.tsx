@@ -45,7 +45,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     navigate('/');
     toast({
       title: "Client Account Switched",
-      description: `You are now viewing ${clients.find(c => c.id === clientId)?.name}`
+      description: `You are now viewing ${clients.find(c => c.id === clientId)?.firstName} ${clients.find(c => c.id === clientId)?.lastName}`
     });
   };
 
@@ -79,10 +79,10 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
           ) : currentClient ? (
             <>
               <Avatar className="h-6 w-6">
-                <AvatarImage src={currentClient.logo} alt={currentClient.name} />
-                <AvatarFallback>{currentClient.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={currentClient.logo} alt={`${currentClient.firstName} ${currentClient.lastName}`} />
+                <AvatarFallback>{`${currentClient.firstName.substring(0, 1)}${currentClient.lastName.substring(0, 1)}`}</AvatarFallback>
               </Avatar>
-              <span className="font-medium max-w-[150px] truncate">{currentClient.name}</span>
+              <span className="font-medium max-w-[150px] truncate">{`${currentClient.firstName} ${currentClient.lastName}`}</span>
               <Badge variant="outline" className="ml-1 bg-green-100 text-green-800 hover:bg-green-100">
                 Client
               </Badge>
@@ -111,10 +111,10 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
             onClick={() => handleSwitchToClient(client.id)}
           >
             <Avatar className="h-5 w-5">
-              <AvatarImage src={client.logo} alt={client.name} />
-              <AvatarFallback>{client.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+              <AvatarImage src={client.logo} alt={`${client.firstName} ${client.lastName}`} />
+              <AvatarFallback>{`${client.firstName.substring(0, 1)}${client.lastName.substring(0, 1)}`}</AvatarFallback>
             </Avatar>
-            <span className="truncate">{client.name}</span>
+            <span className="truncate">{`${client.firstName} ${client.lastName}`}</span>
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />

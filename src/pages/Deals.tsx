@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Filter, MoreHorizontal, Settings, Eye, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,6 @@ import CustomFieldsManager from '@/components/deals/CustomFieldsManager';
 import { useCustomFields } from '@/contexts/CustomFieldsContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-// Sample team members data for demo purposes
 const demoTeamMembers: TeamMember[] = [
   {
     id: "1",
@@ -72,7 +70,6 @@ const Deals = () => {
   const { trackChatbotInteraction, trackEmailSent, trackCall, trackTextMessage, trackIntegrationEvent, trackReviewActivity, trackDealActivity } = useActivityTracker();
   const { dealFields, updateDealFields } = useCustomFields();
   
-  // Initialize deals from context 
   const [deals, setDeals] = useState<Deal[]>(() => {
     return existingDeals || [];
   });
@@ -90,37 +87,31 @@ const Deals = () => {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
-  const [teamMembers] = useState<TeamMember[]>(demoTeamMembers); // Using demo data
+  const [teamMembers] = useState<TeamMember[]>(demoTeamMembers);
   const [sortField, setSortField] = useState<'value' | 'company' | 'name' | 'probability' | 'createdAt'>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterStage, setFilterStage] = useState<string | null>(null);
   
-  // Update local deals when context deals change
   useEffect(() => {
     setDeals(existingDeals);
     setDealsByStage(getInitialDealsByStage(existingDeals, columns));
   }, [existingDeals, columns]);
   
-  // Update dealsByStage when columns change
   useEffect(() => {
     setDealsByStage(getInitialDealsByStage(deals, columns));
   }, [columns, deals]);
   
-  // All deals flattened for search filtering
   const getAllDeals = () => {
     return Object.values(dealsByStage).flat();
   };
   
-  // Filter deals based on search query and selected stage
   const getFilteredDeals = () => {
     let allDeals = getAllDeals();
     
-    // Apply stage filter
     if (filterStage) {
       allDeals = allDeals.filter(deal => deal.stage === filterStage);
     }
     
-    // Apply search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       allDeals = allDeals.filter(deal => {
@@ -132,7 +123,6 @@ const Deals = () => {
       });
     }
     
-    // Apply sorting
     return [...allDeals].sort((a, b) => {
       if (sortField === 'createdAt' || sortField === 'name' || sortField === 'company') {
         const aValue = a[sortField]?.toString().toLowerCase() || '';
@@ -148,7 +138,6 @@ const Deals = () => {
     });
   };
 
-  // Filter deals by stage and search query
   const getFilteredDealsByStage = () => {
     const filteredDeals = getFilteredDeals();
     
@@ -161,19 +150,16 @@ const Deals = () => {
     return filteredResult;
   };
 
-  // Get client name
   const getClientName = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
-    return client ? client.name : 'Unknown Client';
+    return client ? `${client.firstName} ${client.lastName}` : "Unknown";
   };
 
-  // Get client initials
   const getClientInitials = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
     return client ? client.name.substring(0, 2).toUpperCase() : '??';
   };
 
-  // Format currency
   const formatCurrency = (value: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -183,7 +169,6 @@ const Deals = () => {
     }).format(value);
   };
 
-  // Get stage badge variant and label
   const getStageBadge = (stage: string) => {
     const stageColumn = columns.find(column => column.id === stage);
     const label = stageColumn ? stageColumn.label : "Unknown";
@@ -202,77 +187,61 @@ const Deals = () => {
     };
   };
   
-  // Handle drag end
   const handleDragEnd = (result: any) => {
     const { destination, source, draggableId } = result;
     
-    // If there's no destination or if the item was dropped in its original position
     if (!destination || 
         (destination.droppableId === source.droppableId && 
          destination.index === source.index)) {
       return;
     }
     
-    // Find the deal that was dragged
     const deal = getAllDeals().find(d => d.id.toString() === draggableId);
     if (!deal) return;
     
-    // Update the deal's stage
     const updatedDeal: Deal = {
       ...deal, 
       stage: destination.droppableId,
       updatedAt: new Date().toISOString()
     };
     
-    // Update in context
     updateDealInContext(updatedDeal);
     
-    // Track the activity
     const destinationColumn = columns.find(col => col.id === destination.droppableId);
     trackDealActivity(deal.name, "moved to new stage", destinationColumn?.label || 'new stage');
     
-    // Show toast notification
     toast({
       title: "Deal Moved",
       description: `${deal.name} moved to ${destinationColumn?.label || 'new stage'} stage`
     });
   };
 
-  // Handle edit deal
   const handleEditDeal = (deal: Deal) => {
     setEditingDeal(deal);
     setIsEditDialogOpen(true);
   };
 
-  // Handle view deal details
   const handleViewDeal = (deal: Deal) => {
     setViewingDeal(deal);
     setIsDetailDialogOpen(true);
   };
 
-  // Handle save edited deal
   const handleSaveEditedDeal = (updatedDeal: Deal) => {
-    // Update the deal in the context
     updateDealInContext(updatedDeal);
     
-    // Track the activity
     trackDealActivity(updatedDeal.name, "updated deal", "Deal details were modified");
     
-    // Show toast notification
     toast({
       title: "Deal Updated",
       description: `${updatedDeal.name} has been updated successfully`
     });
     
-    // Close dialog
     setIsEditDialogOpen(false);
   };
 
-  // Handle save new deal
   const handleSaveNewDeal = (dealData: Partial<Deal>) => {
     const now = new Date().toISOString();
     
-    // Make sure required fields are present
     const newDeal = {
       ...dealData,
       name: dealData.name || "Unnamed Deal",
@@ -287,44 +256,34 @@ const Deals = () => {
       updatedAt: now
     };
     
-    // Add the deal to context
     addDealToContext(newDeal as Omit<Deal, 'id'>);
     
-    // Track the activity
     trackDealActivity(dealData.name || "New Deal", "created deal", 
       `Value: ${formatCurrency(dealData.value || 0, dealData.currency || 'USD')}`);
     
-    // Show toast notification
     toast({
       title: "Deal Created",
       description: `${dealData.name} has been created successfully`
     });
     
-    // Close dialog
     setIsCreateDialogOpen(false);
   };
 
-  // Handle delete deal
   const handleDeleteDeal = (deal: Deal) => {
-    // Delete the deal from context
     deleteDealFromContext(deal.id);
     
-    // Track the activity
     trackDealActivity(deal.name, "deleted deal", "");
     
-    // Show toast notification
     toast({
       title: "Deal Deleted",
       description: `${deal.name} has been deleted`
     });
   };
 
-  // Handle saving columns from the customizer
   const handleSaveColumns = (newColumns: Column[]) => {
     setColumns(newColumns);
     localStorage.setItem(STORAGE_KEYS.DEALS_COLUMNS, JSON.stringify(newColumns));
     
-    // Update dealsByStage to include new columns
     setDealsByStage(getInitialDealsByStage(deals, newColumns));
     
     toast({
@@ -333,7 +292,6 @@ const Deals = () => {
     });
   };
 
-  // Handle saving custom fields
   const handleSaveCustomFields = (newFields: DealFormField[]) => {
     updateDealFields(newFields);
     
@@ -343,7 +301,6 @@ const Deals = () => {
     });
   };
 
-  // Function to get display name for assigned person
   const getAssignedPersonName = (assignedId?: string) => {
     if (!assignedId) return "Unassigned";
     if (assignedId === "account-owner") return "Account Owner";
@@ -352,7 +309,6 @@ const Deals = () => {
     return member ? member.name : "Unassigned";
   };
   
-  // Handle sort change
   const handleChangeSort = (field: typeof sortField) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -362,12 +318,10 @@ const Deals = () => {
     }
   };
 
-  // Handle filter by stage
   const handleFilterByStage = (stageId: string | null) => {
     setFilterStage(stageId);
   };
 
-  // Get stages in proper format for DealForm component
   const stageOptions = columns.map(column => ({
     id: column.id,
     label: column.label
@@ -719,7 +673,6 @@ const Deals = () => {
         )}
       </div>
 
-      {/* Create Deal Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -735,7 +688,6 @@ const Deals = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Deal Dialog */}
       <EditDealDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
@@ -746,7 +698,6 @@ const Deals = () => {
         customFields={dealFields}
       />
       
-      {/* Deal Detail Dialog */}
       <DealDetailDialog
         isOpen={isDetailDialogOpen}
         onClose={() => setIsDetailDialogOpen(false)}
@@ -757,7 +708,6 @@ const Deals = () => {
         customFields={dealFields}
       />
       
-      {/* Column Customizer Dialog */}
       <ColumnCustomizer
         isOpen={isColumnCustomizerOpen}
         onClose={() => setIsColumnCustomizerOpen(false)}
@@ -766,7 +716,6 @@ const Deals = () => {
         storageKey={STORAGE_KEYS.DEALS_COLUMNS}
       />
       
-      {/* Custom Fields Manager */}
       <CustomFieldsManager
         isOpen={isFieldsManagerOpen}
         onClose={() => setIsFieldsManagerOpen(false)}

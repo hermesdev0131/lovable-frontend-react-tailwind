@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
@@ -53,7 +52,7 @@ const ContentScheduling = () => {
   
   const getClientName = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
-    return client ? client.name : "Unknown Client";
+    return client ? `${client.firstName} ${client.lastName}` : "Unknown Client";
   };
   
   const getFilteredContent = () => {

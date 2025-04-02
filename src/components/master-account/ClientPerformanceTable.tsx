@@ -55,7 +55,7 @@ const ClientPerformanceTable = ({ clientSalesData }: ClientPerformanceTableProps
               <TableHead>Leads</TableHead>
               <TableHead>Conversions</TableHead>
               <TableHead>Rate</TableHead>
-              <TableHead>Subscription</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -63,20 +63,20 @@ const ClientPerformanceTable = ({ clientSalesData }: ClientPerformanceTableProps
               const client = clients[index];
               return (
                 <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
+                  <TableCell className="font-medium">{`${client.firstName} ${client.lastName}`}</TableCell>
                   <TableCell>${data.sales.toLocaleString()}</TableCell>
                   <TableCell>{data.leads}</TableCell>
                   <TableCell>{data.conversions}</TableCell>
                   <TableCell>{Math.round((data.conversions / data.leads) * 100)}%</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${
-                      client.subscription === 'Enterprise' 
+                      client.leadType === 'Customer' 
                         ? 'bg-orange-900/20 text-orange-900 dark:bg-orange-800/30 dark:text-orange-200' 
-                        : client.subscription === 'Professional'
+                        : client.leadType === 'Prospect'
                         ? 'bg-amber-900/20 text-amber-900 dark:bg-amber-800/30 dark:text-amber-200'
                         : 'bg-yellow-900/20 text-yellow-900 dark:bg-yellow-800/30 dark:text-yellow-200'
                     }`}>
-                      {client.subscription}
+                      {client.leadType}
                     </span>
                   </TableCell>
                 </TableRow>
