@@ -157,7 +157,7 @@ const Deals = () => {
 
   const getClientInitials = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
-    return client ? client.name.substring(0, 2).toUpperCase() : '??';
+    return client ? `${client.firstName.charAt(0)}${client.lastName.charAt(0)}`.toUpperCase() : '??';
   };
 
   const formatCurrency = (value: number, currency: string) => {
