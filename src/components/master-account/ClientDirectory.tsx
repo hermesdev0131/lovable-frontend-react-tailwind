@@ -2,8 +2,9 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Mail, Phone } from "lucide-react";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { Badge } from "@/components/ui/badge";
 
 const ClientDirectory = () => {
   const { clients, removeClient } = useMasterAccount();
@@ -16,7 +17,7 @@ const ClientDirectory = () => {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground mb-4">No clients have been added yet</p>
-        <Button variant="outline" onClick={() => document.getElementById('name')?.focus()}>
+        <Button variant="outline" onClick={() => document.getElementById('firstName')?.focus()}>
           Add Your First Client
         </Button>
       </div>
@@ -28,22 +29,41 @@ const ClientDirectory = () => {
       <TableHeader>
         <TableRow>
           <TableHead>Client Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Subscription</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead>Contact</TableHead>
+          <TableHead>Company</TableHead>
+          <TableHead>Lead Type</TableHead>
+          <TableHead>Tags</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {clients.map((client) => (
           <TableRow key={client.id}>
-            <TableCell className="font-medium">{client.name}</TableCell>
-            <TableCell>{client.email}</TableCell>
-            <TableCell>{client.subscription}</TableCell>
+            <TableCell className="font-medium">{client.firstName} {client.lastName}</TableCell>
             <TableCell>
-              <span className={`px-2 py-1 rounded-full text-xs ${client.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
-                {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
-              </span>
+              <div className="space-y-1">
+                {client.emails[0] && (
+                  <div className="flex items-center text-sm">
+                    <Mail className="h-3 w-3 mr-1 text-muted-foreground" /> 
+                    {client.emails[0]}
+                  </div>
+                )}
+                {client.phoneNumbers[0] && (
+                  <div className="flex items-center text-sm">
+                    <Phone className="h-3 w-3 mr-1 text-muted-foreground" /> 
+                    {client.phoneNumbers[0]}
+                  </div>
+                )}
+              </div>
+            </TableCell>
+            <TableCell>{client.company}</TableCell>
+            <TableCell>{client.leadType}</TableCell>
+            <TableCell>
+              <div className="flex flex-wrap gap-1">
+                {client.tags && client.tags.map(tag => (
+                  <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                ))}
+              </div>
             </TableCell>
             <TableCell className="text-right">
               <Button 

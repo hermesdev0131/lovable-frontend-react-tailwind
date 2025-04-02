@@ -13,22 +13,21 @@ const ClientsTable = () => {
   const navigate = useNavigate();
   const { clients } = useMasterAccount();
   
-  // Demo tags for filtering - in a real app these would be dynamically generated
-  // from actual client data
-  const allTags = ['enterprise', 'retail', 'small-business', 'tech', 'manufacturing', 'creative'];
+  // Collect all unique tags from clients
+  const allTags = Array.from(
+    new Set(clients.flatMap(client => client.tags || []))
+  );
   
   // Map clients to format needed by the table
   const clientsWithTags = clients.map(client => ({
     id: client.id.toString(),
-    name: client.name,
-    email: client.email,
-    address: 'No address provided', // This field isn't in the Client type, using placeholder
-    // Demo tags based on subscription type to show filtering functionality
-    tags: [
-      client.subscription.toLowerCase(),
-      client.subscription === 'Enterprise' ? 'large-business' : 
-      client.subscription === 'Professional' ? 'medium-business' : 'small-business'
-    ]
+    name: `${client.firstName} ${client.lastName}`,
+    email: client.emails.length > 0 ? client.emails[0] : '',
+    company: client.company || '',
+    leadType: client.leadType || '',
+    leadSource: client.leadSource || '',
+    // Use client tags if available, otherwise empty array
+    tags: client.tags || []
   }));
   
   // Filter clients based on search and tags
@@ -36,7 +35,7 @@ const ClientsTable = () => {
     const matchesSearch = 
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.address.toLowerCase().includes(searchQuery.toLowerCase());
+      client.company.toLowerCase().includes(searchQuery.toLowerCase());
       
     const matchesTags = 
       selectedTags.length === 0 || 
@@ -60,7 +59,7 @@ const ClientsTable = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="relative max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -72,21 +71,23 @@ const ClientsTable = () => {
           />
         </div>
         
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground mr-2">Filter by tags:</span>
-          <div className="flex flex-wrap gap-2">
-            {allTags.map(tag => (
-              <Badge 
-                key={tag}
-                variant={selectedTags.includes(tag) ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => toggleTag(tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
+        {allTags.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm text-muted-foreground">Filter by tags:</span>
+            <div className="flex flex-wrap gap-2">
+              {allTags.map(tag => (
+                <Badge 
+                  key={tag}
+                  variant={selectedTags.includes(tag) ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
       
       <Table>
@@ -94,7 +95,9 @@ const ClientsTable = () => {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Address</TableHead>
+            <TableHead>Company</TableHead>
+            <TableHead>Lead Type</TableHead>
+            <TableHead>Lead Source</TableHead>
             <TableHead>Tags</TableHead>
           </TableRow>
         </TableHeader>
@@ -108,7 +111,9 @@ const ClientsTable = () => {
               >
                 <TableCell className="font-medium">{client.name}</TableCell>
                 <TableCell>{client.email}</TableCell>
-                <TableCell>{client.address}</TableCell>
+                <TableCell>{client.company}</TableCell>
+                <TableCell>{client.leadType}</TableCell>
+                <TableCell>{client.leadSource}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {client.tags.map(tag => (
@@ -120,7 +125,7 @@ const ClientsTable = () => {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+              <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                 No clients found. Try adjusting your search or filters.
               </TableCell>
             </TableRow>

@@ -68,20 +68,20 @@ export function useClients() {
       return true;
     }
     
-    const client = clients.find(client => client.email === email && client.password === password);
+    const client = clients.find(client => client.emails.includes(email));
     if (client) {
       setCurrentClientId(client.id);
       setIsInMasterMode(false);
       toast({
         title: "Logged In",
-        description: `Successfully logged in to ${client.name} account.`
+        description: `Successfully logged in to ${client.firstName} ${client.lastName}'s account.`
       });
       return true;
     }
     
     toast({
       title: "Login Failed",
-      description: "Invalid email or password. Please try again.",
+      description: "Invalid email. Please try again.",
       variant: "destructive"
     });
     return false;

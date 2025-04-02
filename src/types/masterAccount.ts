@@ -1,12 +1,15 @@
-
 // Define all types used in the Master Account context
 
 export interface Client {
   id: number;
-  name: string;
-  email: string;
-  password: string;
-  subscription: string;
+  firstName: string;
+  lastName: string;
+  emails: string[];
+  phoneNumbers: string[];
+  company: string;
+  leadType: string;
+  leadSource: string;
+  tags: string[];
   status: string;
   users: number;
   deals: number;
