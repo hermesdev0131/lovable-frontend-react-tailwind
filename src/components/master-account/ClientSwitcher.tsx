@@ -64,6 +64,14 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     navigate('/login', { replace: true });
   };
   
+  // Helper function to safely get client initials
+  const getClientInitials = (client: any) => {
+    if (!client || !client.firstName || !client.lastName) {
+      return "??";
+    }
+    return `${client.firstName.substring(0, 1)}${client.lastName.substring(0, 1)}`;
+  };
+  
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -80,7 +88,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
             <>
               <Avatar className="h-6 w-6">
                 <AvatarImage src={currentClient.logo} alt={`${currentClient.firstName} ${currentClient.lastName}`} />
-                <AvatarFallback>{`${currentClient.firstName.substring(0, 1)}${currentClient.lastName.substring(0, 1)}`}</AvatarFallback>
+                <AvatarFallback>{getClientInitials(currentClient)}</AvatarFallback>
               </Avatar>
               <span className="font-medium max-w-[150px] truncate">{`${currentClient.firstName} ${currentClient.lastName}`}</span>
               <Badge variant="outline" className="ml-1 bg-green-100 text-green-800 hover:bg-green-100">
@@ -112,7 +120,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
           >
             <Avatar className="h-5 w-5">
               <AvatarImage src={client.logo} alt={`${client.firstName} ${client.lastName}`} />
-              <AvatarFallback>{`${client.firstName.substring(0, 1)}${client.lastName.substring(0, 1)}`}</AvatarFallback>
+              <AvatarFallback>{getClientInitials(client)}</AvatarFallback>
             </Avatar>
             <span className="truncate">{`${client.firstName} ${client.lastName}`}</span>
           </DropdownMenuItem>
