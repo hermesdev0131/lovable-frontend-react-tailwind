@@ -22,7 +22,7 @@ const ClientsTable = () => {
   const clientsWithTags = clients.map(client => ({
     id: client.id.toString(),
     name: `${client.firstName} ${client.lastName}`,
-    email: client.emails.length > 0 ? client.emails[0] : '',
+    email: client.emails && client.emails.length > 0 ? client.emails[0] : '',
     company: client.company || '',
     leadType: client.leadType || '',
     leadSource: client.leadSource || '',
@@ -39,7 +39,7 @@ const ClientsTable = () => {
       
     const matchesTags = 
       selectedTags.length === 0 || 
-      selectedTags.some(tag => client.tags.includes(tag));
+      selectedTags.some(tag => client.tags && client.tags.includes(tag));
       
     return matchesSearch && matchesTags;
   });
@@ -116,7 +116,7 @@ const ClientsTable = () => {
                 <TableCell>{client.leadSource}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {client.tags.map(tag => (
+                    {client.tags && client.tags.map(tag => (
                       <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
                     ))}
                   </div>
