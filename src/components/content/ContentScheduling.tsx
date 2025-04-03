@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
@@ -102,6 +103,16 @@ const ContentScheduling = () => {
     }
   };
   
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "No date";
+    try {
+      return format(new Date(dateString), "EEEE, MMMM d, yyyy");
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "Invalid date";
+    }
+  };
+  
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -157,10 +168,10 @@ const ContentScheduling = () => {
                     <div className="flex items-center space-x-2 mt-1">
                       {getContentTypeBadge(item.type)}
                       <p className="text-sm text-muted-foreground">
-                        Scheduled for {format(new Date(item.scheduledFor || ''), "EEEE, MMMM d, yyyy")}
+                        Scheduled for {formatDate(item.scheduledFor)}
                       </p>
                     </div>
-                    {isInMasterMode && (
+                    {isInMasterMode && item.createdBy && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Created by {getClientName(item.createdBy)}
                       </p>

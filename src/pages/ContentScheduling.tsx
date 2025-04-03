@@ -5,12 +5,7 @@ import ContentScheduling from '@/components/content/ContentScheduling';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 
 const ContentSchedulingPage = () => {
-  const { clients, getContentItems } = useMasterAccount();
-  
-  const getClientName = (clientId: number) => {
-    const client = clients.find(c => c.id === clientId);
-    return client ? `${client.firstName} ${client.lastName}` : "Unknown Client";
-  };
+  const { clients } = useMasterAccount();
   
   return (
     <div>
