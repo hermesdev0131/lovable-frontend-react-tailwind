@@ -5,8 +5,9 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { MasterAccountProvider } from './contexts/MasterAccountContext';
 import Sidebar from '@/components/layout/Sidebar';
 import { Routes, Route } from 'react-router-dom';
-import { Toast } from "@/components/ui/toast";
+import { Toaster } from "@/components/ui/toaster";
 import { DealsProvider } from './contexts/DealsContext';
+import { TasksProvider } from './contexts/TasksContext';
 import Index from './pages/Index';
 import Reputation from './pages/Reputation';
 
@@ -42,10 +43,12 @@ function App() {
       <ThemeProvider>
         <DealsProvider>
           <MasterAccountProvider>
-            <MainLayout>
-              <RoutesComponent />
-              <Toast />
-            </MainLayout>
+            <TasksProvider>
+              <MainLayout>
+                <RoutesComponent />
+                <Toaster />
+              </MainLayout>
+            </TasksProvider>
           </MasterAccountProvider>
         </DealsProvider>
       </ThemeProvider>
