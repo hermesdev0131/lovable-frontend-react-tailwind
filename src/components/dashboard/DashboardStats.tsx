@@ -24,7 +24,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={totalContacts}
         icon={Users}
         subtitle={totalContacts === 0 ? "No contacts added yet" : `${totalContacts} total contacts`}
-        onClick={() => onCardClick("Contacts", "/contacts")}
+        onClick={() => onCardClick("Contacts", "/clients")}
       />
       
       <StatCard
@@ -32,7 +32,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={openDeals}
         icon={LineChart}
         subtitle={openDeals === 0 ? "No active deals" : `${openDeals} active deals in progress`}
-        onClick={() => onCardClick("Deals", "/deals")}
+        onClick={() => onCardClick("Deals", "/reports")}
       />
       
       <StatCard
@@ -40,7 +40,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={formatCurrency(totalDealValue)}
         icon={PieChart}
         subtitle={totalDealValue === 0 ? "No value in pipeline yet" : `${formatCurrency(totalDealValue)} total pipeline value`}
-        onClick={() => onCardClick("Opportunities", "/opportunities")}
+        onClick={() => onCardClick("Opportunities", "/reports")}
       />
     </div>
   );

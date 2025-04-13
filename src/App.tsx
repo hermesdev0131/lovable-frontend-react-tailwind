@@ -10,6 +10,9 @@ import { DealsProvider } from './contexts/DealsContext';
 import { TasksProvider } from './contexts/TasksContext';
 import Index from './pages/Index';
 import Reputation from './pages/Reputation';
+import Contacts from './pages/Contacts';
+import MasterAccount from './pages/MasterAccount';
+import Reports from './pages/Reports';
 
 // MainLayout component inline since it was missing
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -32,6 +35,9 @@ const RoutesComponent = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/reputation" element={<Reputation />} />
+      <Route path="/contacts" element={<Contacts />} />
+      <Route path="/clients" element={<MasterAccount />} />
+      <Route path="/reports" element={<Reports />} />
       {/* Add other routes as needed */}
     </Routes>
   );
