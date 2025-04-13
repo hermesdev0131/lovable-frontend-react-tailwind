@@ -13,6 +13,7 @@ import Reputation from './pages/Reputation';
 import Contacts from './pages/Contacts';
 import MasterAccount from './pages/MasterAccount';
 import Reports from './pages/Reports';
+import ClientProfile from './pages/ClientProfile';
 
 // MainLayout component inline since it was missing
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -37,6 +38,7 @@ const RoutesComponent = () => {
       <Route path="/reputation" element={<Reputation />} />
       <Route path="/contacts" element={<Contacts />} />
       <Route path="/clients" element={<MasterAccount />} />
+      <Route path="/clients/:clientId" element={<ClientProfile />} />
       <Route path="/reports" element={<Reports />} />
       {/* Add other routes as needed */}
     </Routes>
