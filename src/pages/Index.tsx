@@ -6,23 +6,43 @@ import DealsOverview from '@/components/dashboard/DealsOverview';
 import TasksPanel from '@/components/dashboard/TasksPanel';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import { useNavigate } from 'react-router-dom';
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { useDeals } from '@/contexts/DealsContext';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { clients } = useMasterAccount();
+  const { deals } = useDeals();
   
-  // Sample data for dashboard stats
-  const totalContacts = 24;
-  const openDeals = 8;
-  const totalDealValue = 12500;
+  // Calculate dashboard stats from actual data
+  const totalContacts = clients.length;
   
-  // Sample data for deals overview
-  const dealStageData = [
-    { name: 'Qualified', value: 4, color: '#4CAF50' },
-    { name: 'Proposal', value: 2, color: '#2196F3' },
-    { name: 'Negotiation', value: 2, color: '#FF9800' },
-  ];
+  // Only count deals that are past lead stage (not in 'lead' or 'contact' stages)
+  const openDeals = deals.filter(deal => 
+    !['lead', 'contact'].includes(deal.stage.toLowerCase())
+  ).length;
   
-  // Sample data for activity feed
+  // Calculate total value of all current deals
+  const totalDealValue = deals.reduce((sum, deal) => sum + (deal.value || 0), 0);
+  
+  // Create deal stage data for chart
+  const dealStages = deals.reduce((stages: Record<string, number>, deal) => {
+    const stage = deal.stage || 'Unknown';
+    stages[stage] = (stages[stage] || 0) + 1;
+    return stages;
+  }, {});
+  
+  const dealStageData = Object.entries(dealStages).map(([name, value], index) => {
+    // Colors for the chart (reuse existing colors or generate a set)
+    const colors = ['#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0'];
+    return {
+      name,
+      value,
+      color: colors[index % colors.length]
+    };
+  });
+  
+  // Sample data for activity feed (kept as is)
   const [activities, setActivities] = useState([
     { id: 1, action: 'Email sent to John Doe', time: '10 mins ago', name: 'Sales Team' },
     { id: 2, action: 'Call scheduled with ABC Corp', time: '1 hour ago', name: 'Marketing' },

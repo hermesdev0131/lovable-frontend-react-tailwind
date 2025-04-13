@@ -13,9 +13,11 @@ const ClientsTable = () => {
   const navigate = useNavigate();
   const { clients } = useMasterAccount();
   
-  // Collect all unique tags from clients
+  // Collect all unique tags from clients - protect against undefined tags
   const allTags = Array.from(
-    new Set(clients.flatMap(client => client.tags || []))
+    new Set(
+      clients.flatMap(client => client.tags || [])
+    )
   );
   
   // Map clients to format needed by the table

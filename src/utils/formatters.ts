@@ -1,44 +1,29 @@
 
-import { format, formatDistance } from 'date-fns';
-
-export const formatCurrency = (amount: number) => {
+/**
+ * Format a number as currency
+ */
+export const formatCurrency = (value: number | undefined | null): string => {
+  if (value === undefined || value === null) return '$0';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    notation: 'compact',
-    maximumFractionDigits: 1
-  }).format(amount);
+  }).format(value);
 };
 
-export const formatDate = (dateString: string) => {
+/**
+ * Format a date string to a readable format
+ */
+export const formatDate = (dateString: string): string => {
+  if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    return format(date, 'MMM d, yyyy');
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
   } catch (error) {
     console.error('Error formatting date:', error);
-    return 'Invalid date';
-  }
-};
-
-export const formatReviewDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    return formatDistance(date, new Date(), { addSuffix: true });
-  } catch (error) {
-    console.error('Error formatting review date:', error);
-    return 'Unknown date';
-  }
-};
-
-export const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  switch (status.toLowerCase()) {
-    case 'published':
-      return 'default';
-    case 'draft':
-      return 'secondary';
-    case 'scheduled':
-      return 'outline';
-    default:
-      return 'outline';
+    return '';
   }
 };
