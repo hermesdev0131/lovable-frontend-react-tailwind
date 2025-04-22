@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,6 @@ import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send } from "lucide-
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trackEmailAction, trackError } from "@/lib/analytics";
-import { sendInvitationEmail } from "@/services/supabase";
 
 export interface TeamMember {
   id: string;
@@ -169,56 +167,16 @@ const TeamMembers = () => {
     }
   };
 
-  const sendInvitationEmailWithSupabase = async () => {
-    if (!selectedMember) return;
-    
-    setIsSending(true);
-    
+  const handleInvitationEmail = async (email: string) => {
     try {
-      trackEmailAction('send_invitation', selectedMember.email);
-      
-      const result = await sendInvitationEmail({
-        to: selectedMember.email,
-        subject: `Invitation to join our portal as a ${selectedMember.role}`,
-        message: inviteMessage,
-        name: selectedMember.name,
-        role: selectedMember.role
-      });
-      
-      if (!result.success) {
-        throw new Error('Failed to send email through Supabase');
-      }
-      
-      setTeamMembers(
-        teamMembers.map(member => 
-          member.id === selectedMember.id 
-            ? { ...member, status: "pending" } 
-            : member
-        )
-      );
-      
-      toast({
-        title: "Invitation Sent",
-        description: `An invitation email has been sent to ${selectedMember.email}.`,
-      });
-      
-      setShowInviteDialog(false);
-      setSelectedMember(null);
-      setInviteMessage("");
+      // Implement your own email sending logic here
+      console.log(`Sending invitation email to ${email}`);
+      // Add your email sending implementation
     } catch (error) {
-      trackError('Failed to send invitation email', 'TeamMembers');
-      toast({
-        title: "Error",
-        description: "Failed to send the invitation email. Please try again.",
-        variant: "destructive"
-      });
-      console.error('Error sending invitation:', error);
-    } finally {
-      setIsSending(false);
+      console.error('Failed to send invitation email:', error);
+      throw new Error('Failed to send invitation email');
     }
   };
-
-  const handleInvitationEmail = sendInvitationEmailWithSupabase;
 
   return (
     <Card>
@@ -440,7 +398,7 @@ const TeamMembers = () => {
               Cancel
             </Button>
             <Button 
-              onClick={handleInvitationEmail}
+              onClick={() => handleInvitationEmail(selectedMember?.email || '')}
               disabled={isSending}
             >
               {isSending ? (

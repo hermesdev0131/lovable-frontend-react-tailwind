@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { DealFormField } from '@/components/deals/DealForm';
+import { initialDealFields } from '@/data/initialData';
 
 interface CustomFieldsContextType {
   dealFields: DealFormField[];
@@ -14,7 +14,7 @@ const CustomFieldsContext = createContext<CustomFieldsContextType | undefined>(u
 const STORAGE_KEY = 'crm_custom_fields';
 
 export const CustomFieldsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [dealFields, setDealFields] = useState<DealFormField[]>([]);
+  const [dealFields, setDealFields] = useState<DealFormField[]>(initialDealFields);
   const [accountFields, setAccountFields] = useState<Record<string, DealFormField[]>>({});
   
   // Load custom fields from localStorage on mount

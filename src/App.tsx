@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { MasterAccountProvider } from './contexts/MasterAccountContext';
+import { CustomFieldsProvider } from './contexts/CustomFieldsContext';
 import Sidebar from '@/components/layout/Sidebar';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +14,7 @@ import Contacts from './pages/Contacts';
 import MasterAccount from './pages/MasterAccount';
 import Reports from './pages/Reports';
 import ClientProfile from './pages/ClientProfile';  // Ensure correct import
+import Deals from './pages/Deals';
 
 // MainLayout component inline since it was missing
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -40,6 +41,7 @@ const RoutesComponent = () => {
       <Route path="/clients" element={<MasterAccount />} />
       <Route path="/clients/:clientId" element={<ClientProfile />} />
       <Route path="/reports" element={<Reports />} />
+      <Route path="/deals" element={<Deals />} />
     </Routes>
   );
 };
@@ -48,16 +50,18 @@ function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <DealsProvider>
-          <MasterAccountProvider>
-            <TasksProvider>
-              <MainLayout>
-                <RoutesComponent />
-                <Toaster />
-              </MainLayout>
-            </TasksProvider>
-          </MasterAccountProvider>
-        </DealsProvider>
+        <MasterAccountProvider>
+          <DealsProvider>
+            <CustomFieldsProvider>
+              <TasksProvider>
+                <MainLayout>
+                  <RoutesComponent />
+                  <Toaster />
+                </MainLayout>
+              </TasksProvider>
+            </CustomFieldsProvider>
+          </DealsProvider>
+        </MasterAccountProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

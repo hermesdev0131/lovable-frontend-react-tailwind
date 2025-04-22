@@ -1,8 +1,8 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { Deal, Stage, STORAGE_KEYS } from '@/components/deals/types';
 import { useDealsStorage } from '@/hooks/useDealsStorage';
 import { v4 as uuidv4 } from 'uuid';
+import { initialDeals } from '@/data/initialData';
 
 interface DealsContextType {
   deals: Deal[];
@@ -15,7 +15,7 @@ interface DealsContextType {
 const DealsContext = createContext<DealsContextType | undefined>(undefined);
 
 export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { deals, addDeal: addDealToStorage, updateDeal, deleteDeal, getDealById } = useDealsStorage();
+  const { deals, addDeal: addDealToStorage, updateDeal, deleteDeal, getDealById } = useDealsStorage(initialDeals);
 
   const addDeal = (dealData: Omit<Deal, 'id'> & { id?: string }) => {
     const now = new Date().toISOString();

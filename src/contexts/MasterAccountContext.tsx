@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useClients } from '@/hooks/useClients';
 import { useWebhooks } from '@/hooks/useWebhooks';
@@ -6,6 +5,7 @@ import { useWebsitePages } from '@/hooks/useWebsitePages';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useContentItems } from '@/hooks/useContentItems';
 import { MasterAccountContextType } from '@/types/masterAccount';
+import { initialClients } from '@/data/initialData';
 
 const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
 
@@ -19,7 +19,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     switchToClient,
     toggleMasterMode,
     loginToAccount
-  } = useClients();
+  } = useClients(initialClients);
 
   const {
     webhooks,
