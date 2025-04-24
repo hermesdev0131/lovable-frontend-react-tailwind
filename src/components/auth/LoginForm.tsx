@@ -34,7 +34,7 @@ export const LoginForm = () => {
     
     try {
       const success = loginToAccount(email, password);
-      
+      console.log("Login success:", success);
       if (success) {
         // Redirect to the intended destination or to the dashboard
         const destination = location.state?.from?.pathname || '/dashboard';

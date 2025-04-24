@@ -98,3 +98,30 @@ const Index = () => {
 };
 
 export default Index;
+
+
+// import { useEffect, useState } from "react";
+// import axios from "axios";
+
+// const DashboardMetrics = () => {
+//   const [metrics, setMetrics] = useState(null);
+
+//   useEffect(() => {
+//     axios.get("http://localhost:8000/dashboard/metrics")
+//       .then(res => setMetrics(res.data))
+//       .catch(err => console.error("Error fetching metrics", err));
+//   }, []);
+
+//   if (!metrics) return <p>Loading...</p>;
+
+//   return (
+//     <div className="grid grid-cols-3 gap-4">
+//       Total Clients: {metrics.total_clients}
+//       <div className="p-4 bg-white shadow rounded-xl">Total Clients: {metrics.total_clients}</div>
+//       <div className="p-4 bg-white shadow rounded-xl">Active Deals: {metrics.active_deals}</div>
+//       <div className="p-4 bg-white shadow rounded-xl">Pipeline Value: ${metrics.pipeline_value}</div>
+//     </div>
+//   );
+// };
+
+// export default DashboardMetrics;

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { cn } from "@/lib/utils";
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useToast } from "@/hooks/use-toast";
 import EditDealDialog from '@/components/deals/EditDealDialog';
 import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
@@ -26,6 +26,7 @@ import DealForm, { DealFormField } from '@/components/deals/DealForm';
 import CustomFieldsManager from '@/components/deals/CustomFieldsManager';
 import { useCustomFields } from '@/contexts/CustomFieldsContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ClientsTable from '@/components/clients/ClientsTable';
 
 const demoTeamMembers: TeamMember[] = [
   {
@@ -675,19 +676,24 @@ const Deals = () => {
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Deal</DialogTitle>
-          </DialogHeader>
-          <DealForm
-            stages={stageOptions}
-            teamMembers={teamMembers}
-            customFields={dealFields}
-            onSave={handleSaveNewDeal}
-            onCancel={() => setIsCreateDialogOpen(false)}
-          />
+          <div>
+            <DialogHeader>
+              <DialogTitle>Create New Deal</DialogTitle>
+            </DialogHeader>
+            <EditDealDialog />
+          </div>
+          
         </DialogContent>
       </Dialog>
+      
 
+      {/* <DealForm
+              stages={stageOptions}
+              teamMembers={teamMembers}
+              customFields={dealFields}
+              onSave={handleSaveNewDeal}
+              onCancel={() => setIsCreateDialogOpen(false)}
+      /> */}
       <EditDealDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}

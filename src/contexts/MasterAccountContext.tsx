@@ -104,6 +104,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
 
 export const useMasterAccount = () => {
   const context = useContext(MasterAccountContext);
+  // console.log("useMasterAccount context:", context);
   if (context === undefined) {
     throw new Error('useMasterAccount must be used within a MasterAccountProvider');
   }
