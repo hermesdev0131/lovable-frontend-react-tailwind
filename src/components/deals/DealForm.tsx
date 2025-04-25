@@ -53,6 +53,19 @@ const DealForm: React.FC<DealFormProps> = ({
   const { trackDealActivity, trackAppointmentScheduled } = useActivityTracker();
   
   // Set up react-hook-form
+  // interface DealFormValues {
+  //   name: string;
+  //   company: string;
+  //   value: number;
+  //   currency: string;
+  //   probability: number;
+  //   stage: string;
+  //   closingDate: string;
+  //   description: string;
+  //   assignedTo: string;
+  //   contactId: string;
+  //   [customField: string]: any; // For dynamic/custom fields
+  // }
   const form = useForm<any>({
     defaultValues: {
       name: deal?.name || "",
@@ -378,18 +391,18 @@ const DealForm: React.FC<DealFormProps> = ({
           </TabsList>
           
           {/* Basic Information Tab */}
-          <TabsContent value="basic" className="pt-4">
+          {/* <TabsContent value="basic" className="pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {basicFields.map(renderField)}
             </div>
-          </TabsContent>
+          </TabsContent> */}
           
           {/* Details Tab */}
-          <TabsContent value="details" className="pt-4">
+          {/* <TabsContent value="details" className="pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {detailFields.map(renderField)}
             </div>
-          </TabsContent>
+          </TabsContent> */}
           
           {/* Attachments & Calendar Tab */}
           <TabsContent value="attachments" className="pt-4">

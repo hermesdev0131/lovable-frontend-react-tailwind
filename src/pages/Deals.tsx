@@ -26,7 +26,7 @@ import DealForm, { DealFormField } from '@/components/deals/DealForm';
 import CustomFieldsManager from '@/components/deals/CustomFieldsManager';
 import { useCustomFields } from '@/contexts/CustomFieldsContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import ClientsTable from '@/components/clients/ClientsTable';
+// import ClientsTable from '@/components/clients/ClientsTable';
 
 const demoTeamMembers: TeamMember[] = [
   {
@@ -680,7 +680,13 @@ const Deals = () => {
             <DialogHeader>
               <DialogTitle>Create New Deal</DialogTitle>
             </DialogHeader>
-            <EditDealDialog />
+            <DealForm
+              stages={stageOptions}
+              teamMembers={teamMembers}
+              customFields={dealFields}
+              onSave={handleSaveNewDeal}
+              onCancel={() => setIsCreateDialogOpen(false)}
+            /> 
           </div>
           
         </DialogContent>
