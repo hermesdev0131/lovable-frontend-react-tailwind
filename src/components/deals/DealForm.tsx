@@ -295,7 +295,8 @@ const DealForm: React.FC<DealFormProps> = ({
                 {...formField} 
               />
             )}
-            
+          </FormControl>
+          <FormControl>
             {field.type === "number" && (
               <Input 
                 type="number" 
@@ -304,7 +305,8 @@ const DealForm: React.FC<DealFormProps> = ({
                 onChange={e => formField.onChange(Number(e.target.value))}
               />
             )}
-            
+          </FormControl>
+          <FormControl>
             {field.type === "probability" && (
               <Input 
                 type="number" 
@@ -315,7 +317,8 @@ const DealForm: React.FC<DealFormProps> = ({
                 onChange={e => formField.onChange(Number(e.target.value))}
               />
             )}
-            
+          </FormControl>
+          <FormControl>
             {field.type === "textarea" && (
               <Textarea 
                 placeholder={field.placeholder} 
@@ -323,7 +326,8 @@ const DealForm: React.FC<DealFormProps> = ({
                 {...formField} 
               />
             )}
-            
+          </FormControl>
+          <FormControl>
             {field.type === "select" && field.options && (
               <Select 
                 value={formField.value?.toString()} 
@@ -341,14 +345,16 @@ const DealForm: React.FC<DealFormProps> = ({
                 </SelectContent>
               </Select>
             )}
-            
+          </FormControl>
+          <FormControl>
             {field.type === "date" && (
               <Input
                 type="date"
                 {...formField}
               />
             )}
-            
+          </FormControl>
+          <FormControl>
             {field.type === "currency" && (
               <div className="flex items-center space-x-2">
                 <Input
@@ -391,18 +397,18 @@ const DealForm: React.FC<DealFormProps> = ({
           </TabsList>
           
           {/* Basic Information Tab */}
-          {/* <TabsContent value="basic" className="pt-4">
+          <TabsContent value="basic" className="pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {basicFields.map(renderField)}
             </div>
-          </TabsContent> */}
+          </TabsContent>
           
           {/* Details Tab */}
-          {/* <TabsContent value="details" className="pt-4">
+          <TabsContent value="details" className="pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {detailFields.map(renderField)}
             </div>
-          </TabsContent> */}
+          </TabsContent>
           
           {/* Attachments & Calendar Tab */}
           <TabsContent value="attachments" className="pt-4">
