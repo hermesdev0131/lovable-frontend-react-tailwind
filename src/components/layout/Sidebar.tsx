@@ -177,7 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                     )}
                   >
                     <BookOpen className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />
-                    {isExpanded && <span>Content</span>}
+                    {isExpanded && <span>Socials</span>}
                   </Link>
                 </li>
                 <li>

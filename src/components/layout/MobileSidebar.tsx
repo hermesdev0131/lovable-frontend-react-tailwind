@@ -131,7 +131,7 @@ const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
                 onClick={onClose}
               >
                 <BookOpen className="h-5 w-5 mr-2" />
-                <span>Content</span>
+                <span>Socials</span>
               </Link>
               <Link
                 to="/reputation"
