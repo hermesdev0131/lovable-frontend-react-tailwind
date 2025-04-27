@@ -21,6 +21,8 @@ import { ZapierConnect } from "@/components/integrations/ZapierConnect";
 import { CustomWebhookConnect } from "@/components/integrations/CustomWebhookConnect";
 import { MakeConnect } from "@/components/integrations/MakeConnect";
 import TeamMembers from "@/components/settings/TeamMembers";
+import { SocialMediaConnect } from '@/components/content/SocialMediaConnect';
+import { Integration } from '../hooks/useExternalIntegrations';
 
 const SettingsPage = () => {
   const location = useLocation();
@@ -166,6 +168,7 @@ const SettingsPage = () => {
               <TabsTrigger value="make">Make.com</TabsTrigger>
             </>
           )}
+          <TabsTrigger value="social integration">Social Media Integration</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general">
@@ -365,6 +368,11 @@ const SettingsPage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="social integration">
+              <SocialMediaConnect />
+            </TabsContent>
+            
           </>
         )}
       </Tabs>

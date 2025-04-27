@@ -169,10 +169,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                 </li>
                 <li>
                   <Link
-                    to="/content"
+                    to="/socials"
                     className={cn(
                       "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
-                      isActive("/content") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                      isActive("/socials") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
                       !isExpanded && "justify-center"
                     )}
                   >
@@ -228,7 +228,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                   </Link>
                 </li>
                 <li>
-                  <Link
+                  {/* <Link
                     to="#"
                     onClick={() => {
                       toast({
@@ -241,6 +241,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, onToggle, children }) => 
                       "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
                       !isExpanded && "justify-center",
                       "text-foreground/80 hover:bg-primary/10 hover:text-primary"
+                    )}
+                  > */}
+                  <Link
+                    to="/help"
+                    className={cn(
+                      "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
+                      isActive("/help") ? "bg-primary/20 text-primary" : "text-foreground/80 hover:bg-primary/10 hover:text-primary",
+                      !isExpanded && "justify-center"
                     )}
                   >
                     <HelpCircle className={cn("h-5 w-5", isExpanded ? "mr-2" : "")} />

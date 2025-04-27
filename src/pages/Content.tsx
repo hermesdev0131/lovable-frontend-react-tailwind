@@ -23,12 +23,12 @@ const Socials = () => {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="schedule">
                 <Calendar className="h-4 w-4 mr-2" /> Content Calendar
+              </TabsTrigger>              
+              <TabsTrigger value="approvals">
+                <CheckCircle className="h-4 w-4 mr-2" /> Approvals
               </TabsTrigger>
               <TabsTrigger value="content">
                 <FileEdit className="h-4 w-4 mr-2" /> Content Library
-              </TabsTrigger>
-              <TabsTrigger value="approvals">
-                <CheckCircle className="h-4 w-4 mr-2" /> Approvals
               </TabsTrigger>
             </TabsList>
           </CardContent>

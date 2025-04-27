@@ -22,6 +22,7 @@ import WebsiteManagement from './pages/WebsiteManagement';
 import Socials from './pages/Content';
 import Clients from './pages/Clients';
 import SettingsPage from './pages/Settings';
+import ChatbotManagement from './pages/ChatbotManagement';
 
 // MainLayout component inline since it was missing
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -45,18 +46,19 @@ const RoutesComponent = () => {
       
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/reputation" element={<Reputation />} />
+      <Route path="/reputation" element={<Socials />} />
       <Route path="/contacts" element={<Contacts />} />
       <Route path="/clients" element={<Clients />} />
       <Route path="/calendar" element={<Calendar />} />
       <Route path="/clients/:clientId" element={<ClientProfile />} />
       <Route path="/email" element={<EmailMarketing />} />
       <Route path="/website" element={<WebsiteManagement />} />
-      <Route path="/content" element={<Socials />} />
+      <Route path="/socials" element={<Socials />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/master-account" element={<MasterAccount />} />
       <Route path="/deals" element={<Deals />} />
       <Route path="/settings" element={<SettingsPage />} />
+      {/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
     </Routes>
   );
 };
