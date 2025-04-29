@@ -57,7 +57,7 @@ export const n8nService = {
 		}
 	},
 
-	async triggerCustomWorkflow(data: any, eventType: string) {
+	async triggerCustomWorkflow(data: unknown, eventType: string) {
 		try {
 			await axios.post(`${n8nWebhookUrl}/custom`, {
 				data,
@@ -151,7 +151,7 @@ export const n8nService = {
 		}
 	},
 
-	async triggerWorkflowWebhook(dealId: string, oldStage: string, newStage: string, dealData: any) {
+	async triggerWorkflowWebhook(dealId: string, oldStage: string, newStage: string, dealData: Record<string, unknown>) {
 		try {
 			await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hubspot/workflows/deal-stage`, {
 				method: 'POST',
