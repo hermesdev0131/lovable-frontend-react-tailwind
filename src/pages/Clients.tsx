@@ -304,7 +304,7 @@ const Clients = () => {
               
               <div>
                 <Label htmlFor="leadType">Lead Type</Label>
-                <Select onValueChange={(value) => handleSelectChange('leadType', value)} value={newClient.leadType}>
+                <Select>
                   <SelectTrigger id="leadType">
                     <SelectValue placeholder="Select lead type" />
                   </SelectTrigger>
