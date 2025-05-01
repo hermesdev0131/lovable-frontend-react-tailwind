@@ -1,10 +1,10 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import React, { use } from 'react';
+//import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { MasterAccountProvider } from './contexts/MasterAccountContext';
 import { CustomFieldsProvider } from './contexts/CustomFieldsContext';
 import Sidebar from '@/components/layout/Sidebar';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import { DealsProvider } from './contexts/DealsContext';
 import { TasksProvider } from './contexts/TasksContext';
@@ -23,6 +23,9 @@ import Socials from './pages/Content';
 import Clients from './pages/Clients';
 import SettingsPage from './pages/Settings';
 import ChatbotManagement from './pages/ChatbotManagement';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthCallback } from './components/auth/callback';
 
 // MainLayout component inline since it was missing
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -40,48 +43,39 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 // RoutesComponent to handle application routing
-const RoutesComponent = () => {
+const App = () => {
+	const { authState } = useAuth();
   return (
-    <Routes>
+		<Router>
+			<Routes>
       
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/reputation" element={<Reputation />} />
-      <Route path="/contacts" element={<Contacts />} />
-      <Route path="/clients" element={<Clients />} />
-      <Route path="/calendar" element={<Calendar />} />
-      <Route path="/clients/:clientId" element={<ClientProfile />} />
-      <Route path="/email" element={<EmailMarketing />} />
-      <Route path="/website" element={<WebsiteManagement />} />
-      <Route path="/socials" element={<Socials />} />
-      <Route path="/reports" element={<Reports />} />
-      <Route path="/master-account" element={<MasterAccount />} />
-      <Route path="/deals" element={<Deals />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      {/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
-    </Routes>
+				<Route path="/" element={<Index />} />
+				<Route path="/login" element={<Login />} />
+
+				 {/* Redirect root to login if not authenticated */}
+				 <Route path="/" element={authState.isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+
+				<Route element={<ProtectedRoute />}>
+					<Route path="/reputation" element={<Reputation />} />
+					<Route path="/contacts" element={<Contacts />} />
+					<Route path="/clients" element={<Clients />} />
+					<Route path="/calendar" element={<Calendar />} />
+					<Route path="/clients/:clientId" element={<ClientProfile />} />
+					<Route path="/email" element={<EmailMarketing />} />
+					<Route path="/website" element={<WebsiteManagement />} />
+					<Route path="/socials" element={<Socials />} />
+					<Route path="/reports" element={<Reports />} />
+					<Route path="/master-account" element={<MasterAccount />} />
+					<Route path="/deals" element={<Deals />} />
+					<Route path="/settings" element={<SettingsPage />} />
+				</Route>
+				
+				{/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
+			</Routes>
+		</Router>
+    
   );
 };
 
-function App() {
-  return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <MasterAccountProvider>
-          <DealsProvider>
-            <CustomFieldsProvider>
-              <TasksProvider>
-                <MainLayout>
-                  <RoutesComponent />
-                  <Toaster />
-                </MainLayout>
-              </TasksProvider>
-            </CustomFieldsProvider>
-          </DealsProvider>
-        </MasterAccountProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  );
-}
 
 export default App;

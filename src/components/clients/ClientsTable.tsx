@@ -259,12 +259,24 @@ const ClientsTable = () => {
 						<TableHead onClick={() => handleSort('name')} className='cursor-pointer'>
 							Name {sortField === 'name' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
 						</TableHead>
-						<TableHead>Email</TableHead>
-						<TableHead>Company</TableHead>
-						<TableHead>Lead Type</TableHead>
-						<TableHead>Lead Source</TableHead>
-						<TableHead>Tags</TableHead>
-						<TableHead>Last Activity</TableHead>
+						<TableHead onClick={() => handleSort('email')} className='cursor-pointer'>
+							Email {sortField === 'email' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+						</TableHead>
+						<TableHead onClick={() => handleSort('company')} className='cursor-pointer'>
+							Company {sortField === 'company' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+						</TableHead>
+						<TableHead onClick={() => handleSort('leadType')} className='cursor-pointer'>
+							Lead Type {sortField === 'leadType' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+						</TableHead>
+						<TableHead onClick={() => handleSort('leadSource')} className='cursor-pointer'>
+							Lead Source {sortField === 'leadSource' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+						</TableHead>
+						<TableHead>
+							Tags
+						</TableHead>
+						<TableHead onClick={() => handleSort('lastActivity')} className='cursor-pointer'>
+							Last Activity {sortField === 'lastActivity' ? (sortDirection === 'asc' ? '▲' : '▼') : ''}
+						</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
