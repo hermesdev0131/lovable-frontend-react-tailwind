@@ -14,11 +14,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [auth, setAuthState] = useState<AuthState>(authService.getAuthState());
 
 	useEffect(() => {
-		const unsubscribe();
+		const unsubscribe = authService.subscribe((newState: AuthState) => {
+			setAuthState(newState);
+		});
+	
+		return () => unsubscribe(); // cleanup on unmount
 	}, []);
-
-	const value = {
-		authState,
+	
+	const value: AuthContextType = {
+		authState: auth,
 		login: authService.login,
 		logout: authService.logout,
 		refreshToken: authService.refreshToken,
