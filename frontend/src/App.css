@@ -1,0 +1,102 @@
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #D35400aa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #D35400aa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+  background-color: white;
+  color: black;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Animation for activity feed items */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+/* Animation for deal cards */
+@keyframes fade-in-up {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out forwards;
+}
+
+/* Animation for form fields */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Staggered animation for list items */
+.stagger-animation > *:nth-child(1) { animation-delay: 0s; }
+.stagger-animation > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger-animation > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger-animation > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger-animation > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger-animation > *:nth-child(6) { animation-delay: 0.25s; }
+.stagger-animation > *:nth-child(7) { animation-delay: 0.3s; }
+.stagger-animation > *:nth-child(8) { animation-delay: 0.35s; }
+.stagger-animation > *:nth-child(9) { animation-delay: 0.4s; }
+.stagger-animation > *:nth-child(10) { animation-delay: 0.45s; }
