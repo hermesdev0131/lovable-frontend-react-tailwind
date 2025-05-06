@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { cn } from "@/lib/utils";
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useToast } from "@/hooks/use-toast";
 import EditDealDialog from '@/components/deals/EditDealDialog';
 import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
@@ -188,7 +188,7 @@ const Deals = () => {
     };
   };
   
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
     
     if (!destination || 
@@ -719,7 +719,7 @@ const Deals = () => {
         teamMembers={teamMembers}
         customFields={dealFields}
       />
-      
+			
       <ColumnCustomizer
         isOpen={isColumnCustomizerOpen}
         onClose={() => setIsColumnCustomizerOpen(false)}

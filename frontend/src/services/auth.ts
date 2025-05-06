@@ -146,31 +146,7 @@ export class AuthService {
 			});
 
 			await this.handleLoginResponse(response);
-			//const user = await prisma.user.findUnique({ where: { email } });
-
-			//if(user && bcrypt.compareSync(password, user.password)) {
-			//	const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
-			//	const expiryDate = new Date(Date.now() + 3600 * 1000);
-
-			//	this.authState = {
-			//		user,
-			//		token,
-			//		refreshToken: null,
-			//		expiresAt: expiryDate,
-			//		isAuthenticated: true,
-			//		isLoading: false,
-			//		error: null,
-			//	};
-
-			//	this.saveToStorage();
-			//	this.notifyListeners();
-			//	toast({
-			//		title: "Login Successful",
-			//		description: `Welcome back, ${user.name}`,
-			//	});
-			//} else {
-			//	throw new Error('Invalid credentials');
-			//}
+			
 		} catch (error) {
 			this.authState = {
 				user: null,

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, MoreHorizontal, Filter, List, Kanban, ArrowDown, ArrowUp, X, Move, Settings } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from 'r@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -155,7 +155,7 @@ const Pipeline = () => {
     setStageManagerOpen(false);
   };
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
 
     if (!destination || 
@@ -231,7 +231,7 @@ const Pipeline = () => {
                           {dealsByStage[stage]?.length || 0} deals • {formatCurrency(stageValues[stage] || 0, 'USD')}
                         </p>
                       </div>
-                      <Button 
+										  <Button 
                         variant="ghost" 
                         size="icon" 
                         className="h-7 w-7 rounded-full hover:bg-[#D35400]/10 hover:text-[#D35400]"
@@ -239,18 +239,18 @@ const Pipeline = () => {
                           setNewDeal({...newDeal, stage: stage});
                           setAddDealOpen(true);
                         }}
-                      >
+                      >												
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     
                     <Droppable droppableId={stage}>
-                      {(provided) => (
+                      {(provided, snapshot) => (
                         <div
                           {...provided.droppableProps}
                           ref={provided.innerRef}
                           className="space-y-3 min-h-[200px] p-1 rounded-md transition-colors"
-                          style={{ background: provided.isDraggingOver ? 'rgba(211, 84, 0, 0.05)' : 'transparent' }}
+                          style={{ background: snapshot.isDraggingOver ? 'rgba(211, 84, 0, 0.05)' : 'transparent' }}
                         >
                           {(dealsByStage[stage] || []).map((deal, index) => (
                             <Draggable key={deal.id} draggableId={deal.id} index={index}>

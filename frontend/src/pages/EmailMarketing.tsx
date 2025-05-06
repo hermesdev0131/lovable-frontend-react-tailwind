@@ -70,7 +70,6 @@ const EmailMarketing = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setNewEmail({ ...newEmail, [e.target.name]: e.target.value });
   };
-
   const handleDateChange = (date: Date | undefined) => {
     setNewEmail({ ...newEmail, scheduledFor: date });
   };

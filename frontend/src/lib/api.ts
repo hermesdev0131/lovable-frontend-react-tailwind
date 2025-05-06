@@ -40,7 +40,7 @@ export const getJSON = <T>(url: string, options: FetchOptions = {}): Promise<T |
 };
 
 // Helper for POST requests
-export const postJSON = <T>(url: string, data: any, options: FetchOptions = {}): Promise<T | null> => {
+export const postJSON = <T, D extends Record<string, unknown>>(url: string, data: D, options: FetchOptions = {}): Promise<T | null> => {
   return fetchWithErrorHandling<T>(url, {
     method: 'POST',
     headers: {
@@ -53,7 +53,7 @@ export const postJSON = <T>(url: string, data: any, options: FetchOptions = {}):
 };
 
 // Helper for PUT requests
-export const putJSON = <T>(url: string, data: any, options: FetchOptions = {}): Promise<T | null> => {
+export const putJSON = <T, D extends Record<string, unknown>>(url: string, data: D, options: FetchOptions = {}): Promise<T | null> => {
   return fetchWithErrorHandling<T>(url, {
     method: 'PUT',
     headers: {

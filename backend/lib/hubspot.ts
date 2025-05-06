@@ -7,7 +7,10 @@ export const hubspotClient = new Client({
 
 // Contact operations
 export const createContact = async (contactData: any) => {
-	const contact = await hubspotClient.crm.contacts.basicApi.create({ properties: contactData });
+	const contact = await hubspotClient.crm.contacts.basicApi.create({ 
+		properties: contactData,
+		associations: [] // Adding the required associations property
+	});
 
 	//Trigger the welcome workflow
 	await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hubspot/workflows/welcome`, {
@@ -38,7 +41,10 @@ export const deleteContact = async (contactId: string) => {
 
 // Deal operations
 export const createDeal = async (dealData: any) => {
-	const deal = await hubspotClient.crm.deals.basicApi.create({ properties: dealData});
+	const deal = await hubspotClient.crm.deals.basicApi.create({ 
+		properties: dealData,
+		associations: [] // Adding the required associations property
+	});
 	await triggerWorkflowWebhook('deal.created', deal);
 	return deal;
 };
@@ -77,7 +83,10 @@ export const deleteDeal = async (dealId: string) => {
 
 //Company operations
 export const createCompany = async (companyData: any) => {
-	const company = await hubspotClient.crm.companies.basicApi.create({ properties: companyData });
+	const company = await hubspotClient.crm.companies.basicApi.create({ 
+		properties: companyData,
+		associations: [] // Adding the required associations property
+	});
 	await triggerWorkflowWebhook('company.created', company);
 	return company;
 };
@@ -85,7 +94,7 @@ export const createCompany = async (companyData: any) => {
 export const updateCompany = async (companyId: string, companyData: any) => {
 	//Get current company to check for changes
 	const currentCompany = await hubspotClient.crm.companies.basicApi.getById(companyId);
-	const changes = {};
+	const changes: Record<string, { from: any; to: any }> = {};
 
 	// Compare properties to find changes
 	Object.entries(companyData).forEach(([key, value]) => {

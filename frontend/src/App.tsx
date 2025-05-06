@@ -24,8 +24,7 @@ import Clients from './pages/Clients';
 import SettingsPage from './pages/Settings';
 import ChatbotManagement from './pages/ChatbotManagement';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthCallback } from './components/auth/callback';
+//import { useAuth } from '@/contexts/AuthContext';
 //import { AuthCallback } from './components/auth/callback';
 
 // MainLayout component inline since it was missing
@@ -44,39 +43,95 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 // RoutesComponent to handle application routing
-const App = () => {
-	const { authState } = useAuth();
+//const App = () => {
+//	//const { authState } = useAuth();
+//	const flag = false
+//  return (
+//		<Router>
+//    <ThemeProvider>
+//      <MasterAccountProvider>
+//        <DealsProvider>
+//          <TasksProvider>
+//            <CustomFieldsProvider>
+              
+//                <Routes>
+//                  <Route path="/" element={<Index />} />
+//                  <Route path="/login" element={<Login />} />
+
+//                  {/* Redirect root to login if not authenticated */}
+//                  <Route path="/" element={flag ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+
+//                  <Route element={<ProtectedRoute />}>
+//                    <Route path="/reputation" element={<Reputation />} />
+//                    <Route path="/contacts" element={<Contacts />} />
+//                    <Route path="/clients" element={<Clients />} />
+//                    <Route path="/calendar" element={<Calendar />} />
+//                    <Route path="/clients/:clientId" element={<ClientProfile />} />
+//                    <Route path="/email" element={<EmailMarketing />} />
+//                    <Route path="/website" element={<WebsiteManagement />} />
+//                    <Route path="/socials" element={<Socials />} />
+//                    <Route path="/reports" element={<Reports />} />
+//                    <Route path="/master-account" element={<MasterAccount />} />
+//                    <Route path="/deals" element={<Deals />} />
+//                    <Route path="/settings" element={<SettingsPage />} />
+//                  </Route>
+                  
+//                  {/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
+//                </Routes>
+//                <Toaster />
+//            </CustomFieldsProvider>
+//          </TasksProvider>
+//        </DealsProvider>
+//      </MasterAccountProvider>
+//    </ThemeProvider>
+		
+//		</Router>
+//  );
+//};
+
+const RoutesComponent = () => {
   return (
-		<Router>
-			<Routes>
+    <Routes>
       
-				<Route path="/" element={<Index />} />
-				<Route path="/login" element={<Login />} />
-
-				 {/* Redirect root to login if not authenticated */}
-				 <Route path="/" element={authState.isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-
-				<Route element={<ProtectedRoute />}>
-					<Route path="/reputation" element={<Reputation />} />
-					<Route path="/contacts" element={<Contacts />} />
-					<Route path="/clients" element={<Clients />} />
-					<Route path="/calendar" element={<Calendar />} />
-					<Route path="/clients/:clientId" element={<ClientProfile />} />
-					<Route path="/email" element={<EmailMarketing />} />
-					<Route path="/website" element={<WebsiteManagement />} />
-					<Route path="/socials" element={<Socials />} />
-					<Route path="/reports" element={<Reports />} />
-					<Route path="/master-account" element={<MasterAccount />} />
-					<Route path="/deals" element={<Deals />} />
-					<Route path="/settings" element={<SettingsPage />} />
-				</Route>
-				
-				{/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
-			</Routes>
-		</Router>
-    
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/reputation" element={<Socials />} />
+      <Route path="/contacts" element={<Contacts />} />
+      <Route path="/clients" element={<Clients />} />
+      <Route path="/calendar" element={<Calendar />} />
+      <Route path="/clients/:clientId" element={<ClientProfile />} />
+      <Route path="/email" element={<EmailMarketing />} />
+      <Route path="/website" element={<WebsiteManagement />} />
+      <Route path="/socials" element={<Socials />} />
+      <Route path="/reports" element={<Reports />} />
+      <Route path="/master-account" element={<MasterAccount />} />
+      <Route path="/deals" element={<Deals />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      {/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
+    </Routes>
   );
 };
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider>
+        <MasterAccountProvider>
+          <DealsProvider>
+            <CustomFieldsProvider>
+              <TasksProvider>
+                <MainLayout>
+                  <RoutesComponent />
+                  <Toaster />
+                </MainLayout>
+              </TasksProvider>
+            </CustomFieldsProvider>
+          </DealsProvider>
+        </MasterAccountProvider>
+      </ThemeProvider>
+    </Router>
+  );
+}
 
 
 export default App;
