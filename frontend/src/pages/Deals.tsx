@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { useMasterAccount } from "@/hooks/useMasterAccount";
 import { cn } from "@/lib/utils";
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useToast } from "@/hooks/use-toast";

@@ -4,10 +4,10 @@ import { Client } from '@/types/masterAccount';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { toast } from "@/hooks/use-toast";
 
-export function useClients() {
+export function useClients(initialClientData?: Client[]) {
   const [clients, setClients] = useState<Client[]>(() => {
     const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
-    return savedClients ? JSON.parse(savedClients) : [];
+    return savedClients ? JSON.parse(savedClients) : initialClientData || [];
   });
   
   const [currentClientId, setCurrentClientId] = useState<number | null>(() => {

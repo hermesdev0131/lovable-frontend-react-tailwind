@@ -4,8 +4,7 @@
     "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "msw": "^2.7.6"
   }
 }
-
-

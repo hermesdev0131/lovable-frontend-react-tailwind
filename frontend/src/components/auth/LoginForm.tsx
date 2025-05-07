@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMasterAccount } from "@/contexts/MasterAccountContext";
+import { useMasterAccount } from "@/hooks/useMasterAccount";
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { loginToAccount } = useMasterAccount();
+	const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,23 +35,44 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      const success = loginToAccount(email, password);
-      console.log("Login success:", success);
-      if (success) {
-        // Redirect to the intended destination or to the dashboard
-        const destination = location.state?.from?.pathname || '/dashboard';
-        navigate(destination, { replace: true });
+      //const success = loginToAccount(email, password);
+      //console.log("Login success:", success);
+      //if (success) {
+      //  // Redirect to the intended destination or to the dashboard
+      //  const destination = location.state?.from?.pathname || '/dashboard';
+      //  navigate(destination, { replace: true });
+
+			await login(email, password);
+
+				// If real auth succeeds, redirect to the intended destination
+      const destination = location.state?.from?.pathname || '/';
+      navigate(destination, { replace: true });
+    } catch (authError) {
+      console.error("Auth service login failed:", authError);
+      
+      // Fallback to master account login for development
+      try {
+        const success = loginToAccount(email, password);
+        console.log("Master account login success:", success);
+        if (success) {
+          // Redirect to the intended destination or to the dashboard
+          const destination = location.state?.from?.pathname || '/';
+          navigate(destination, { replace: true });
+        } else {
+          throw new Error("Master account login failed");
+        }
+      } catch (masterError) {
+        console.error("Master account login failed:", masterError);
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);

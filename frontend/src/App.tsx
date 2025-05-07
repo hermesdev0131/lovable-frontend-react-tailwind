@@ -24,6 +24,7 @@ import Clients from './pages/Clients';
 import SettingsPage from './pages/Settings';
 import ChatbotManagement from './pages/ChatbotManagement';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AuthProvider } from '@/contexts/AuthContext';
 //import { useAuth } from '@/contexts/AuthContext';
 //import { AuthCallback } from './components/auth/callback';
 
@@ -93,20 +94,25 @@ const RoutesComponent = () => {
   return (
     <Routes>
       
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/reputation" element={<Socials />} />
-      <Route path="/contacts" element={<Contacts />} />
-      <Route path="/clients" element={<Clients />} />
-      <Route path="/calendar" element={<Calendar />} />
-      <Route path="/clients/:clientId" element={<ClientProfile />} />
-      <Route path="/email" element={<EmailMarketing />} />
-      <Route path="/website" element={<WebsiteManagement />} />
-      <Route path="/socials" element={<Socials />} />
-      <Route path="/reports" element={<Reports />} />
-      <Route path="/master-account" element={<MasterAccount />} />
-      <Route path="/deals" element={<Deals />} />
-      <Route path="/settings" element={<SettingsPage />} />
+			<Route path="/login" element={<Login />} />
+
+			<Route element={<ProtectedRoute />}>
+				<Route path="/" element={<Index />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/reputation" element={<Socials />} />
+				<Route path="/contacts" element={<Contacts />} />
+				<Route path="/clients" element={<Clients />} />
+				<Route path="/calendar" element={<Calendar />} />
+				<Route path="/clients/:clientId" element={<ClientProfile />} />
+				<Route path="/email" element={<EmailMarketing />} />
+				<Route path="/website" element={<WebsiteManagement />} />
+				<Route path="/socials" element={<Socials />} />
+				<Route path="/reports" element={<Reports />} />
+				<Route path="/master-account" element={<MasterAccount />} />
+				<Route path="/deals" element={<Deals />} />
+				<Route path="/settings" element={<SettingsPage />} />
+			</Route>
+      
       {/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
     </Routes>
   );
@@ -116,18 +122,21 @@ function App() {
   return (
     <Router>
       <ThemeProvider>
-        <MasterAccountProvider>
-          <DealsProvider>
-            <CustomFieldsProvider>
-              <TasksProvider>
-                <MainLayout>
-                  <RoutesComponent />
-                  <Toaster />
-                </MainLayout>
-              </TasksProvider>
-            </CustomFieldsProvider>
-          </DealsProvider>
-        </MasterAccountProvider>
+				<AuthProvider>
+					<MasterAccountProvider>
+						<DealsProvider>
+							<CustomFieldsProvider>
+								<TasksProvider>
+									<MainLayout>
+										<RoutesComponent />
+										<Toaster />
+									</MainLayout>
+								</TasksProvider>
+							</CustomFieldsProvider>
+						</DealsProvider>
+					</MasterAccountProvider>
+				</AuthProvider>
+        
       </ThemeProvider>
     </Router>
   );

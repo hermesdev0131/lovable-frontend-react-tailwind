@@ -6,10 +6,18 @@ export const initialClients = [
     id: 1,
     firstName: "John",
     lastName: "Doe",
-    email: "john@example.com",
+    emails: ["john@example.com"],
+    phoneNumbers: ["+1234567890"],
     company: "Acme Inc",
-    phone: "+1234567890",
-    status: "active"
+    leadType: "customer",
+    leadSource: "website",
+    tags: ["enterprise", "software"],
+    status: "active",
+    users: 5,
+    deals: 2,
+    contacts: 3,
+    lastActivity: new Date().toISOString(),
+    logo: "/logos/acme.png"
   }
 ];
 

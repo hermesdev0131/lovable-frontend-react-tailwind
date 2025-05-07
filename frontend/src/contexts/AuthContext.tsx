@@ -6,6 +6,9 @@ interface AuthContextType {
 	login: (email: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
 	refreshToken: ()=> Promise<void>;	
+	//login: authService.login.bind(authService),
+	//logout: authService.logout.bind(authService),
+	//refreshToken: authService.refreshToken.bind(authService),
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +30,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		logout: authService.logout,
 		refreshToken: authService.refreshToken,
 	};
+
+	return (
+		<AuthContext.Provider value={value}>
+			{children}
+		</AuthContext.Provider>
+	);
 };
 
 export const useAuth = () => {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext } from 'react';
 import { useClients } from '@/hooks/useClients';
 import { useWebhooks } from '@/hooks/useWebhooks';
 import { useWebsitePages } from '@/hooks/useWebsitePages';
@@ -7,7 +7,7 @@ import { useContentItems } from '@/hooks/useContentItems';
 import { MasterAccountContextType } from '@/types/masterAccount';
 import { initialClients } from '@/data/initialData';
 
-const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
+export const MasterAccountContext = createContext<MasterAccountContextType | undefined>(undefined);
 
 export const MasterAccountProvider = ({ children }: { children: ReactNode }) => {
   const { 
@@ -103,10 +103,10 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
 };
 
 export const useMasterAccount = () => {
-  const context = useContext(MasterAccountContext);
-  // console.log("useMasterAccount context:", context);
-  if (context === undefined) {
-    throw new Error('useMasterAccount must be used within a MasterAccountProvider');
-  }
-  return context;
+	const context = useContext(MasterAccountContext);
+	// console.log("useMasterAccount context:", context);
+	if (context === undefined) {
+		throw new Error('useMasterAccount must be used within a MasterAccountProvider');
+	}
+	return context;
 };
