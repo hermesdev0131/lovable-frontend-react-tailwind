@@ -169,6 +169,7 @@ export class AuthService {
 
 	private async handleLoginResponse(response: Response): Promise<void> {
 		const data = await response.json();
+		console.log(data);
 		if (response.ok) {
 			const { user, token, expiresIn } = data;
 			const expiryDate = new Date(Date.now() + expiresIn * 1000);
@@ -200,6 +201,11 @@ export class AuthService {
 				error: data.message || 'Login failed',
 			};
 			this.notifyListeners();
+			toast({
+				title: "Login Failed",
+				description: data.message || 'Login failed',
+				variant: "destructive",
+			});
 		}
 	}
 
