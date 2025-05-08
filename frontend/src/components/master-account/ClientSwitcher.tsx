@@ -15,6 +15,7 @@ import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ClientSwitcherProps {
   triggerClassName?: string;
@@ -22,6 +23,7 @@ interface ClientSwitcherProps {
 
 export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) => {
   const { clients, currentClientId, switchToClient, isInMasterMode, toggleMasterMode } = useMasterAccount();
+  const { authState } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   
@@ -30,8 +32,20 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     : null;
     
   const handleSwitchToMaster = () => {
-    switchToClient(null);
     setOpen(false);
+    
+    // Check if user is authenticated
+    if (!authState.isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the Master Account",
+        variant: "destructive"
+      });
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    switchToClient(null);
     navigate('/master-account');
     toast({
       title: "Switched to Master Account",
@@ -40,8 +54,20 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
   };
   
   const handleSwitchToClient = (clientId: number) => {
-    switchToClient(clientId);
     setOpen(false);
+    
+    // Check if user is authenticated
+    if (!authState.isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access client accounts",
+        variant: "destructive"
+      });
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    switchToClient(clientId);
     navigate('/');
     toast({
       title: "Client Account Switched",
@@ -76,7 +102,11 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className={cn("flex items-center gap-2", triggerClassName)}>
-          {isInMasterMode ? (
+          {!authState.isAuthenticated ? (
+            // Show "Select Account" for unauthenticated users
+            <span>Select Account</span>
+          ) : isInMasterMode && authState.user?.role === 'admin' ? (
+            // Show Master Account for authenticated admin users in master mode
             <>
               <Building2 className="h-4 w-4" />
               <span className="font-medium">Master Account</span>
@@ -85,6 +115,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
               </Badge>
             </>
           ) : currentClient ? (
+            // Show client account for authenticated users with a selected client
             <>
               <Avatar className="h-6 w-6">
                 <AvatarImage src={currentClient.logo} alt={`${currentClient.firstName} ${currentClient.lastName}`} />
@@ -96,54 +127,81 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
               </Badge>
             </>
           ) : (
+            // Default case for authenticated users without a selected client
             <span>Select Account</span>
           )}
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">
-        <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
-        <DropdownMenuItem 
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={handleSwitchToMaster}
-        >
-          <Building2 className="h-4 w-4" />
-          <span>Master Account</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Client Accounts</DropdownMenuLabel>
-        {clients.map(client => (
-          <DropdownMenuItem
-            key={client.id}
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => handleSwitchToClient(client.id)}
-          >
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={client.logo} alt={`${client.firstName} ${client.lastName}`} />
-              <AvatarFallback>{getClientInitials(client)}</AvatarFallback>
-            </Avatar>
-            <span className="truncate">{`${client.firstName} ${client.lastName}`}</span>
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => {
-            setOpen(false);
-            navigate('/master-account');
-          }}
-        >
-          <Users className="h-4 w-4" />
-          <span>Manage Clients</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600"
-          onClick={handleLogout}
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Logout</span>
-        </DropdownMenuItem>
+        {!authState.isAuthenticated ? (
+          // Show limited menu for unauthenticated users
+          <>
+            <DropdownMenuLabel>Account</DropdownMenuLabel>
+            <DropdownMenuItem 
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => {
+                setOpen(false);
+                navigate('/login', { replace: true });
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Log In</span>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          // Show full menu for authenticated users
+          <>
+            <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
+            {authState.user?.role === 'admin' && (
+              <DropdownMenuItem 
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={handleSwitchToMaster}
+              >
+                <Building2 className="h-4 w-4" />
+                <span>Master Account</span>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Client Accounts</DropdownMenuLabel>
+            {clients.map(client => (
+              <DropdownMenuItem
+                key={client.id}
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => handleSwitchToClient(client.id)}
+              >
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={client.logo} alt={`${client.firstName} ${client.lastName}`} />
+                  <AvatarFallback>{getClientInitials(client)}</AvatarFallback>
+                </Avatar>
+                <span className="truncate">{`${client.firstName} ${client.lastName}`}</span>
+              </DropdownMenuItem>
+            ))}
+            {authState.user?.role === 'admin' && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate('/master-account');
+                  }}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Manage Clients</span>
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

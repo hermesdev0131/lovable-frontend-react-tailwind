@@ -6,7 +6,7 @@ import DealsOverview from '@/components/dashboard/DealsOverview';
 import TasksPanel from '@/components/dashboard/TasksPanel';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import { useNavigate } from 'react-router-dom';
-import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { useMasterAccount } from '@/hooks/useMasterAccount';
 import { useDeals } from '@/contexts/DealsContext';
 
 const Index = () => {
@@ -49,6 +49,7 @@ const Index = () => {
     { id: 3, action: 'New task created', time: '3 hours ago', name: 'Support' },
   ]);
   
+	
   // Handle card click navigation
   const handleCardClick = useCallback((title: string, path: string) => {
     navigate(path);
@@ -80,7 +81,7 @@ const Index = () => {
         {/* Tasks Panel */}
         <TasksPanel />
       </div>
-      
+			
       {/* Activity Feed - Full width at the bottom */}
       <Card>
         <CardHeader>

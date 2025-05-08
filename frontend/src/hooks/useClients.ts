@@ -79,11 +79,11 @@ export function useClients(initialClientData?: Client[]) {
       return true;
     }
     
-    toast({
-      title: "Login Failed",
-      description: "Invalid email. Please try again.",
-      variant: "destructive"
-    });
+    //toast({
+    //  title: "Login Failed",
+    //  description: "Invalid email. Please try again.",
+    //  variant: "destructive"
+    //});
     return false;
   };
 

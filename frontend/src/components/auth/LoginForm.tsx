@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMasterAccount } from "@/hooks/useMasterAccount";
+import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn } from 'lucide-react';
@@ -63,11 +63,7 @@ export const LoginForm = () => {
         }
       } catch (masterError) {
         console.error("Master account login failed:", masterError);
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive"
-        });
+        // Toast is already shown by auth service, no need to show another one here
       }
     } finally {
       setIsLoading(false);

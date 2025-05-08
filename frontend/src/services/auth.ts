@@ -137,7 +137,7 @@ export class AuthService {
 
 		try {
 			// Replace with yout actual API endpoint
-			const response = await fetch('/api/auth/login', {
+			const response = await fetch(`${config.apiUrl}/auth/login`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

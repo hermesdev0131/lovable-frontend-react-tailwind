@@ -26,9 +26,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	
 	const value: AuthContextType = {
 		authState: auth,
-		login: authService.login,
-		logout: authService.logout,
-		refreshToken: authService.refreshToken,
+		login: authService.login.bind(authService),
+		logout: authService.logout.bind(authService),
+		refreshToken: authService.refreshToken.bind(authService),
 	};
 
 	return (
