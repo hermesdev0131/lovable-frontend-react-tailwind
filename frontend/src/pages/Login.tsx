@@ -9,13 +9,13 @@ const Login = () => {
   const navigate = useNavigate();
   const { isInMasterMode, currentClientId } = useMasterAccount();
   
-  // If user is already authenticated, redirect to dashboard or the page they were trying to access
+  // If user is already authenticated, redirect to home or the page they were trying to access
   useEffect(() => {
     const isAuthenticated = isInMasterMode || currentClientId !== null;
     
     if (isAuthenticated) {
-      // Get the intended destination or default to dashboard
-      const destination = location.state?.from?.pathname || '/dashboard';
+      // Get the intended destination or default to home page
+      const destination = location.state?.from?.pathname || '/';
       navigate(destination, { replace: true });
     }
   }, [isInMasterMode, currentClientId, navigate, location]);

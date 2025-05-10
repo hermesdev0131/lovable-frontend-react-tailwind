@@ -16,7 +16,7 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { loginToAccount } = useMasterAccount();
-	const { login } = useAuth();
+	const { login, authState } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,33 +38,39 @@ export const LoginForm = () => {
       //const success = loginToAccount(email, password);
       //console.log("Login success:", success);
       //if (success) {
-      //  // Redirect to the intended destination or to the dashboard
-      //  const destination = location.state?.from?.pathname || '/dashboard';
+      //  // Redirect to the intended destination or to the home page
+      //  const destination = location.state?.from?.pathname || '/';
       //  navigate(destination, { replace: true });
 
 			await login(email, password);
 
-				// If real auth succeeds, redirect to the intended destination
-      const destination = location.state?.from?.pathname || '/';
-      navigate(destination, { replace: true });
+			// If real auth succeeds, redirect to the intended destination
+      if (authState.isAuthenticated) {
+        const destination = location.state?.from?.pathname || '/';
+        console.log("Login success:", destination);
+        navigate(destination, { replace: true });
+      } else {
+        navigate('/login', { replace: true});
+      }
+      
     } catch (authError) {
       console.error("Auth service login failed:", authError);
-      
+      navigate('/login', { replace: true });
       // Fallback to master account login for development
-      try {
-        const success = loginToAccount(email, password);
-        console.log("Master account login success:", success);
-        if (success) {
-          // Redirect to the intended destination or to the dashboard
-          const destination = location.state?.from?.pathname || '/';
-          navigate(destination, { replace: true });
-        } else {
-          throw new Error("Master account login failed");
-        }
-      } catch (masterError) {
-        console.error("Master account login failed:", masterError);
-        // Toast is already shown by auth service, no need to show another one here
-      }
+      // try {
+      //   const success = loginToAccount(email, password);
+      //   console.log("Master account login success:", success);
+      //   if (success) {
+      //     // Redirect to the intended destination or to the home page
+      //     const destination = location.state?.from?.pathname || '/';
+      //     navigate(destination, { replace: true });
+      //   } else {
+      //     throw new Error("Master account login failed");
+      //   }
+      // } catch (masterError) {
+      //   console.error("Master account login failed:", masterError);
+      //   // Toast is already shown by auth service, no need to show another one here
+      // }
     } finally {
       setIsLoading(false);
     }

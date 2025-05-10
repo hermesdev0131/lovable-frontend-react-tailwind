@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ClientSwitcher } from '@/components/master-account/ClientSwitcher';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { NotificationsPopover } from '@/components/notifications/NotificationsPopover';
 import {
   DropdownMenu,
@@ -27,26 +28,33 @@ interface NavbarProps {
 
 const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const { isInMasterMode, switchToClient, toggleMasterMode } = useMasterAccount();
+  const { authState, logout } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const handleLogout = () => {
-    // Clear client selection
-    switchToClient(null);
-    
-    // If in master mode, toggle it to disable
-    if (isInMasterMode) {
-      toggleMasterMode();
+  const handleLogout = async () => {
+    try {
+      // Clear client selection
+      switchToClient(null);
+      
+      // If in master mode, toggle it to disable
+      if (isInMasterMode) {
+        toggleMasterMode();
+      }
+      
+      // Use the auth service to properly logout and clear tokens
+      await logout();
+      
+      // Navigate to login page with replacement (prevents going back)
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout Failed",
+        description: "There was an error logging out. Please try again.",
+        variant: "destructive"
+      });
     }
-    
-    // Show logout confirmation
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out."
-    });
-    
-    // Navigate to login page with replacement (prevents going back)
-    navigate('/login', { replace: true });
   };
   
   return (
@@ -106,7 +114,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
           
           {/* Client Switcher (desktop only) */}
           {!isMobile && (
-            <>
+            <> 
               <ClientSwitcher />
               <Separator orientation="vertical" className="h-6" />
             </>
@@ -135,8 +143,12 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                 </span>
                 <Avatar className={cn("border border-primary/20", isMobile ? "h-7 w-7" : "h-10 w-10")}>
-                  <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt="User" />
-                  <AvatarFallback className="bg-primary/10 text-lg font-bold">U</AvatarFallback>
+                  <AvatarImage src="/lovable-uploads/2e7bc354-d939-480c-b0dc-7aa03dbde994.png" alt={authState.user?.name || 'User'} />
+                  <AvatarFallback className="bg-primary/10 text-lg font-bold">
+                    {authState.user?.name 
+                      ? authState.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() 
+                      : 'U'}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -146,8 +158,13 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
             >
               <DropdownMenuLabel className="font-normal py-3">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-base font-medium">My Account</p>
+                  <p className="text-base font-medium">
+                    {authState.user?.name || 'My Account'}
+                  </p>
                   <p className="text-sm text-muted-foreground">
+                    {authState.user?.email || ''}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
                     {isInMasterMode ? 'Master Account' : 'Client Account'}
                   </p>
                 </div>

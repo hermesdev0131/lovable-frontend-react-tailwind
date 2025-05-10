@@ -42,7 +42,7 @@ export const AuthCallback = () => {
 					description: `Successfully connected to HubSpot as ${user.email}`
 				});
 
-				navigate('/dashboard');
+				navigate('/');
 			} catch (error) {
 				console.error('Authentication error:', error);
 				toast({

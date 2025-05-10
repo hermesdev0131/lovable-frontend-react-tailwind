@@ -136,7 +136,7 @@ export class AuthService {
 		this.notifyListeners();
 
 		try {
-			// Replace with yout actual API endpoint
+			// Replace with your actual API endpoint
 			const response = await fetch(`${config.apiUrl}/auth/login`, {
 				method: 'POST',
 				headers: {
@@ -171,6 +171,7 @@ export class AuthService {
 		const data = await response.json();
 		console.log(data);
 		if (response.ok) {
+			console.log("login success!");
 			const { user, token, expiresIn } = data;
 			const expiryDate = new Date(Date.now() + expiresIn * 1000);
 
@@ -191,6 +192,7 @@ export class AuthService {
 				description: `Welcome back, ${user.name}!`,
 			});
 		} else {
+			console.log("login fail");
 			this.authState = {
 				user: null,
 				token: null,
@@ -210,23 +212,35 @@ export class AuthService {
 	}
 
 	public async logout(): Promise<void> {
-		try {
-			// Call logout endpoint if needed
-			await fetch('/api/auth/logout', {
-				method: 'POST',
-				headers: {
-					'Authorization': `Bearer ${localStorage.getItem('token') ?? ''}`,
-				},
-			});
-		} catch (error) {
-			console.error('Logout error:', error);
-		} finally {
-			this.clearAuth();
-			toast({
-				title: "Logged Out",
-				description: "You have been successfully logged out",
-			});
+		const token = localStorage.getItem('token');
+		if (token) {
+			try {
+				// Call logout endpoint if needed
+				await fetch(`${config.apiUrl}/auth/logout`, {
+					method: 'POST',
+					headers: {
+						'Authorization': `Bearer ${token}`,
+					},
+				});
+			} catch (error) {
+				console.error('Logout error:', error);
+			// } finally {
+			// 	this.clearAuth();
+			// 	console.log("Auth data cleared");
+			// 	toast({
+			// 		title: "Logged Out",
+			// 		description: "You have been successfully logged out",
+			// 	});
+			}
 		}
+
+		this.clearAuth();
+		console.log("Auth data cleared");
+		toast({
+			title: "Logged Out",
+			description: "You have been successfully logged out",
+		});
+		
 	}
 
 	private clearAuth() {
@@ -251,7 +265,7 @@ export class AuthService {
 		}
 
 		try {
-			const response = await fetch('/api/auth/refresh', {
+			const response = await fetch(`${config.apiUrl}/auth/refresh`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ refreshToken: this.authState.refreshToken}),
@@ -399,11 +413,11 @@ export class AuthService {
 
 export const authService = AuthService.getInstance();
 
-export const useAuth = () => {
- return {
-	 login: authService.login.bind(authService),
-	 logout: authService.logout.bind(authService),
-	 isAuthenticated: authService.isAuthenticated.bind(authService),
-	 getAccessToken: authService.getAccessToken.bind(authService),
- };
-}
+// export const useAuth = () => {
+//  return {
+// 	 login: authService.login.bind(authService),
+// 	 logout: authService.logout.bind(authService),
+// 	 isAuthenticated: authService.isAuthenticated.bind(authService),
+// 	 getAccessToken: authService.getAccessToken.bind(authService),
+//  };
+// }

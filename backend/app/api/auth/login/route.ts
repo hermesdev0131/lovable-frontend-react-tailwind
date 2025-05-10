@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
       return corsHeaders(response);
     }
-		console.log("email exists");
+		// console.log("email exists");
     // Fetch user from the database
     //const user = await prisma.user.findUnique({
     //  where: { email },
@@ -43,17 +43,16 @@ export async function POST(request: NextRequest) {
       );
       return corsHeaders(response);
     }
-		console.log(user);
-    // Compare password
+		console.log(user.password, password);
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    if (isPasswordValid) {
       const response = NextResponse.json(
         { message: 'Invalid password' },
         { status: 401 }
       );
       return corsHeaders(response);
     }
-		console.log("isPasswordValid");
+		
 
 		
 
@@ -73,7 +72,7 @@ export async function POST(request: NextRequest) {
     });
     
     // Add CORS headers to the response
-		console.log("response");
+		// console.log("response");
     return corsHeaders(response);
   } catch (error) {
     console.error('Login error:', error);

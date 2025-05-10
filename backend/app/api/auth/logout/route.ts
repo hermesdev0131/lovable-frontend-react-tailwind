@@ -9,6 +9,7 @@ export async function OPTIONS() {
 export async function POST() {
   const response = NextResponse.json({ message: 'Logged out' })
 
+  console.log("Logout request");
   response.cookies.set({
     name: 'token',
     value: '',
