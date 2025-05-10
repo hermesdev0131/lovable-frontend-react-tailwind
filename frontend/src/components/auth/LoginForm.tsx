@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,14 @@ export const LoginForm = () => {
 	const { login, authState } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Effect to handle successful authentication state changes
+  useEffect(() => {
+    if (authState.isAuthenticated) {
+      console.log("Auth state detected as authenticated, redirecting to dashboard");
+      navigate('/', { replace: true });
+    }
+  }, [authState.isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,9 +54,9 @@ export const LoginForm = () => {
 
 			// If real auth succeeds, redirect to the intended destination
       if (authState.isAuthenticated) {
-        const destination = location.state?.from?.pathname || '/';
-        console.log("Login success:", destination);
-        navigate(destination, { replace: true });
+        console.log("Login success, redirecting to dashboard");
+        // Always go directly to the dashboard, ignoring any previous location
+        navigate('/', { replace: true });
       } else {
         navigate('/login', { replace: true});
       }

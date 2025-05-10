@@ -7,22 +7,16 @@ export const ProtectedRoute = () => {
   const { authState } = useAuth();
   const location = useLocation();
   
-  // Allow access to dashboard (Index page) without authentication
-  if (location.pathname === '/' && !authState.isAuthenticated) {
-    return <Outlet />;
-  }
-  
-  // For all other protected routes, redirect to login if not authenticated
+  // For all protected routes, redirect to login if not authenticated
   if (!authState.isAuthenticated) {
-
     // Check if the user is being redirected from a failed login attempt
     const isRedirectFromLogin = location.state?.from?.pathname === '/login';
-
-    // Show toast notification for unauthorized access attempts
-    if (location.pathname !== '/login' && !isRedirectFromLogin) {
+    
+    // Only show toast for routes other than login and dashboard
+    if (location.pathname !== '/login' && location.pathname !== '/' && !isRedirectFromLogin) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to access this page 404.",
+        description: "Please log in to access this page.",
         variant: "destructive"
       });
     }

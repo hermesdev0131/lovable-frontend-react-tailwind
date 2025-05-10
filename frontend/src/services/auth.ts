@@ -79,23 +79,40 @@ export class AuthService {
 		const storedUser = localStorage.getItem('user');
 		const storedToken = localStorage.getItem('token');
 		const storedExpiry = localStorage.getItem('tokenExpiry');
+		const storedRefreshToken = localStorage.getItem('refreshToken');
 
+		// Check if we have the minimum required data
 		if (storedUser && storedToken && storedExpiry) {
-			const expiryDate = new Date(storedExpiry);
-			if (expiryDate > new Date()) {
-				this.authState = {
-					user: JSON.parse(storedUser),
-					token: storedToken,
-					refreshToken: null,
-					expiresAt: expiryDate,
-					isAuthenticated: true,
-					isLoading: false,
-					error: null,
-				};
-				this.notifyListeners();
-			} else {
+			try {
+				const expiryDate = new Date(storedExpiry);
+				
+				// Only restore if the token hasn't expired
+				if (expiryDate > new Date()) {
+					const parsedUser = JSON.parse(storedUser);
+					
+					// Set the auth state with the stored values
+					this.authState = {
+						user: parsedUser,
+						token: storedToken,
+						refreshToken: storedRefreshToken || null,
+						expiresAt: expiryDate,
+						isAuthenticated: true,
+						isLoading: false,
+						error: null,
+					};
+					
+					console.log("Auth state restored from storage");
+					this.notifyListeners();
+				} else {
+					console.log("Stored token has expired");
+					this.clearAuth();
+				}
+			} catch (error) {
+				console.error("Error parsing stored auth data:", error);
 				this.clearAuth();
 			}
+		} else {
+			console.log("No complete auth data found in storage");
 		}
 	}
 
@@ -168,85 +185,152 @@ export class AuthService {
 	}
 
 	private async handleLoginResponse(response: Response): Promise<void> {
-		const data = await response.json();
-		console.log(data);
-		if (response.ok) {
-			console.log("login success!");
-			const { user, token, expiresIn } = data;
-			const expiryDate = new Date(Date.now() + expiresIn * 1000);
+		try {
+			const data = await response.json();
+			console.log("Login response received:", response.status);
+			
+			if (response.ok) {
+				console.log("Login successful!");
+				const { user, token, expiresIn, refreshToken } = data;
+				const expiryDate = new Date(Date.now() + expiresIn * 1000);
 
-			this.authState = {
-				user,
-				token,
-				refreshToken: null,
-				expiresAt: expiryDate,
-				isAuthenticated: true,
-				isLoading: false,
-				error: null,
-			};
+				// Clear any previous auth state first
+				this.clearAuth();
+				
+				// Set the new auth state
+				this.authState = {
+					user,
+					token,
+					refreshToken: refreshToken || null,
+					expiresAt: expiryDate,
+					isAuthenticated: true,
+					isLoading: false,
+					error: null,
+				};
 
-			this.saveToStorage();
-			this.notifyListeners();
-			toast({
-				title: "Login Successful",
-				description: `Welcome back, ${user.name}!`,
-			});
-		} else {
-			console.log("login fail");
+				// Save to storage and notify listeners
+				this.saveToStorage();
+				this.notifyListeners();
+				
+				// Show success toast
+				toast({
+					title: "Login Successful",
+					description: `Welcome back, ${user.name}!`,
+				});
+			} else {
+				console.log("Login failed:", data.message);
+				
+				// Clear any previous auth state
+				this.clearAuth();
+				
+				// Set error state
+				this.authState = {
+					...this.authState,
+					error: data.message || 'Login failed',
+					isLoading: false,
+				};
+				
+				this.notifyListeners();
+				
+				// Show error toast
+				toast({
+					title: "Login Failed",
+					description: data.message || 'Login failed',
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			console.error("Error processing login response:", error);
+			
+			// Clear any previous auth state
+			this.clearAuth();
+			
+			// Set error state
 			this.authState = {
-				user: null,
-				token: null,
-				refreshToken: null,
-				expiresAt: null,
-				isAuthenticated: false,
+				...this.authState,
+				error: 'Error processing login response',
 				isLoading: false,
-				error: data.message || 'Login failed',
 			};
+			
 			this.notifyListeners();
+			
+			// Show error toast
 			toast({
 				title: "Login Failed",
-				description: data.message || 'Login failed',
+				description: "Error processing login response",
 				variant: "destructive",
 			});
 		}
 	}
 
-	public async logout(): Promise<void> {
-		const token = localStorage.getItem('token');
-		if (token) {
-			try {
-				// Call logout endpoint if needed
-				await fetch(`${config.apiUrl}/auth/logout`, {
-					method: 'POST',
-					headers: {
-						'Authorization': `Bearer ${token}`,
-					},
-				});
-			} catch (error) {
-				console.error('Logout error:', error);
-			// } finally {
-			// 	this.clearAuth();
-			// 	console.log("Auth data cleared");
-			// 	toast({
-			// 		title: "Logged Out",
-			// 		description: "You have been successfully logged out",
-			// 	});
-			}
-		}
+	// Flag to prevent multiple simultaneous logout calls
+	private isLoggingOut = false;
 
-		this.clearAuth();
-		console.log("Auth data cleared");
-		toast({
-			title: "Logged Out",
-			description: "You have been successfully logged out",
-		});
+	public async logout(): Promise<void> {
+		// Prevent multiple simultaneous logout calls
+		if (this.isLoggingOut) {
+			console.log("Logout already in progress, ignoring additional call");
+			return;
+		}
 		
+		try {
+			this.isLoggingOut = true;
+			console.log("Logout process started");
+			
+			// Store token before clearing auth state
+			const token = localStorage.getItem('token');
+			
+			// First clear the auth state to prevent any further authenticated requests
+			this.clearAuth();
+			
+			// Only attempt API call if we have a token
+			if (token) {
+				try {
+					// Set a timeout to ensure the API call doesn't hang indefinitely
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 5000);
+					
+					// Call logout endpoint if needed
+					await fetch(`${config.apiUrl}/auth/logout`, {
+						method: 'POST',
+						headers: {
+							'Authorization': `Bearer ${token}`,
+						},
+						signal: controller.signal
+					});
+					
+					clearTimeout(timeoutId);
+					console.log("Logout API call successful");
+				} catch (error) {
+					console.error('Logout API error:', error);
+					// Continue with logout process even if API call fails
+				}
+			}
+
+			// Show toast notification
+			toast({
+				title: "Logged Out",
+				description: "You have been successfully logged out",
+			});
+			
+			console.log("Logout process completed");
+			
+			// Note: Navigation to login page is handled in the Navbar component
+			// This ensures we have access to the router context for navigation
+		} finally {
+			// Reset the logging out flag
+			this.isLoggingOut = false;
+		}
 	}
 
 	private clearAuth() {
+		// Clear all auth-related items from localStorage
 		localStorage.removeItem('user');
 		localStorage.removeItem('token');
 		localStorage.removeItem('tokenExpiry');
+		localStorage.removeItem('refreshToken');
+		
+		// Reset the auth state to initial values
 		this.authState = {
 			user: null,
 			token: null,
@@ -256,7 +340,10 @@ export class AuthService {
 			isLoading: false,
 			error: null,
 		};
+		
+		// Notify all subscribers about the state change
 		this.notifyListeners();
+		console.log("Auth state cleared completely");
 	}
 
 	public async refreshToken(): Promise<void> {
@@ -398,16 +485,28 @@ export class AuthService {
 				expiresAt: new Date(Date.now() + response.data.expiresIn * 1000),
 			};
 		} catch (error) {
-		 // If refresh fails, clear tokens and log out
-		 this.logout();
-		 throw new Error('Session expired. Please log in again.');
-	 }
- }
+			// If refresh fails, clear tokens and log out
+			this.logout();
+			throw new Error('Session expired. Please log in again.');
+		}
+	}
 
  private saveToStorage(): void {
-	 localStorage.setItem('user', JSON.stringify(this.authState.user));
-	 localStorage.setItem('token', this.authState.token ?? '');
-	 localStorage.setItem('tokenExpiry', this.authState.expiresAt?.toISOString() || '');
+	 // Only save if we have valid data
+	 if (this.authState.user && this.authState.token) {
+		 localStorage.setItem('user', JSON.stringify(this.authState.user));
+		 localStorage.setItem('token', this.authState.token);
+		 localStorage.setItem('tokenExpiry', this.authState.expiresAt?.toISOString() || '');
+		 
+		 // Save refresh token if available
+		 if (this.authState.refreshToken) {
+			 localStorage.setItem('refreshToken', this.authState.refreshToken);
+		 }
+		 
+		 console.log("Auth data saved to storage");
+	 } else {
+		 console.warn("Attempted to save incomplete auth data to storage");
+	 }
  }
 }
 
