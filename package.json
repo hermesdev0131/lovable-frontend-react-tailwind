@@ -1,7 +1,11 @@
 {
   "name": "lovable-app",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "dev:all": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\" \"npm run prisma:studio --prefix backend\"",
+    "db:studio": "npm run prisma:studio --prefix backend",
+    "db:migrate": "npm run prisma:migrate --prefix backend",
+    "db:seed": "npm run prisma:seed --prefix backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

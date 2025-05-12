@@ -36,6 +36,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   
   // Determine if user is authenticated based on either auth system
   const isUserAuthenticated = authState.isAuthenticated || isInMasterMode || currentClientId !== null;
+  const isAdmin = authState.user?.role === 'admin';
   
   // Reset dropdown state when auth state changes
   // React.useEffect(() => {

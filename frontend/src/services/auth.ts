@@ -148,7 +148,7 @@ export class AuthService {
 		return this.authState;
 	}
 
-	public async login(email: string, password: string): Promise<void> {
+	public async login(email: string, password: string, rememberMe: boolean = false): Promise<void> {
 		this.authState.isLoading = true;
 		this.notifyListeners();
 
@@ -159,7 +159,7 @@ export class AuthService {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ email, password }),
+				body: JSON.stringify({ email, password, rememberMe }),
 			});
 
 			await this.handleLoginResponse(response);
@@ -187,7 +187,6 @@ export class AuthService {
 	private async handleLoginResponse(response: Response): Promise<void> {
 		try {
 			const data = await response.json();
-			console.log("Login response received:", response.status);
 			
 			if (response.ok) {
 				console.log("Login successful!");
@@ -215,7 +214,7 @@ export class AuthService {
 				// Show success toast
 				toast({
 					title: "Login Successful",
-					description: `Welcome back, ${user.name}!`,
+					description: `Welcome back, ${user.name || 'User'}!`,
 				});
 			} else {
 				console.log("Login failed:", data.message);
@@ -277,25 +276,34 @@ export class AuthService {
 			this.isLoggingOut = true;
 			console.log("Logout process started");
 			
-			// Store token before clearing auth state
-			const token = localStorage.getItem('token');
+			// Store tokens before clearing auth state
+			const token = this.authState.token;
+			const refreshToken = this.authState.refreshToken;
 			
 			// First clear the auth state to prevent any further authenticated requests
 			this.clearAuth();
 			
 			// Only attempt API call if we have a token
-			if (token) {
+			if (token || refreshToken) {
 				try {
 					// Set a timeout to ensure the API call doesn't hang indefinitely
 					const controller = new AbortController();
 					const timeoutId = setTimeout(() => controller.abort(), 5000);
 					
-					// Call logout endpoint if needed
+					// Call logout endpoint with both tokens if available
+					const headers: Record<string, string> = {};
+					
+					if (token) {
+						headers['Authorization'] = `Bearer ${token}`;
+					}
+					
+					if (refreshToken) {
+						headers['X-Refresh-Token'] = refreshToken;
+					}
+					
 					await fetch(`${config.apiUrl}/auth/logout`, {
 						method: 'POST',
-						headers: {
-							'Authorization': `Bearer ${token}`,
-						},
+						headers,
 						signal: controller.signal
 					});
 					
@@ -472,21 +480,50 @@ export class AuthService {
 		}
 
 		try {
-			const response = await axios.post<{ accessToken: string; refreshToken: string; expiresIn: number}> (
+			// Create a new axios instance without the interceptor to avoid infinite loop
+			const axiosInstance = axios.create();
+			
+			const response = await axiosInstance.post<{ 
+				token: string; 
+				refreshToken: string; 
+				expiresIn: number;
+				user: {
+					id: string;
+					name: string;
+					email: string;
+					role: string;
+				}
+			}>(
 				`${config.apiUrl}/auth/refresh`,
 				{ refreshToken: this.authState.refreshToken }
 			);
 
-			const { accessToken, refreshToken } = response.data;
+			const { token, refreshToken, expiresIn, user } = response.data;
+			
+			// Update the auth state with new tokens
 			this.authState = {
 				...this.authState,
-				token: accessToken,
+				token: token,
 				refreshToken: refreshToken,
-				expiresAt: new Date(Date.now() + response.data.expiresIn * 1000),
+				expiresAt: new Date(Date.now() + expiresIn * 1000),
+				user: { 
+					...user,
+					role: (user.role as 'admin' | 'editor' | 'viewer'),
+					isEmailVerified: this.authState.user?.isEmailVerified || false }
 			};
+			
+			// Save the updated tokens to storage
+			this.saveToStorage();
+			
+			// Notify listeners of the state change
+			this.notifyListeners();
+			
+			console.log("Access token refreshed successfully");
 		} catch (error) {
+			console.error("Failed to refresh access token:", error);
 			// If refresh fails, clear tokens and log out
-			this.logout();
+			this.clearAuth();
+			this.notifyListeners();
 			throw new Error('Session expired. Please log in again.');
 		}
 	}

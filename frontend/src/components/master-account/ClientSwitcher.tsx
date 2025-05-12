@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -10,12 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, ChevronDown, Users, ShieldCheck, LogOut } from 'lucide-react';
+import { Building2, ChevronDown, Users, ShieldCheck, LogOut, UserCog } from 'lucide-react';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+
 
 interface ClientSwitcherProps {
   triggerClassName?: string;
@@ -23,40 +23,31 @@ interface ClientSwitcherProps {
 
 export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) => {
   const { clients, currentClientId, switchToClient, isInMasterMode, toggleMasterMode } = useMasterAccount();
-  const { authState } = useAuth();
+  // const { authState } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const { authState, logoutAndRedirect } = useAuth();
   
   const currentClient = currentClientId !== null 
     ? clients.find(c => c.id === currentClientId) 
     : null;
-    
-  const handleSwitchToMaster = () => {
-    setOpen(false);
-    
-    // Check if user is authenticated
-    if (!authState.isAuthenticated) {
+
+  useEffect(() => {
+    if (authState.isAuthenticated && authState.user?.role === 'admin' && isInMasterMode) {
+      toggleMasterMode();
+      switchToClient(null);
+      navigate('/master-account');
       toast({
-        title: "Authentication Required",
-        description: "Please log in to access the Master Account",
-        variant: "destructive"
+        title: "Switched to Master Account",
+        description: "You now have access to all client accounts"
       });
-      navigate('/login', { replace: true });
-      return;
     }
-    
-    switchToClient(null);
-    navigate('/master-account');
-    toast({
-      title: "Switched to Master Account",
-      description: "You now have access to all client accounts"
-    });
-  };
-  
+  }, [authState, switchToClient, navigate, isInMasterMode, toggleMasterMode]);
+
   const handleSwitchToClient = (clientId: number) => {
     setOpen(false);
     
-    // Check if user is authenticated
     if (!authState.isAuthenticated) {
       toast({
         title: "Authentication Required",
@@ -75,22 +66,48 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     });
   };
 
-  const handleLogout = () => {
-    switchToClient(null);
-    
-    if (isInMasterMode) {
-      toggleMasterMode();
-    }
-    
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully"
-    });
-    
-    navigate('/login', { replace: true });
-  };
+  const handleLogout = async () => {
+      // Prevent multiple logout attempts
+      if (isLoggingOut) {
+        console.log("Logout already in progress, ignoring additional click");
+        return;
+      }
+      
+      try {
+        // Set logging out state to prevent multiple clicks
+        setIsLoggingOut(true);
+        
+        console.log("Starting logout and redirect process");
+        
+        // Clear client selection first
+        if (currentClientId !== null) {
+          switchToClient(null);
+        }
+        
+        // If in master mode, toggle it to disable
+        if (isInMasterMode) {
+          toggleMasterMode();
+        }
+        
+        // Use the auth service to properly logout and redirect to login page
+        await logoutAndRedirect();
+        
+        // No need to navigate here as logoutAndRedirect already does that
+      } catch (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Logout Failed",
+          description: "There was an error logging out. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        // Reset the logging out state after a delay
+        setTimeout(() => {
+          setIsLoggingOut(false);
+        }, 500);
+      }
+    };
   
-  // Helper function to safely get client initials
   const getClientInitials = (client: any) => {
     if (!client || !client.firstName || !client.lastName) {
       return "??";
@@ -98,36 +115,53 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     return `${client.firstName.substring(0, 1)}${client.lastName.substring(0, 1)}`;
   };
   
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return (
+          <Badge variant="outline" className="ml-1 bg-amber-100 text-amber-800 hover:bg-amber-100">
+            <ShieldCheck className="h-3 w-3 mr-1" /> Admin
+          </Badge>
+        );
+      case 'editor':
+        return (
+          <Badge variant="outline" className="ml-1 bg-blue-100 text-blue-800 hover:bg-blue-100">
+            <UserCog className="h-3 w-3 mr-1" /> Editor
+          </Badge>
+        );
+      case 'viewer':
+        return (
+          <Badge variant="outline" className="ml-1 bg-gray-100 text-gray-800 hover:bg-gray-100">
+            <Users className="h-3 w-3 mr-1" /> Viewer
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className={cn("flex items-center gap-2", triggerClassName)}>
           {!authState.isAuthenticated ? (
-            // Show "Select Account" for unauthenticated users
             <span>Select Account</span>
           ) : isInMasterMode && authState.user?.role === 'admin' ? (
-            // Show Master Account for authenticated admin users in master mode
             <>
               <Building2 className="h-4 w-4" />
               <span className="font-medium">Master Account</span>
-              <Badge variant="outline" className="ml-1 bg-amber-100 text-amber-800 hover:bg-amber-100">
-                <ShieldCheck className="h-3 w-3 mr-1" /> Admin
-              </Badge>
+              {getRoleBadge(authState.user.role)}
             </>
           ) : currentClient ? (
-            // Show client account for authenticated users with a selected client
             <>
               <Avatar className="h-6 w-6">
                 <AvatarImage src={currentClient.logo} alt={`${currentClient.firstName} ${currentClient.lastName}`} />
                 <AvatarFallback>{getClientInitials(currentClient)}</AvatarFallback>
               </Avatar>
               <span className="font-medium max-w-[150px] truncate">{`${currentClient.firstName} ${currentClient.lastName}`}</span>
-              <Badge variant="outline" className="ml-1 bg-green-100 text-green-800 hover:bg-green-100">
-                Client
-              </Badge>
+              {getRoleBadge(authState.user.role)}
             </>
           ) : (
-            // Default case for authenticated users without a selected client
             <span>Select Account</span>
           )}
           <ChevronDown className="h-4 w-4 opacity-50" />
@@ -135,7 +169,6 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">
         {!authState.isAuthenticated ? (
-          // Show limited menu for unauthenticated users
           <>
             <DropdownMenuLabel>Account</DropdownMenuLabel>
             <DropdownMenuItem 
@@ -150,13 +183,15 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
             </DropdownMenuItem>
           </>
         ) : (
-          // Show full menu for authenticated users
           <>
             <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
             {authState.user?.role === 'admin' && (
               <DropdownMenuItem 
                 className="flex items-center gap-2 cursor-pointer"
-                onClick={handleSwitchToMaster}
+                onClick={() => {
+                  switchToClient(null);
+                  navigate('/master-account');
+                }}
               >
                 <Building2 className="h-4 w-4" />
                 <span>Master Account</span>
@@ -177,21 +212,6 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
                 <span className="truncate">{`${client.firstName} ${client.lastName}`}</span>
               </DropdownMenuItem>
             ))}
-            {authState.user?.role === 'admin' && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => {
-                    setOpen(false);
-                    navigate('/master-account');
-                  }}
-                >
-                  <Users className="h-4 w-4" />
-                  <span>Manage Clients</span>
-                </DropdownMenuItem>
-              </>
-            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="flex items-center gap-2 cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600"
