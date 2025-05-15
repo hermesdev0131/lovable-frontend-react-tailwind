@@ -1,6 +1,7 @@
 import React, {createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { AuthState, authService } from '@/services/auth';
 import { useNavigate } from 'react-router-dom';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface AuthContextType {
 	authState: AuthState;
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	// Custom function that logs out and redirects to login page
 	const logoutAndRedirect = useCallback(async () => {
 		// Prevent multiple navigation attempts
+		
 		if (isNavigating) {
 			console.log("AuthContext: Navigation already in progress");
 			return;
@@ -39,12 +41,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			setIsNavigating(true);
 			console.log("AuthContext: Starting logout process");
 			
+			
 			// First attempt to logout via the auth service
 			await authService.logout();
+			
 			console.log("AuthContext: Logout successful, redirecting to login");
-			navigate('/login', { state: { from: { pathname: '/logout' } }, replace: true });
+			// navigate('/login', { state: { from: { pathname: '/logout' } }, replace: true });
 			// Navigate to login page with replacement (prevents going back)
-			// navigate('/login', { replace: true });
+			navigate('/login', { state: { from: { pathname: '/logout' } }, replace: true });
 		} catch (error) {
 			console.error('AuthContext: Logout error:', error);
 			

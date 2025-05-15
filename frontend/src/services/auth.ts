@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { config } from "@/config";
 import { toast } from '@/hooks/use-toast';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 //import { PrismaClient } from '@prisma/client';
 //import bcrypt from 'bcrypt';
 //import jwt from 'jsonwebtoken';
@@ -311,6 +312,7 @@ export class AuthService {
 				}
 			}
 			// First clear the auth state to prevent any further authenticated requests
+			
 			this.clearAuth();
 			// Show toast notification
 			toast({
@@ -334,7 +336,10 @@ export class AuthService {
 		localStorage.removeItem('token');
 		localStorage.removeItem('tokenExpiry');
 		localStorage.removeItem('refreshToken');
-		
+		localStorage.removeItem('master_account_is_master_mode');
+		localStorage.removeItem('master_account_current_client');
+		localStorage.setItem('master_account_is_master_mode', 'false');
+		localStorage.removeItem('master_account_current_client');
 		// Reset the auth state to initial values
 		this.authState = {
 			user: null,

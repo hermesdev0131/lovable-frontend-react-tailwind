@@ -81,6 +81,10 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
         console.log("Starting logout and redirect process");
         
         // Clear client selection first
+        
+        
+        // Use the auth service to properly logout and redirect to login page
+        await logoutAndRedirect();
         if (currentClientId !== null) {
           switchToClient(null);
         }
@@ -89,9 +93,6 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
         if (isInMasterMode) {
           toggleMasterMode();
         }
-        
-        // Use the auth service to properly logout and redirect to login page
-        await logoutAndRedirect();
         
         // No need to navigate here as logoutAndRedirect already does that
       } catch (error) {

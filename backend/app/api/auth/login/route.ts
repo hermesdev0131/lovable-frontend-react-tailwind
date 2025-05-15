@@ -15,6 +15,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, rememberMe = false } = body;
     
+  //   const accessToken = process.env.HUBSPOT_ACCESS_TOKEN;
+
+  // if (!accessToken) {
+  //   console.error('Missing HUBSPOT_ACCESS_TOKEN in environment variables.');
+  //   return;
+  // }
+
+  //   // Get the first owner from HubSpot
+  //   const res = await fetch('https://api.hubapi.com/crm/v3/owners', {
+  //     headers: {
+  //       Authorization: `Bearer ${accessToken}`,
+  //       'Content-Type': 'application/json',
+  //     },
+  //   });
+
+
+  //   const data = await res.json();
+  //   console.log('HubSpot API response:', data);
     // Define headers for the HubSpot OAuth request    
     
     if (!email || !password) {
@@ -83,7 +101,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: 'admin',
       },
       token,
       refreshToken,

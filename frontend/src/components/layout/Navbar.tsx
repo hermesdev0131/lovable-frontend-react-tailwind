@@ -59,18 +59,20 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
       console.log("Starting logout and redirect process");
       
       // Clear client selection first
-      if (currentClientId !== null) {
-        switchToClient(null);
-      }
+      
       
       // If in master mode, toggle it to disable
-      if (isInMasterMode) {
-        toggleMasterMode();
-      }
+      
       
       // Use the auth service to properly logout and redirect to login page
       await logoutAndRedirect();
       
+      if (currentClientId !== null) {
+        switchToClient(null);
+      }
+      if (isInMasterMode) {
+        toggleMasterMode();
+      }
       // No need to navigate here as logoutAndRedirect already does that
     } catch (error) {
       console.error('Logout error:', error);

@@ -35,8 +35,8 @@ async function main() {
     const ownerPassword = ownerEmail.split('@')[0];
 
     // Use a static test user or pull from HubSpot if needed
-    const testEmail = 'admin@example.com';
-    const testPassword = 'password123'; // OR use ownerPassword if needed
+    // const testEmail = 'admin@example.com';
+    // const testPassword = 'password123'; // OR use ownerPassword if needed
 
     // Check if test user exists
     const existingUser = await prisma.user.findUnique({
@@ -55,9 +55,9 @@ async function main() {
         },
       });
 
-      console.log(`Test user "${ownerEmail}" created successfully.`);
+      console.log(`Admin user "${ownerEmail}" created successfully.`);
     } else {
-      console.log(`ℹTest user "${ownerEmail}" already exists.`);
+      console.log(`Admin user "${ownerEmail}" already exists.`);
     }
 
   } catch (error) {

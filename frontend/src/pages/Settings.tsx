@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Cable, RefreshCw, Users } from "lucide-react";
+import { Check, Copy, ExternalLink, Plus, Trash2, Zap, Calendar, Mail, Cable, RefreshCw, Users, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,14 @@ const SettingsPage = () => {
   const [copied, setCopied] = useState(false);
   
   const [activeTab, setActiveTab] = useState("general");
+  
+  // Password state variables
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (location.state?.tab) {
@@ -147,6 +155,19 @@ const SettingsPage = () => {
       dateStyle: 'medium', 
       timeStyle: 'short' 
     }).format(date);
+  };
+  
+  // Toggle password visibility functions
+  const toggleCurrentPasswordVisibility = () => {
+    setShowCurrentPassword(!showCurrentPassword);
+  };
+  
+  const toggleNewPasswordVisibility = () => {
+    setShowNewPassword(!showNewPassword);
+  };
+  
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
@@ -306,26 +327,112 @@ const SettingsPage = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
-                <Input id="currentPassword" type="password" />
+                <div className="relative">
+                  <Input 
+                    id="currentPassword" 
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button 
+                    type="button"
+                    onClick={toggleCurrentPasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
-                <Input id="newPassword" type="password" />
+                <div className="relative">
+                  <Input 
+                    id="newPassword" 
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button 
+                    type="button"
+                    onClick={toggleNewPasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input id="confirmPassword" type="password" />
+                <div className="relative">
+                  <Input 
+                    id="confirmPassword" 
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button 
+                    type="button"
+                    onClick={toggleConfirmPasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => {
-                toast({
-                  title: "Password Updated",
-                  description: "Your password has been changed successfully."
-                });
-              }}>
+              <Button 
+                onClick={() => {
+                  // Validate passwords
+                  if (!currentPassword) {
+                    toast({
+                      title: "Error",
+                      description: "Please enter your current password",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
+                  if (!newPassword) {
+                    toast({
+                      title: "Error",
+                      description: "Please enter a new password",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
+                  if (newPassword !== confirmPassword) {
+                    toast({
+                      title: "Error",
+                      description: "New passwords do not match",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
+                  // Here you would typically call an API to update the password
+                  
+                  // Reset form fields
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                  
+                  // Show success message
+                  toast({
+                    title: "Password Updated",
+                    description: "Your password has been changed successfully."
+                  });
+                }}
+              >
                 Update Password
               </Button>
             </CardFooter>

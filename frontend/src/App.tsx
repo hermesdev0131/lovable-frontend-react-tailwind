@@ -51,7 +51,6 @@ const RoutesComponent = () => {
 			<Route path="/" element={<Index />} />
 
 			<Route element={<ProtectedRoute />}>
-				<Route path="/login" element={<Login />} />
 				<Route path="/reputation" element={<Reputation />} />
 				<Route path="/contacts" element={<Contacts />} />
 				<Route path="/clients" element={<Clients />} />
