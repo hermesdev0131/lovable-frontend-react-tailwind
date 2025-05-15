@@ -34,16 +34,16 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     : null;
 
   useEffect(() => {
-    if (authState.isAuthenticated && authState.user?.role === 'admin' && isInMasterMode) {
+    if (authState.isAuthenticated && authState.user?.role === 'admin') {
       toggleMasterMode();
       switchToClient(null);
-      navigate('/master-account');
-      toast({
-        title: "Switched to Master Account",
-        description: "You now have access to all client accounts"
-      });
+      // navigate('/master-account');
+      // toast({
+      //   title: "Switched to Master Account",
+      //   description: "You now have access to all client accounts"
+      // });
     }
-  }, [authState, switchToClient, navigate, isInMasterMode, toggleMasterMode]);
+  }, [authState, switchToClient, navigate, toggleMasterMode]);
 
   const handleSwitchToClient = (clientId: number) => {
     setOpen(false);
@@ -59,6 +59,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     }
     
     switchToClient(clientId);
+    console.log(`Navigating to home after switching to client ID: ${clientId}`);
     navigate('/');
     toast({
       title: "Client Account Switched",
@@ -146,24 +147,35 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
         <Button variant="outline" className={cn("flex items-center gap-2", triggerClassName)}>
           {!authState.isAuthenticated ? (
             <span>Select Account</span>
-          ) : isInMasterMode && authState.user?.role === 'admin' ? (
+          ) : authState.user?.role === 'admin' ? (
             <>
               <Building2 className="h-4 w-4" />
-              <span className="font-medium">Master Account</span>
-              {getRoleBadge(authState.user.role)}
+              {/* <span className="font-medium">Master Account</span> */}
+              <span className="font-medium max-w-[150px] truncate">{authState.user?.name}</span>
+              <Badge variant="outline" className="ml-1 bg-amber-100 text-amber-800 hover:bg-amber-100">
+                <ShieldCheck className="h-3 w-3 mr-1" /> Admin
+              </Badge>
             </>
-          ) : currentClient ? (
+          ) : authState.user?.role === 'editor' ? (
             <>
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={currentClient.logo} alt={`${currentClient.firstName} ${currentClient.lastName}`} />
-                <AvatarFallback>{getClientInitials(currentClient)}</AvatarFallback>
-              </Avatar>
-              <span className="font-medium max-w-[150px] truncate">{`${currentClient.firstName} ${currentClient.lastName}`}</span>
-              {getRoleBadge(authState.user.role)}
+              {/* <Avatar className="h-6 w-6">
+                <AvatarImage src={authState.user?.role} alt={`${authState.user?.name}`} />
+                <AvatarFallback>{getClientInitials(authState.user)}</AvatarFallback>
+              </Avatar> */}
+              <UserCog className="h-4 w-4" />
+              <span className="font-medium max-w-[150px] truncate">{authState.user?.name}</span>
+              {getRoleBadge(authState.user?.role)}
+            </>
+          ) : authState.user?.role === 'viewer' ? (
+            <>
+              <Users className="h-4 w-4" />
+              <span className="font-medium max-w-[150px] truncate">{authState.user?.name}</span>
+              {getRoleBadge(authState.user?.role)}
             </>
           ) : (
             <span>Select Account</span>
           )}
+        
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
@@ -184,7 +196,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
           </>
         ) : (
           <>
-            <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
+            {/* <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
             {authState.user?.role === 'admin' && (
               <DropdownMenuItem 
                 className="flex items-center gap-2 cursor-pointer"
@@ -197,7 +209,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
                 <span>Master Account</span>
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator /> */}
             <DropdownMenuLabel>Client Accounts</DropdownMenuLabel>
             {clients.map(client => (
               <DropdownMenuItem

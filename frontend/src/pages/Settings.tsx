@@ -158,17 +158,19 @@ const SettingsPage = () => {
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="password">Password</TabsTrigger>
-          <TabsTrigger value="team">
-            <Users className="h-4 w-4 mr-2" />
-            Team
-          </TabsTrigger>
+          
           {isInMasterMode && (
             <>
+              <TabsTrigger value="team">
+                <Users className="h-4 w-4 mr-2" />
+                Team
+              </TabsTrigger>
               <TabsTrigger value="integrations">Integrations</TabsTrigger>
               <TabsTrigger value="make">Make.com</TabsTrigger>
+              <TabsTrigger value="social integration">Social Media Integration</TabsTrigger>
             </>
           )}
-          <TabsTrigger value="social integration">Social Media Integration</TabsTrigger>
+          
         </TabsList>
         
         <TabsContent value="general">

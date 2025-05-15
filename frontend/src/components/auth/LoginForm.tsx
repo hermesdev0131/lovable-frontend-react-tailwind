@@ -56,7 +56,8 @@ export const LoginForm = () => {
       if (authState.isAuthenticated) {
         console.log("Login success, redirecting to dashboard");
         // Always go directly to the dashboard, ignoring any previous location
-        navigate('/', { replace: true });
+        const destination = location.state?.from?.pathname || '/';
+        navigate(destination, { replace: true });
       } else {
         navigate('/login', { replace: true});
       }

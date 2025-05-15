@@ -275,13 +275,11 @@ export class AuthService {
 		try {
 			this.isLoggingOut = true;
 			console.log("Logout process started");
-			
 			// Store tokens before clearing auth state
 			const token = this.authState.token;
 			const refreshToken = this.authState.refreshToken;
 			
-			// First clear the auth state to prevent any further authenticated requests
-			this.clearAuth();
+			
 			
 			// Only attempt API call if we have a token
 			if (token || refreshToken) {
@@ -306,7 +304,6 @@ export class AuthService {
 						headers,
 						signal: controller.signal
 					});
-					
 					clearTimeout(timeoutId);
 					console.log("Logout API call successful");
 				} catch (error) {
@@ -314,7 +311,8 @@ export class AuthService {
 					// Continue with logout process even if API call fails
 				}
 			}
-
+			// First clear the auth state to prevent any further authenticated requests
+			this.clearAuth();
 			// Show toast notification
 			toast({
 				title: "Logged Out",

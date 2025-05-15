@@ -48,9 +48,9 @@ const RoutesComponent = () => {
     <Routes>
       
 			<Route path="/login" element={<Login />} />
+			<Route path="/" element={<Index />} />
 
 			<Route element={<ProtectedRoute />}>
-				<Route path="/" element={<Index />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/reputation" element={<Reputation />} />
 				<Route path="/contacts" element={<Contacts />} />

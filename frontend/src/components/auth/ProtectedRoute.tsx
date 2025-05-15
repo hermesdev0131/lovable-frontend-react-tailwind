@@ -9,7 +9,9 @@ export const ProtectedRoute = () => {
   
   if (!authState.isAuthenticated) {
     const isRedirectFromLogin = location.state?.from?.pathname === '/login';
-    if (location.pathname !== '/login' && location.pathname !== '/' && !isRedirectFromLogin) {
+    const isRedirectFromLogout = location.state?.from?.pathname === '/logout';
+    console.log(location.state?.from?.pathname);
+    if (location.pathname !== '/login' && location.pathname !== '/' && !isRedirectFromLogin && !isRedirectFromLogout) {
       toast({
         title: "Authentication Required",
         description: "Please log in to access this page.",
@@ -21,14 +23,14 @@ export const ProtectedRoute = () => {
   
   if (authState.user && authState.user.role) {
     const { role } = authState.user;
-    const adminOnlyPaths = ['/master-account', '/settings'];
+    const adminOnlyPaths = ['/master-account'];
     const editorRestrictedPaths = ['/settings'];
 
     if (role === 'admin') {
       return <Outlet />;
     }
 
-    if (role === 'viewer' && (adminOnlyPaths.includes(location.pathname) || editorRestrictedPaths.includes(location.pathname))) {
+    if (role === 'viewer' && (adminOnlyPaths.includes(location.pathname))) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access this page",
