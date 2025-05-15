@@ -161,7 +161,6 @@ export class AuthService {
 				},
 				body: JSON.stringify({ email, password, rememberMe }),
 			});
-
 			await this.handleLoginResponse(response);
 			
 		} catch (error) {

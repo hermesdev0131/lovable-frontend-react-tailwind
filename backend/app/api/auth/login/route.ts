@@ -4,9 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { signToken } from '@/lib/jwt';
 import { corsOptionsResponse, corsHeaders } from '@/lib/cors';
 import crypto from 'crypto';
-import { TokenData } from '../../../../lib/tokenStorage';
-import { access } from 'fs';
-import { getHubspotAccessToken } from '../../../../lib/hubspotAuth';
 
 // Handle OPTIONS request for CORS preflight
 export async function OPTIONS() {
@@ -18,28 +15,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, rememberMe = false } = body;
     
-    // Define headers for the HubSpot OAuth request
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
+    // Define headers for the HubSpot OAuth request    
     
-    const accessToken = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hubspot/oauth/login`, {
-      method: 'GET',
-      headers,
-    });
-    // console.log('Access Token:', accessToken);
-    const res = await fetch('https://api.hubapi.com/oauth/v1/access-tokens/' + accessToken);
-    // const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
-    //   headers: {
-    //     Authorization: `Bearer ${tokenData}`,  // must be exact
-    //     'Content-Type': 'application/json',
-    //   }
-    // });
-    const data = await res.json();
-    // console.log('HubSpot OAuth response:', data);
-
-
     if (!email || !password) {
       const response = NextResponse.json(
         { message: 'Email and password are required' },
@@ -106,7 +83,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: 'editor',
+        role: user.role,
       },
       token,
       refreshToken,
