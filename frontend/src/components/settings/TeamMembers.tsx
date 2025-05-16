@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,11 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send } from "lucide-react";
+import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send, Users} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trackEmailAction, trackError } from "@/lib/analytics";
-
+import { config } from "@/config";
 export interface TeamMember {
   id: string;
   name: string;
@@ -19,7 +19,7 @@ export interface TeamMember {
   role: "admin" | "editor" | "viewer";
   status: "active" | "pending" | "inactive";
   avatar?: string;
-  lastActive?: string;
+  updatedAt?: string;
 }
 
 const TeamMembers = () => {
@@ -30,10 +30,12 @@ const TeamMembers = () => {
     name: string;
     email: string;
     role: "admin" | "editor" | "viewer";
+    status : "active" | "pending" | "inactive"
   }>({
     name: "",
     email: "",
-    role: "editor"
+    role: "editor",
+    status: "pending"
   });
 
   const [showInviteDialog, setShowInviteDialog] = useState(false);
@@ -41,7 +43,29 @@ const TeamMembers = () => {
   const [inviteMessage, setInviteMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  const handleAddMember = () => {
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/settings/teammembers`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch team members');
+        }
+        const data = await response.json();
+        setTeamMembers(data);
+      } catch (error) {
+        console.error('Error fetching team members:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load team members.",
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchTeamMembers();
+  }, []);
+
+  const handleAddMember = async() => {
     if (!newMember.name || !newMember.email) {
       toast({
         title: "Missing information",
@@ -69,46 +93,128 @@ const TeamMembers = () => {
       return;
     }
 
-    const newTeamMember: TeamMember = {
-      id: Date.now().toString(),
-      name: newMember.name,
-      email: newMember.email,
-      role: newMember.role,
-      status: "pending"
-    };
+    // const newTeamMember: TeamMember = {
+    //   id: Date.now().toString(),
+    //   name: newMember.name,
+    //   email: newMember.email,
+    //   role: newMember.role,
+    //   status: "pending",
+    // };
 
-    setTeamMembers([...teamMembers, newTeamMember]);
-    setNewMember({ name: "", email: "", role: "editor" });
+    try {
+      const response = await fetch(`${config.apiUrl}/settings/teammembers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMember),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to add team member.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-    toast({
-      title: "Invitation sent",
-      description: `An invitation has been sent to ${newMember.email}`,
-    });
+      const addedMember = await response.json();
+      setTeamMembers(prevMembers => [...prevMembers, addedMember]);
+
+      // Reset the input fields after adding
+      setNewMember({ name: "", email: "", role: "editor", status: "pending"});
+
+      toast({
+        title: "Success",
+        description: "Team member added successfully.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error adding team member:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add team member.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleRoleChange = (memberId: string, newRole: "admin" | "editor" | "viewer") => {
-    setTeamMembers(
-      teamMembers.map(member => 
-        member.id === memberId 
-          ? { ...member, role: newRole } 
-          : member
-      )
-    );
-    
-    toast({
-      title: "Role updated",
-      description: "Team member role has been updated successfully."
-    });
+  const handleRoleChange = async (memberId: string, newRole: "admin" | "editor" | "viewer") => {
+    try {
+      const response = await fetch(`${config.apiUrl}/settings/teammembers?id=${memberId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update team member role');
+      }
+
+      const updatedMember = await response.json();
+      
+      // Update the UI with the response from the server
+      setTeamMembers(
+        teamMembers.map(member => 
+          member.id === memberId 
+            ? { ...member, ...updatedMember } 
+            : member
+        )
+      );
+      
+      toast({
+        title: "Role updated",
+        description: "Team member role has been updated successfully."
+      });
+    } catch (error) {
+      console.error('Error updating team member role:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update team member role.",
+        variant: "destructive"
+      });
+      
+      // Revert the UI change if the API call fails
+      // This requires fetching the team members again to get the current state
+      try {
+        const response = await fetch(`${config.apiUrl}/settings/teammembers`);
+        if (response.ok) {
+          const data = await response.json();
+          setTeamMembers(data);
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing team members:', refreshError);
+      }
+    }
   };
 
-  const handleRemoveMember = (memberId: string) => {
-    setTeamMembers(teamMembers.filter(member => member.id !== memberId));
-    
-    toast({
-      title: "Team member removed",
-      description: "The team member has been removed successfully."
-    });
-  };
+  const handleRemoveMember = async (memberId: string) => {
+    try {
+      const response = await fetch(`${config.apiUrl}/settings/teammembers?id=${memberId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to remove team member');
+      }
+
+      // Only update the UI if the API call was successful
+      setTeamMembers(teamMembers.filter(member => member.id !== memberId));
+      
+      toast({
+        title: "Team member removed",
+        description: "The team member has been removed successfully."
+      });
+    } catch (error) {
+      console.error('Error removing team member:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to remove team member.",
+        variant: "destructive"
+      });
+    }
+   };
 
   const handleResendInvite = (email: string) => {
     toast({
@@ -196,33 +302,35 @@ const TeamMembers = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead></TableHead>
                   <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {teamMembers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                       No team members added yet. Add your first team member below.
                     </TableCell>
                   </TableRow>
-                ) : (
+                ) : ( 
                   teamMembers.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell>
-                        <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={member.avatar} alt={member.name} />
                             <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                           </Avatar>
-                          <div>
-                            <div className="font-medium">{member.name}</div>
-                            <div className="text-sm text-muted-foreground">{member.email}</div>
-                          </div>
-                        </div>
+                      </TableCell>
+                      <TableCell>
+                         <div className="font-medium">{member.name}</div>
+                      </TableCell>
+                      <TableCell>
+                         <div className="text-sm text-muted-foreground">{member.email}</div>
                       </TableCell>
                       <TableCell>
                         <Select 
@@ -245,28 +353,35 @@ const TeamMembers = () => {
                                 Editor
                               </div>
                             </SelectItem>
-                            <SelectItem value="viewer">Viewer</SelectItem>
+                            <SelectItem value="viewer">
+                              {/* <Users className="h-4 w-4 mr-2" /> */}
+                              Viewer
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
+                      
                       <TableCell>
                         {renderStatusBadge(member.status)}
-                        {member.lastActive && (
+                        
+                      </TableCell>
+                      <TableCell>
+                        {member.updatedAt && (
                           <div className="text-xs text-muted-foreground mt-1">
-                            Last active: {member.lastActive}
+                            Last active: {member.updatedAt}
                           </div>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button 
+                          {/* <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => openInviteDialog(member)}
                           >
                             <Send className="h-4 w-4 mr-1" />
                             Invite
-                          </Button>
+                          </Button> */}
                           {member.status === "pending" && (
                             <Button 
                               variant="outline" 
@@ -338,7 +453,11 @@ const TeamMembers = () => {
                       Editor
                     </div>
                   </SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
+                  
+                  <SelectItem value="viewer">
+                    {/* <Users className="h-4 w-4 mr-2" /> */}
+                    Viewer
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

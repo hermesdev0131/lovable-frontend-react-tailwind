@@ -42,6 +42,7 @@ async function main() {
     const existingUser = await prisma.user.findUnique({
       where: { email: ownerEmail },
     });
+    
 
     if (!existingUser) {
       const hashedPassword = await bcrypt.hash(ownerPassword, 10);
@@ -52,6 +53,7 @@ async function main() {
           name: ownerName,
           password: hashedPassword,
           role: 'admin',
+          status: 'active'
         },
       });
 

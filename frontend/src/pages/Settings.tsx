@@ -23,6 +23,8 @@ import { MakeConnect } from "@/components/integrations/MakeConnect";
 import TeamMembers from "@/components/settings/TeamMembers";
 import { SocialMediaConnect } from '@/components/content/SocialMediaConnect';
 import { Integration } from '../hooks/useExternalIntegrations';
+import { config } from "@/config";
+import { AuthService } from "@/services/auth";
 
 const SettingsPage = () => {
   const location = useLocation();
@@ -60,6 +62,9 @@ const SettingsPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const currentUser = AuthService.getInstance().getCurrentUser(); // Get the current user
+  const email = currentUser?.email; // Extract the email from the current user
+
   useEffect(() => {
     if (location.state?.tab) {
       setActiveTab(location.state.tab);
@@ -94,6 +99,55 @@ const SettingsPage = () => {
     });
   };
 
+  const validatePassword = async () => {
+    if (!currentPassword || !newPassword || newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please ensure all fields are filled correctly.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiUrl}/settings/validatepassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email, // or user ID if preferred
+          currentPassword,
+          newPassword,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: "Password Updated",
+          description: data.message || "Your password has been changed successfully.",
+          variant: "default"
+        });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to update password.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
+      });
+    }
+  };
   const handleGeneralSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
@@ -390,48 +444,7 @@ const SettingsPage = () => {
             </CardContent>
             <CardFooter>
               <Button 
-                onClick={() => {
-                  // Validate passwords
-                  if (!currentPassword) {
-                    toast({
-                      title: "Error",
-                      description: "Please enter your current password",
-                      variant: "destructive"
-                    });
-                    return;
-                  }
-                  
-                  if (!newPassword) {
-                    toast({
-                      title: "Error",
-                      description: "Please enter a new password",
-                      variant: "destructive"
-                    });
-                    return;
-                  }
-                  
-                  if (newPassword !== confirmPassword) {
-                    toast({
-                      title: "Error",
-                      description: "New passwords do not match",
-                      variant: "destructive"
-                    });
-                    return;
-                  }
-                  
-                  // Here you would typically call an API to update the password
-                  
-                  // Reset form fields
-                  setCurrentPassword('');
-                  setNewPassword('');
-                  setConfirmPassword('');
-                  
-                  // Show success message
-                  toast({
-                    title: "Password Updated",
-                    description: "Your password has been changed successfully."
-                  });
-                }}
+                onClick={validatePassword}
               >
                 Update Password
               </Button>
