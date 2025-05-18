@@ -65,6 +65,7 @@ export class AuthService {
 	private subscribers: Set<(state: AuthState) => void> = new Set();
 
 	private constructor() {
+		this.isLoggingOut = false
 		this.initializeFromStorage();
 		this.setupSessionCheck();
 	}
@@ -129,7 +130,7 @@ export class AuthService {
 					variant: "destructive",
 				});
 			}
-		}, 60000);
+		}, 10);
 	}
 
 	public subscribe(listener: (state: AuthState) => void) {

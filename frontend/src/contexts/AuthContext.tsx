@@ -48,12 +48,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			console.log("AuthContext: Logout successful, redirecting to login");
 			// navigate('/login', { state: { from: { pathname: '/logout' } }, replace: true });
 			// Navigate to login page with replacement (prevents going back)
-			navigate('/login', { state: { from: { pathname: '/logout' } }, replace: true });
+			navigate('/login', { replace: true });
 		} catch (error) {
 			console.error('AuthContext: Logout error:', error);
 			
 			// Still try to navigate to login even if logout fails
-			navigate('/login', { state: { from: { pathname: '/logout' } }, replace: true });
+			navigate('/login', { replace: true });
 		} finally {
 			// Reset the navigating flag after a delay
 			setTimeout(() => {

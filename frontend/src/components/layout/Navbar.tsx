@@ -62,7 +62,9 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
       
       
       // If in master mode, toggle it to disable
-      
+      // if (isInMasterMode) {
+      //   toggleMasterMode();
+      // }
       
       // Use the auth service to properly logout and redirect to login page
       await logoutAndRedirect();

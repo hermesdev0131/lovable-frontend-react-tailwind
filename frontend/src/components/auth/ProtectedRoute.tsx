@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -7,11 +7,18 @@ export const ProtectedRoute = () => {
   const { authState } = useAuth();
   const location = useLocation();
   
+  console.log("refresh state");
+  // In ProtectedRoute component
+  useEffect(() => {
+    // If we're not authenticated and not on the login page, ensure all storage is cleared
+    if (!authState.isAuthenticated && location.pathname !== '/login' && location.pathname !== '/logout') {
+      // localStorage.clear();
+      sessionStorage.clear();
+    }
+  }, []);
 
-  
-  console.log("Don't put");
   if (!authState.isAuthenticated) {
-    console.log("Don't come");
+
     const isRedirectFromLogin = location.state?.from?.pathname === '/login';
     // const isRedirectFromLogout = location.state?.from?.pathname === '/logout';
     console.log(location.state?.from?.pathname);
