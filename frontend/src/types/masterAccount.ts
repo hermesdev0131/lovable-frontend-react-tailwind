@@ -1,7 +1,7 @@
 // Define all types used in the Master Account context
 
 export interface Client {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   emails: string[];
@@ -38,7 +38,7 @@ export interface WebsitePage {
   views: number;
   conversions: number;
   bounceRate: number;
-  clientId: number | null;
+  clientId: string | null;
 }
 
 export interface ContentItem {
@@ -55,7 +55,7 @@ export interface ContentItem {
   approvedBy?: number;
   approvedAt?: string;
   media?: string | null;
-  clientId: number | null;
+  clientId: string | null;
   skipApproval?: boolean;
 }
 
@@ -67,19 +67,19 @@ export interface Notification {
   createdAt: string;
   read: boolean;
   relatedContentId?: number;
-  forClientId?: number | null;
+  forClientId?: string | null;
 }
 
 export interface MasterAccountContextType {
   clients: Client[];
-  currentClientId: number | null;
+  currentClientId: string | null;
   webhooks: Webhook[];
   websitePages: WebsitePage[];
   contentItems: ContentItem[];
   notifications: Notification[];
   addClient: (client: Client) => void;
-  removeClient: (id: number) => void;
-  switchToClient: (id: number | null) => void;
+  removeClient: (id: string) => void;
+  switchToClient: (id: string | null) => void;
   isInMasterMode: boolean;
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
@@ -95,9 +95,9 @@ export interface MasterAccountContextType {
   updateContentItem: (id: number, data: Partial<ContentItem>) => void;
   deleteContentItem: (id: number) => void;
   updateContentStatus: (id: number, status: 'approved' | 'rejected', reason?: string) => void;
-  getContentItems: (clientId?: number | null, status?: string) => ContentItem[];
+  getContentItems: (clientId?: string | null, status?: string) => ContentItem[];
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
   markNotificationAsRead: (id: number) => void;
-  getNotifications: (forClientId?: number | null) => Notification[];
-  getUnreadNotificationsCount: (forClientId?: number | null) => number;
+  getNotifications: (forClientId?: string | null) => Notification[];
+  getUnreadNotificationsCount: (forClientId?: string | null) => number;
 }

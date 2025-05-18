@@ -55,7 +55,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
   } = useContentItems(isInMasterMode, currentClientId, clients, addNotification);
 
   // Clean up websitePages and contentItems when removing a client
-  const handleRemoveClient = (id: number) => {
+  const handleRemoveClient = (id: string) => {
     removeClient(id);
     
     // These operations are now handled in the main context instead of inside the hooks

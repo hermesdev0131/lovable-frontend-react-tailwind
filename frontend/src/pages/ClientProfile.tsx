@@ -28,24 +28,32 @@ const ClientProfile = () => {
       return;
     }
 
-    const clientData = clients.find(c => c.id === parseInt(clientId));
-    console.log(parseInt(clientId));
-    console.log(clients.find(c => c.id));
+    console.log("Looking for client with ID:", clientId);
+    console.log("Available clients:", clients);
+    
+    // No need to parse clientId as it's already a string
+    const clientData = clients.find(c => c.id === clientId);
     if (clientData) {
+      console.log("Client found:", clientData);
       setClient(clientData);
     } else {
-      navigate('/clients');
-      toast({
-        title: "Client not found",
-        description: "The client you're looking for doesn't exist.",
-        variant: "destructive"
-      });
+      if (clients.length > 0) {
+        console.log("Client not found in loaded clients");
+        navigate('/clients');
+        toast({
+          title: "Client not found",
+          description: "The client you're looking for doesn't exist.",
+          variant: "destructive"
+        });
+      } else {
+        console.log("No clients loaded yet, waiting...");
+      }
     }
   }, [clientId, clients, navigate]);
 
   const handleDelete = () => {
-    if (isDeleting) {
-      removeClient(parseInt(clientId!));
+    if (isDeleting && clientId) {
+      removeClient(clientId);
       toast({
         title: "Client deleted",
         description: "The client has been successfully deleted."
@@ -65,8 +73,21 @@ const ClientProfile = () => {
       <div className="container mx-auto py-8 flex items-center justify-center min-h-[400px]">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Loading client data...</CardTitle>
+            <CardTitle className="flex items-center justify-center">
+              <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              Loading client data...
+            </CardTitle>
+            <CardDescription className="text-center mt-2">
+              {clients.length === 0 
+                ? "Waiting for clients to load..." 
+                : "Preparing client profile..."}
+            </CardDescription>
           </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button variant="outline" onClick={() => navigate('/clients')}>
+              Back to Clients List
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );

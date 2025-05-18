@@ -15,7 +15,7 @@ export function useClients(initialClientData?: Client[]) {
   //   const savedClientId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLIENT);
   //   return savedClientId ? JSON.parse(savedClientId) : null;
   // });
-  const [currentClientId, setCurrentClientId] = useState<number | null>(null);
+  const [currentClientId, setCurrentClientId] = useState<string | null>(null);
 
   // const [isInMasterMode, setIsInMasterMode] = useState<boolean>(() => {
   //   const savedMode = localStorage.getItem(STORAGE_KEYS.MASTER_MODE);
@@ -39,7 +39,7 @@ export function useClients(initialClientData?: Client[]) {
   const addClient = (client: Client) => {
     const newClient: Client = {
       ...client,
-      id: client.id || (clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1)
+      id: client.id || (clients.length > 0 ? (parseInt(clients[clients.length - 1].id) + 1).toString() : "1")
     };
     
     // setClients([...clients, newClient]);
@@ -65,11 +65,11 @@ export function useClients(initialClientData?: Client[]) {
 
 
 
-  const removeClient = (id: number) => {
+  const removeClient = (id: string) => {
     setClients(clients.filter(client => client.id !== id));
   };
 
-  const switchToClient = (id: number | null) => {
+  const switchToClient = (id: string | null) => {
     setCurrentClientId(id);
     setIsInMasterMode(id === null);
   };
