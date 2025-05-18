@@ -18,8 +18,9 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     removeClient, 
     switchToClient,
     toggleMasterMode,
-    loginToAccount
-  } = useClients(initialClients);
+    loginToAccount,
+    clearAllClients
+  } = useClients();
 
   const {
     webhooks,
@@ -79,6 +80,7 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         isInMasterMode,
         toggleMasterMode,
         loginToAccount,
+        clearAllClients,
         addWebhook,
         removeWebhook,
         updateWebhook,

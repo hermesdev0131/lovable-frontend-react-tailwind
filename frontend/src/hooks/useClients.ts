@@ -5,41 +5,65 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { toast } from "@/hooks/use-toast";
 
 export function useClients(initialClientData?: Client[]) {
-  const [clients, setClients] = useState<Client[]>(() => {
-    const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
-    return savedClients ? JSON.parse(savedClients) : initialClientData || [];
-  });
-  
-  const [currentClientId, setCurrentClientId] = useState<number | null>(() => {
-    const savedClientId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLIENT);
-    return savedClientId ? JSON.parse(savedClientId) : null;
-  });
+  // const [clients, setClients] = useState<Client[]>(() => {
+  //   const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
+  //   return savedClients ? JSON.parse(savedClients) : initialClientData || [];
+  // });
+  const [clients, setClients] = useState<Client[]>([]);
 
-  const [isInMasterMode, setIsInMasterMode] = useState<boolean>(() => {
-    const savedMode = localStorage.getItem(STORAGE_KEYS.MASTER_MODE);
-    return savedMode ? JSON.parse(savedMode) : true;
-  });
+  // const [currentClientId, setCurrentClientId] = useState<number | null>(() => {
+  //   const savedClientId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLIENT);
+  //   return savedClientId ? JSON.parse(savedClientId) : null;
+  // });
+  const [currentClientId, setCurrentClientId] = useState<number | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
-  }, [clients]);
+  // const [isInMasterMode, setIsInMasterMode] = useState<boolean>(() => {
+  //   const savedMode = localStorage.getItem(STORAGE_KEYS.MASTER_MODE);
+  //   return savedMode ? JSON.parse(savedMode) : true;
+  // });
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_CLIENT, JSON.stringify(currentClientId));
-  }, [currentClientId]);
+  // useEffect(() => {
+  //   localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
+  // }, [clients]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.MASTER_MODE, JSON.stringify(isInMasterMode));
-  }, [isInMasterMode]);
+  // useEffect(() => {
+  //   localStorage.setItem(STORAGE_KEYS.CURRENT_CLIENT, JSON.stringify(currentClientId));
+  // }, [currentClientId]);
 
-  const addClient = (client: Omit<Client, 'id'>) => {
-    const newClient = {
+  // useEffect(() => {
+  //   localStorage.setItem(STORAGE_KEYS.MASTER_MODE, JSON.stringify(isInMasterMode));
+  // }, [isInMasterMode]);
+
+  const [isInMasterMode, setIsInMasterMode] = useState<boolean>(true);
+
+  const addClient = (client: Client) => {
+    const newClient: Client = {
       ...client,
-      id: clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1
+      id: client.id || (clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1)
     };
     
-    setClients([...clients, newClient]);
+    // setClients([...clients, newClient]);
+    // Check if this is a new client or an existing one
+    // const existingClientIndex = clients.findIndex(c => 
+    //   c.firstName === client.firstName && 
+    //   c.lastName === client.lastName &&
+    //   c.emails.some(email => client.emails.includes(email))
+    // );
+    
+    // if (existingClientIndex >= 0) {
+    //   // Update existing client
+    //   const updatedClients = [...clients];
+    //   updatedClients[existingClientIndex] = { ...newClient, id: clients[existingClientIndex].id };
+    //   setClients(updatedClients);
+    // } else {
+    //   // Add new client
+    //   setClients([...clients, newClient]);
+    // }
+
+    setClients(prev => [...prev, newClient]);
   };
+
+
 
   const removeClient = (id: number) => {
     setClients(clients.filter(client => client.id !== id));
@@ -87,6 +111,11 @@ export function useClients(initialClientData?: Client[]) {
     return false;
   };
 
+  // Add a method to clear all clients
+  const clearAllClients = () => {
+    setClients([]);
+  };
+
   return {
     clients,
     currentClientId,
@@ -95,6 +124,7 @@ export function useClients(initialClientData?: Client[]) {
     removeClient,
     switchToClient,
     toggleMasterMode,
-    loginToAccount
+    loginToAccount,
+    clearAllClients
   };
 }

@@ -5,20 +5,76 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Mail, Phone, X, Tag, Building } from 'lucide-react';
+import { Plus, Mail, Phone, X, Tag, Building, Loader2 } from 'lucide-react';
 import ClientsTable from '@/components/clients/ClientsTable';
 import { useToast } from '@/hooks/use-toast';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { Badge } from '@/components/ui/badge';
+import { config } from '@/config';
 
 const Clients = () => {
   const [showAddClientForm, setShowAddClientForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { addClient } = useMasterAccount();
+  const { addClient, clients, clearAllClients } = useMasterAccount();
   const [availableTags, setAvailableTags] = useState<string[]>([
     'VIP', 'New Lead', 'Qualified', 'Nurturing', 'Potential', 'Enterprise', 'Small Business'
   ]);
   const [newTag, setNewTag] = useState('');
+  
+  // Function to fetch clients from the API
+  const fetchClients = async () => {
+    // console.log("effect");
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${config.apiUrl}/contacts`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch clients');
+      }
+      
+      const data = await response.json();
+      console.log(data);
+      // Add each client to the context
+      clearAllClients();
+      if (Array.isArray(data)) {
+        // If there are no clients in the context or they're just the initial data,
+
+        // we can replace them all with the fetched data
+        data.forEach((client, index) => {
+          // console.log("www");
+            addClient(client);
+        });
+      }
+      
+      toast({
+        title: "Clients loaded",
+        description: `Successfully loaded ${data.length} clients from HubSpot.`,
+      });
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch clients from HubSpot.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Fetch clients when the component mounts
+  useEffect(() => {
+
+    setIsLoading(true);
+
+    // clearAllClients();
+    // console.log("effect");
+    // Always fetch clients from the API when the component mounts
+    fetchClients();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const [newClient, setNewClient] = useState({
     firstName: '',
@@ -29,7 +85,7 @@ const Clients = () => {
     leadType: 'Prospect',
     leadSource: 'Website',
     tags: [] as string[],
-    status: 'active',
+    // status: 'new', // Using 'new' to match HubSpot's NEW status
     users: 0,
     deals: 0,
     contacts: 0,
@@ -130,7 +186,7 @@ const Clients = () => {
     }
   };
   
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     if (!newClient.firstName || !newClient.lastName) {
       toast({
         title: "Error",
@@ -147,41 +203,73 @@ const Clients = () => {
       phoneNumbers: newClient.phoneNumbers.filter(phone => phone.trim() !== '')
     };
     
-    // Add the client
-    addClient(filteredClient);
-    
-    // Reset the form
-    setShowAddClientForm(false);
-    setNewClient({
-      firstName: '',
-      lastName: '',
-      emails: [''],
-      phoneNumbers: [''],
-      company: '',
-      leadType: 'Prospect',
-      leadSource: 'Website',
-      tags: [],
-      status: 'active',
-      users: 0,
-      deals: 0,
-      contacts: 0,
-      lastActivity: new Date().toISOString(),
-      logo: ''
-    });
-    
-    toast({
-      title: "Client added",
-      description: "The client has been successfully added.",
-    });
+    console.log(filteredClient);
+    try {
+      // Send client data to backend API
+      const response = await fetch(`${config.apiUrl}/contacts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filteredClient),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add client');
+      }
+      
+      const data = await response.json();
+      
+      // Add the client to local state with the returned data from HubSpot
+      addClient({...filteredClient, ...data});
+      
+      // Reset the form
+      setShowAddClientForm(false);
+      setNewClient({
+        firstName: '',
+        lastName: '',
+        emails: [''],
+        phoneNumbers: [''],
+        company: '',
+        leadType: 'Prospect',
+        leadSource: 'Website',
+        tags: [],
+        // status: 'new', // Using 'new' to match HubSpot's NEW status
+        users: 0,
+        deals: 0,
+        contacts: 0,
+        lastActivity: new Date().toISOString(),
+        logo: ''
+      });
+      
+      toast({
+        title: "Client added",
+        description: "The client has been successfully added to HubSpot.",
+      });
+    } catch (error) {
+      console.error('Error adding client:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add client to HubSpot.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Clients</h1>
-        <Button onClick={handleCreateClientClick}>
-          <Plus className="mr-2 h-4 w-4" /> Add Client
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={fetchClients} disabled={isLoading}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <></>}
+            Refresh
+          </Button>
+          <Button onClick={handleCreateClientClick}>
+            <Plus className="mr-2 h-4 w-4" /> Add Client
+          </Button>
+        </div>
       </div>
       
       {showAddClientForm && (
@@ -304,7 +392,7 @@ const Clients = () => {
               
               <div>
                 <Label htmlFor="leadType">Lead Type</Label>
-                <Select>
+                <Select onValueChange={(value) => handleSelectChange('leadType', value)} value={newClient.leadType}>
                   <SelectTrigger id="leadType">
                     <SelectValue placeholder="Select lead type" />
                   </SelectTrigger>
@@ -333,6 +421,25 @@ const Clients = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* <div>
+                <Label htmlFor="status">Lead Status</Label>
+                <Select onValueChange={(value) => handleSelectChange('status', value)} value={newClient.status}>
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select lead status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="open_deal">Open Deal</SelectItem>
+                    <SelectItem value="unqualified">Unqualified</SelectItem>
+                    <SelectItem value="attempted_to_contact">Attempted to Contact</SelectItem>
+                    <SelectItem value="connected">Connected</SelectItem>
+                    <SelectItem value="bad_timing">Bad Timing</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div> */}
               
               <div className="md:col-span-2">
                 <Label>Tags</Label>
@@ -378,11 +485,23 @@ const Clients = () => {
       )}
       
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Client Directory</CardTitle>
+          {isLoading && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading clients...
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          <ClientsTable />
+          {isLoading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <ClientsTable />
+          )}
         </CardContent>
       </Card>
     </div>

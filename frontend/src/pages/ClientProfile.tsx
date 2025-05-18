@@ -29,6 +29,8 @@ const ClientProfile = () => {
     }
 
     const clientData = clients.find(c => c.id === parseInt(clientId));
+    console.log(parseInt(clientId));
+    console.log(clients.find(c => c.id));
     if (clientData) {
       setClient(clientData);
     } else {

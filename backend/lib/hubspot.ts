@@ -1,9 +1,6 @@
 import { triggerWorkflowWebhook } from './webhooks';
 import { hubspotClient, handleHubspotAuthError } from './hubspotAuth';
-
-export const hubspotClient = new Client({
-    accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
-});
+import { Client } from '@hubspot/api-client';
 
 
 // Contact operations

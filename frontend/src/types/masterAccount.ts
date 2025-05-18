@@ -77,12 +77,13 @@ export interface MasterAccountContextType {
   websitePages: WebsitePage[];
   contentItems: ContentItem[];
   notifications: Notification[];
-  addClient: (client: Omit<Client, 'id'>) => void;
+  addClient: (client: Client) => void;
   removeClient: (id: number) => void;
   switchToClient: (id: number | null) => void;
   isInMasterMode: boolean;
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
+  clearAllClients: () => void;
   addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
   removeWebhook: (id: number) => void;
   updateWebhook: (id: number, data: Partial<Webhook>) => void;
