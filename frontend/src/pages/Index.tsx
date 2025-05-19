@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DashboardStats from '@/components/dashboard/DashboardStats';
@@ -13,23 +12,29 @@ import { toast } from '@/hooks/use-toast';
 const Index = () => {
   const navigate = useNavigate();
   const { clients, clientsLoaded, fetchClientsData, isLoadingClients } = useMasterAccount();
-  const { deals } = useDeals();
+  const { deals, fetchDealsData, isLoadingDeals, dealsLoaded } = useDeals();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Fetch clients data if not already loaded
+  // Fetch clients and deals data if not already loaded
   useEffect(() => {
     console.log("reload");
-    const loadClientData = async () => {
-      if (!clientsLoaded && !isLoadingClients && !isLoading) {
+    const loadData = async () => {
+      if ((!clientsLoaded && !isLoadingClients) || (!dealsLoaded && !isLoadingDeals)) {
         setIsLoading(true);
         try {
-          console.log("Dashboard: Fetching client data...");
-          await fetchClientsData();
+          if (!clientsLoaded && !isLoadingClients) {
+            console.log("Dashboard: Fetching client data...");
+            await fetchClientsData();
+          }
+          if (!dealsLoaded && !isLoadingDeals) {
+            console.log("Dashboard: Fetching deals data...");
+            await fetchDealsData();
+          }
         } catch (error) {
-          console.error("Error fetching client data:", error);
+          console.error("Error fetching data:", error);
           toast({
             title: "Error",
-            description: "Failed to load client data",
+            description: "Failed to load dashboard data",
             variant: "destructive"
           });
         } finally {
@@ -38,8 +43,8 @@ const Index = () => {
       }
     };
     
-    loadClientData();
-  }, [clientsLoaded, fetchClientsData, isLoadingClients, isLoading]);
+    loadData();
+  }, [clientsLoaded, fetchClientsData, isLoadingClients, dealsLoaded, fetchDealsData, isLoadingDeals]);
   
   // Calculate dashboard stats from actual data
   const totalContacts = clients.length;
@@ -96,7 +101,7 @@ const Index = () => {
         openDeals={openDeals}
         totalDealValue={totalDealValue}
         onCardClick={handleCardClick}
-        isLoading={isLoading || isLoadingClients}
+        isLoading={isLoading || isLoadingClients || isLoadingDeals}
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
