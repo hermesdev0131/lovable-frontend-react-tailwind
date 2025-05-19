@@ -15,6 +15,7 @@ import { config } from '@/config';
 const Clients = () => {
   const [showAddClientForm, setShowAddClientForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddingClient, setIsAddingClient] = useState(false);
   const { toast } = useToast();
   const { addClient, clients, clearAllClients, clientsLoaded, fetchClientsData, isLoadingClients, refreshClientsData } = useMasterAccount();
   const [availableTags, setAvailableTags] = useState<string[]>([
@@ -191,7 +192,9 @@ const Clients = () => {
       });
       return;
     }
-    
+
+    setIsAddingClient(true);
+
     // Filter out any empty emails or phone numbers
     const filteredClient = {
       ...newClient,
@@ -250,6 +253,9 @@ const Clients = () => {
         description: error instanceof Error ? error.message : "Failed to add client to HubSpot.",
         variant: "destructive"
       });
+    } finally {
+      // Reset loading state
+      setIsAddingClient(false);
     }
   };
 
@@ -262,8 +268,9 @@ const Clients = () => {
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <></>}
             Refresh
           </Button>
-          <Button onClick={handleCreateClientClick}>
-            <Plus className="mr-2 h-4 w-4" /> Add Client
+          <Button onClick={handleCreateClientClick} disabled={isAddingClient}>
+            {isAddingClient ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+            Add Client
           </Button>
         </div>
       </div>
@@ -473,8 +480,24 @@ const Clients = () => {
               </div>
             </div>
             <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" onClick={() => setShowAddClientForm(false)}>Cancel</Button>
-              <Button onClick={handleAddClient}>Add Client</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAddClientForm(false)} 
+                disabled={isAddingClient}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddClient} 
+                disabled={isAddingClient}
+              >
+               {isAddingClient ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                {isAddingClient ? "Adding..." : "Add Client"}
+              </Button>
             </div>
           </CardContent>
         </Card>
