@@ -17,16 +17,23 @@ const Index = () => {
   
   // Fetch clients and deals data if not already loaded
   useEffect(() => {
-    console.log("reload");
+    console.log("Dashboard: Initial data load check");
     const loadData = async () => {
-      if ((!clientsLoaded && !isLoadingClients) || (!dealsLoaded && !isLoadingDeals)) {
+      // Only proceed if we need to load data and aren't already loading
+      const needClientsData = !clientsLoaded && !isLoadingClients;
+      const needDealsData = !dealsLoaded && !isLoadingDeals;
+      
+      if (needClientsData || needDealsData) {
         setIsLoading(true);
         try {
-          if (!clientsLoaded && !isLoadingClients) {
+          // Load clients data if needed
+          if (needClientsData) {
             console.log("Dashboard: Fetching client data...");
             await fetchClientsData();
           }
-          if (!dealsLoaded && !isLoadingDeals) {
+          
+          // Load deals data if needed
+          if (needDealsData) {
             console.log("Dashboard: Fetching deals data...");
             await fetchDealsData();
           }
@@ -44,7 +51,8 @@ const Index = () => {
     };
     
     loadData();
-  }, [clientsLoaded, fetchClientsData, isLoadingClients, dealsLoaded, fetchDealsData, isLoadingDeals]);
+    // Only re-run when the loaded state changes, not when the loading state or fetch functions change
+  }, [clientsLoaded, dealsLoaded]);
   
   // Calculate dashboard stats from actual data
   const totalContacts = clients.length;

@@ -36,7 +36,7 @@ const demoTeamMembers: TeamMember[] = [
     email: "jane@example.com",
     role: "admin",
     status: "active",
-    lastActive: "Today at 2:34 PM"
+    updatedAt: "Today at 2:34 PM"
   },
   {
     id: "2",
@@ -44,7 +44,7 @@ const demoTeamMembers: TeamMember[] = [
     email: "john@example.com",
     role: "editor",
     status: "active",
-    lastActive: "Yesterday at 5:12 PM"
+    updatedAt: "Yesterday at 5:12 PM"
   },
   {
     id: "3",
