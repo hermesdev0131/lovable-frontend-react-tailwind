@@ -77,6 +77,8 @@ export interface MasterAccountContextType {
   websitePages: WebsitePage[];
   contentItems: ContentItem[];
   notifications: Notification[];
+  isLoadingClients: boolean;
+  clientsLoaded: boolean;
   addClient: (client: Client) => void;
   removeClient: (id: string) => void;
   switchToClient: (id: string | null) => void;
@@ -84,6 +86,8 @@ export interface MasterAccountContextType {
   toggleMasterMode: () => void;
   loginToAccount: (email: string, password: string) => boolean;
   clearAllClients: () => void;
+  fetchClientsData: () => Promise<boolean>;
+  refreshClientsData: () => Promise<boolean>;
   addWebhook: (webhook: Omit<Webhook, 'id'>) => void;
   removeWebhook: (id: number) => void;
   updateWebhook: (id: number, data: Partial<Webhook>) => void;

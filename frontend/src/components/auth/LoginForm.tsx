@@ -15,18 +15,34 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { loginToAccount } = useMasterAccount();
-	const { login, authState } = useAuth();
+  const { loginToAccount, fetchClientsData, clientsLoaded } = useMasterAccount();
+  const { login, authState } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Effect to handle successful authentication state changes
   useEffect(() => {
-    if (authState.isAuthenticated) {
-      console.log("Auth state detected as authenticated, redirecting to dashboard");
-      navigate('/', { replace: true });
-    }
-  }, [authState.isAuthenticated, navigate]);
+    const handleSuccessfulLogin = async () => {
+      if (authState.isAuthenticated) {
+        console.log("Auth state detected as authenticated");
+        
+        // Fetch client data only if not already loaded
+        if (!clientsLoaded) {
+          console.log("Fetching client data after login");
+          try {
+            await fetchClientsData();
+          } catch (error) {
+            console.error("Error fetching client data:", error);
+          }
+        }
+        
+        console.log("Redirecting to dashboard");
+        navigate('/', { replace: true });
+      }
+    };
+    
+    handleSuccessfulLogin();
+  }, [authState.isAuthenticated, navigate, fetchClientsData, clientsLoaded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

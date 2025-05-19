@@ -9,13 +9,15 @@ interface DashboardStatsProps {
   openDeals: number;
   totalDealValue: number;
   onCardClick: (title: string, path: string) => void;
+  isLoading?: boolean;
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
   totalContacts,
   openDeals,
   totalDealValue,
-  onCardClick
+  onCardClick,
+  isLoading = false
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -25,6 +27,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         icon={Users}
         subtitle={totalContacts === 0 ? "No contacts added yet" : `${totalContacts} total contacts`}
         onClick={() => onCardClick("Contacts", "/clients")}
+        isLoading={isLoading}
       />
       
       <StatCard
@@ -33,6 +36,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         icon={LineChart}
         subtitle={openDeals === 0 ? "No active deals" : `${openDeals} active deals in progress`}
         onClick={() => onCardClick("Deals", "/reports")}
+        isLoading={isLoading}
       />
       
       <StatCard
@@ -41,6 +45,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         icon={PieChart}
         subtitle={totalDealValue === 0 ? "No value in pipeline yet" : `${formatCurrency(totalDealValue)} total pipeline value`}
         onClick={() => onCardClick("Opportunities", "/reports")}
+        isLoading={isLoading}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   User, Building, Mail, Phone, Calendar, Tag, 
-  ChevronLeft, Edit, Trash2, CheckCircle, XCircle
+  ChevronLeft, Edit, Trash2, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { formatDate } from '@/utils/formatters';
 import { toast } from '@/hooks/use-toast';
+import { config } from '@/config';
 
 const ClientProfile = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -21,6 +22,7 @@ const ClientProfile = () => {
   const { clients, removeClient } = useMasterAccount();
   const [client, setClient] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (!clientId) {
@@ -51,15 +53,41 @@ const ClientProfile = () => {
     }
   }, [clientId, clients, navigate]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (isDeleting && clientId) {
-      removeClient(clientId);
-      toast({
-        title: "Client deleted",
-        description: "The client has been successfully deleted."
-      });
-      navigate('/clients');
+      try {
+        // First, send delete request to backend API
+        setIsProcessing(true);
+        const response = await fetch(`${config.apiUrl}/contacts?id=${clientId}`, {
+          method: 'DELETE'
+        });
+        // console.log(clientId);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete client');
+        }
+        // console.log(clientId);
+        // If backend deletion was successful, remove from local state
+        removeClient(clientId);
+        
+        toast({
+          title: "Client deleted",
+          description: "The client has been successfully deleted from HubSpot."
+        });
+        
+        // Navigate back to clients list
+        navigate('/clients');
+      } catch (error) {
+        // console.error('Error deleting client:', error);
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to delete client from HubSpot.",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+      }
     } else {
+      // First click - show confirmation buttons
       setIsDeleting(true);
     }
   };
@@ -142,10 +170,26 @@ const ClientProfile = () => {
 
             {isDeleting ? (
               <>
-                <Button variant="destructive" size="sm" onClick={handleDelete}>
-                  <CheckCircle className="h-4 w-4 mr-1" /> Confirm
-                </Button>
-                <Button variant="outline" size="sm" onClick={cancelDelete}>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleDelete} 
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                  )}
+                  {isProcessing ? "Deleting..." : "Confirm"}
+                 </Button>
+                {/* <Button variant="outline" size="sm" onClick={cancelDelete}> */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={cancelDelete}
+                  disabled={isProcessing}
+                >                
                   <XCircle className="h-4 w-4 mr-1" /> Cancel
                 </Button>
               </>

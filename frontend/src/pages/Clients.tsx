@@ -16,47 +16,34 @@ const Clients = () => {
   const [showAddClientForm, setShowAddClientForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { addClient, clients, clearAllClients } = useMasterAccount();
+  const { addClient, clients, clearAllClients, clientsLoaded, fetchClientsData, isLoadingClients, refreshClientsData } = useMasterAccount();
   const [availableTags, setAvailableTags] = useState<string[]>([
     'VIP', 'New Lead', 'Qualified', 'Nurturing', 'Potential', 'Enterprise', 'Small Business'
   ]);
   const [newTag, setNewTag] = useState('');
   
-  // Function to fetch clients from the API
-  const fetchClients = async () => {
-    // console.log("effect");
+  
+  // Function to force refresh clients from the backend without affecting clientsLoaded state
+  const handleRefreshClients = async () => {
     setIsLoading(true);
+    
     try {
-      const response = await fetch(`${config.apiUrl}/contacts`);
+      // Use the new refreshClientsData function that doesn't affect clientsLoaded state
+      const success = await refreshClientsData();
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch clients');
-      }
-      
-      const data = await response.json();
-      console.log(data);
-      // Add each client to the context
-      clearAllClients();
-      if (Array.isArray(data)) {
-        // If there are no clients in the context or they're just the initial data,
-
-        // we can replace them all with the fetched data
-        data.forEach((client, index) => {
-          // console.log("www");
-            addClient(client);
+      if (success) {
+        toast({
+          title: "Clients refreshed",
+          description: `Successfully refreshed ${clients.length} clients from HubSpot.`,
         });
+      } else {
+        throw new Error('Failed to refresh clients');
       }
-      
-      toast({
-        title: "Clients loaded",
-        description: `Successfully loaded ${data.length} clients from HubSpot.`,
-      });
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error('Error refreshing clients:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch clients from HubSpot.",
+        description: error instanceof Error ? error.message : "Failed to refresh clients from HubSpot.",
         variant: "destructive"
       });
     } finally {
@@ -66,15 +53,24 @@ const Clients = () => {
   
   // Fetch clients when the component mounts
   useEffect(() => {
-
-    setIsLoading(true);
-
-    // clearAllClients();
-    // console.log("effect");
-    // Always fetch clients from the API when the component mounts
-    fetchClients();
+    // Only fetch clients if they haven't been loaded yet
+    if (!clientsLoaded && !isLoadingClients) {
+      console.log("Clients not loaded yet, fetching...");
+      setIsLoading(true);
+      fetchClientsData()
+        .then(() => {
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching clients:", error);
+          setIsLoading(false);
+        });
+    } else {
+      console.log("Clients already loaded, skipping fetch");
+      // setIsLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [clientsLoaded, isLoadingClients]);
   
   const [newClient, setNewClient] = useState({
     firstName: '',
@@ -203,7 +199,7 @@ const Clients = () => {
       phoneNumbers: newClient.phoneNumbers.filter(phone => phone.trim() !== '')
     };
     
-    console.log(filteredClient);
+    // console.log(filteredClient);
     try {
       // Send client data to backend API
       const response = await fetch(`${config.apiUrl}/contacts`, {
@@ -262,7 +258,7 @@ const Clients = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Clients</h1>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={fetchClients} disabled={isLoading}>
+          <Button variant="outline" onClick={handleRefreshClients} disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <></>}
             Refresh
           </Button>

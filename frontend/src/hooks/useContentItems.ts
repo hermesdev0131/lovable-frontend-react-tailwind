@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 
 export function useContentItems(
   isInMasterMode: boolean, 
-  currentClientId: number | null, 
+  currentClientId: string | null, 
   clients: Client[],
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void
 ) {
@@ -50,7 +50,7 @@ export function useContentItems(
     });
   };
 
-  const updateContentItem = (id: number, updatedData: Partial<ContentItem>) => {
+  const updateContentItem = (id: string, updatedData: Partial<ContentItem>) => {
     const contentItem = contentItems.find(item => item.id === id);
     if (!contentItem) return;
     

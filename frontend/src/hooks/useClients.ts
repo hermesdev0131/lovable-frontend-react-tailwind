@@ -3,38 +3,62 @@ import { useState, useEffect } from 'react';
 import { Client } from '@/types/masterAccount';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { toast } from "@/hooks/use-toast";
+import { config } from "@/config";
 
 export function useClients(initialClientData?: Client[]) {
-  // const [clients, setClients] = useState<Client[]>(() => {
-  //   const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
-  //   return savedClients ? JSON.parse(savedClients) : initialClientData || [];
-  // });
+  // State for clients data
   const [clients, setClients] = useState<Client[]>([]);
+  
+  // State for tracking if clients have been loaded
+  const [clientsLoaded, setClientsLoaded] = useState<boolean>(false);
+  
+  // State for loading status
+  const [isLoadingClients, setIsLoadingClients] = useState<boolean>(false);
 
-  // const [currentClientId, setCurrentClientId] = useState<number | null>(() => {
-  //   const savedClientId = localStorage.getItem(STORAGE_KEYS.CURRENT_CLIENT);
-  //   return savedClientId ? JSON.parse(savedClientId) : null;
-  // });
+  // Current client ID
   const [currentClientId, setCurrentClientId] = useState<string | null>(null);
 
-  // const [isInMasterMode, setIsInMasterMode] = useState<boolean>(() => {
-  //   const savedMode = localStorage.getItem(STORAGE_KEYS.MASTER_MODE);
-  //   return savedMode ? JSON.parse(savedMode) : true;
-  // });
-
-  // useEffect(() => {
-  //   localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
-  // }, [clients]);
-
-  // useEffect(() => {
-  //   localStorage.setItem(STORAGE_KEYS.CURRENT_CLIENT, JSON.stringify(currentClientId));
-  // }, [currentClientId]);
-
-  // useEffect(() => {
-  //   localStorage.setItem(STORAGE_KEYS.MASTER_MODE, JSON.stringify(isInMasterMode));
-  // }, [isInMasterMode]);
-
+  // Master mode state
   const [isInMasterMode, setIsInMasterMode] = useState<boolean>(true);
+  
+  // Function to fetch clients from the API
+  const fetchClientsData = async (): Promise<boolean> => {
+    // If clients are already loaded or currently loading, don't fetch again
+    if (clientsLoaded || isLoadingClients) {
+      console.log("Clients already loaded or loading, skipping fetch");
+      return true;
+    }
+    
+    setIsLoadingClients(true);
+    try {
+      const response = await fetch(`${config.apiUrl}/contacts`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch clients');
+      }
+      
+      const data = await response.json();
+      console.log("Fetched clients data:", data);
+      
+      // Clear existing clients and add new ones
+      clearAllClients();
+      if (Array.isArray(data)) {
+        data.forEach(client => {
+          addClient(client);
+        });
+      }
+      
+      // Mark clients as loaded
+      setClientsLoaded(true);
+      setIsLoadingClients(false);
+      return true;
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      setIsLoadingClients(false);
+      return false;
+    }
+  };
 
   const addClient = (client: Client) => {
     const newClient: Client = {
@@ -114,17 +138,48 @@ export function useClients(initialClientData?: Client[]) {
   // Add a method to clear all clients
   const clearAllClients = () => {
     setClients([]);
+    setClientsLoaded(false);
+  };
+  
+  // Add a method to refresh clients without affecting the loaded state
+  const refreshClientsData = async (): Promise<boolean> => {
+    setIsLoadingClients(true);
+    try {
+      const response = await fetch(`${config.apiUrl}/contacts`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch clients');
+      }
+      
+      const data = await response.json();
+      console.log("Refreshed clients data:", data);
+      
+      // Update clients without changing clientsLoaded state
+      setClients(Array.isArray(data) ? data : []);
+      
+      setIsLoadingClients(false);
+      return true;
+    } catch (error) {
+      console.error("Error refreshing clients:", error);
+      setIsLoadingClients(false);
+      return false;
+    }
   };
 
   return {
     clients,
     currentClientId,
     isInMasterMode,
+    isLoadingClients,
+    clientsLoaded,
     addClient,
     removeClient,
     switchToClient,
     toggleMasterMode,
     loginToAccount,
-    clearAllClients
+    clearAllClients,
+    fetchClientsData,
+    refreshClientsData
   };
 }

@@ -25,7 +25,11 @@ const nextConfig = {
       {
         source: '/api/properties',
         destination: '/api/properties/index' // or to an external API
-      }
+      },
+      // {
+      //   source: '/api/contacts/:id',
+      //   destination: '/api/contacts?id=:id' 
+      // }    
     ];
   },
 

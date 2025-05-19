@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Notification } from '@/types/masterAccount';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
-export function useNotifications(isInMasterMode: boolean, currentClientId: number | null) {
+export function useNotifications(isInMasterMode: boolean, currentClientId: string | null) {
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     const savedNotifications = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
     return savedNotifications ? JSON.parse(savedNotifications) : [];
@@ -30,7 +30,7 @@ export function useNotifications(isInMasterMode: boolean, currentClientId: numbe
     ));
   };
 
-  const getNotifications = (forClientId?: number | null) => {
+  const getNotifications = (forClientId?: string | null) => {
     return notifications.filter(notification => {
       if (forClientId !== undefined) {
         if (notification.forClientId !== forClientId) return false;
@@ -42,7 +42,7 @@ export function useNotifications(isInMasterMode: boolean, currentClientId: numbe
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   };
 
-  const getUnreadNotificationsCount = (forClientId?: number | null) => {
+  const getUnreadNotificationsCount = (forClientId?: string | null) => {
     return getNotifications(forClientId).filter(notification => !notification.read).length;
   };
 

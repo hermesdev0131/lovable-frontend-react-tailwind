@@ -1,18 +1,45 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import DealsOverview from '@/components/dashboard/DealsOverview';
 import TasksPanel from '@/components/dashboard/TasksPanel';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import { useNavigate } from 'react-router-dom';
-import { useMasterAccount } from '@/hooks/useMasterAccount';
+import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useDeals } from '@/contexts/DealsContext';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { clients } = useMasterAccount();
+  const { clients, clientsLoaded, fetchClientsData, isLoadingClients } = useMasterAccount();
   const { deals } = useDeals();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Fetch clients data if not already loaded
+  useEffect(() => {
+    console.log("reload");
+    const loadClientData = async () => {
+      if (!clientsLoaded && !isLoadingClients && !isLoading) {
+        setIsLoading(true);
+        try {
+          console.log("Dashboard: Fetching client data...");
+          await fetchClientsData();
+        } catch (error) {
+          console.error("Error fetching client data:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load client data",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadClientData();
+  }, [clientsLoaded, fetchClientsData, isLoadingClients, isLoading]);
   
   // Calculate dashboard stats from actual data
   const totalContacts = clients.length;
@@ -69,6 +96,7 @@ const Index = () => {
         openDeals={openDeals}
         totalDealValue={totalDealValue}
         onCardClick={handleCardClick}
+        isLoading={isLoading || isLoadingClients}
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -4,7 +4,7 @@ import { WebsitePage } from '@/types/masterAccount';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { toast } from "@/hooks/use-toast";
 
-export function useWebsitePages(isInMasterMode: boolean, currentClientId: number | null) {
+export function useWebsitePages(isInMasterMode: boolean, currentClientId: string | null) {
   const [websitePages, setWebsitePages] = useState<WebsitePage[]>(() => {
     const savedPages = localStorage.getItem(STORAGE_KEYS.WEBSITE_PAGES);
     return savedPages ? JSON.parse(savedPages) : [];

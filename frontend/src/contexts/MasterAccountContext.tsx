@@ -14,12 +14,16 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
     clients, 
     currentClientId, 
     isInMasterMode, 
+    isLoadingClients,
+    clientsLoaded,
     addClient, 
     removeClient, 
     switchToClient,
     toggleMasterMode,
     loginToAccount,
-    clearAllClients
+    clearAllClients,
+    fetchClientsData,
+    refreshClientsData
   } = useClients();
 
   const {
@@ -74,6 +78,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         websitePages,
         contentItems,
         notifications,
+        isLoadingClients,
+        clientsLoaded,
         addClient, 
         removeClient: handleRemoveClient, 
         switchToClient,
@@ -81,6 +87,8 @@ export const MasterAccountProvider = ({ children }: { children: ReactNode }) => 
         toggleMasterMode,
         loginToAccount,
         clearAllClients,
+        fetchClientsData,
+        refreshClientsData,
         addWebhook,
         removeWebhook,
         updateWebhook,
