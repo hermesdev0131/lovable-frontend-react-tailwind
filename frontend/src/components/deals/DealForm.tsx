@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, FilePlus, UserPlus, Clock, Calendar, X, Upload, Paperclip } from "lucide-react";
+import { CalendarIcon, FilePlus, UserPlus, Clock, Calendar, X, Upload, Paperclip, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,7 @@ interface DealFormProps {
   customFields?: DealFormField[];
   onSave: (dealData: Partial<Deal>) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
 const DealForm: React.FC<DealFormProps> = ({ 
@@ -42,7 +43,8 @@ const DealForm: React.FC<DealFormProps> = ({
   teamMembers, 
   customFields = [],
   onSave, 
-  onCancel 
+  onCancel,
+  isLoading = false
 }) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -560,11 +562,22 @@ const DealForm: React.FC<DealFormProps> = ({
         </Tabs>
         
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" className="bg-[#D35400] hover:bg-[#B74600] text-white">
-            {deal?.id ? "Update" : "Create"} Deal
+          <Button 
+            type="submit" 
+            className="bg-[#D35400] hover:bg-[#B74600] text-white"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {deal?.id ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              <>{deal?.id ? "Update" : "Create"} Deal</>
+            )}
           </Button>
         </div>
       </form>

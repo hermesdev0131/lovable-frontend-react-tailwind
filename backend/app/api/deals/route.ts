@@ -440,16 +440,11 @@ export async function PUT(request: NextRequest) {
 // DELETE: Delete a deal by ID
 export async function DELETE(request: NextRequest) {
   try {
+    // Extract the deal ID from the URL query parameters
     const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
+    const dealId = url.searchParams.get('id');
     
-    // Extract deal ID from URL pattern: /api/deals/{id}
-    let dealId;
-    if (pathParts.length >= 4) {
-      dealId = pathParts[pathParts.length - 1];
-    }
-    
-    if (!dealId || dealId === 'deals') {
+    if (!dealId) {
       return corsHeaders(NextResponse.json({ message: 'Deal ID is required' }, { status: 400 }));
     }
 

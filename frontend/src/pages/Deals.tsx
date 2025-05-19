@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, Settings, Eye, Edit, Trash2 } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, Settings, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -301,7 +301,21 @@ const Deals = () => {
     }
   };
 
+  const [isAddingDeal, setIsAddingDeal] = useState(false);
+
   const handleSaveNewDeal = async (dealData: Partial<Deal>) => {
+    // Validate required fields
+    if (!dealData.name) {
+      toast({
+        title: "Error",
+        description: "Deal name is required.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAddingDeal(true);
+    
     const now = new Date().toISOString();
     
     const newDeal = {
@@ -345,6 +359,9 @@ const Deals = () => {
         title: "Deal Created",
         description: `${dealData.name} has been successfully added to HubSpot.`
       });
+      
+      // Reset the form
+      setIsCreateDialogOpen(false);
     } catch (error) {
       console.error('Error adding deal:', error);
       
@@ -357,6 +374,8 @@ const Deals = () => {
         variant: "destructive"
       });
     } finally {
+      // Reset loading state
+      setIsAddingDeal(false);
       setIsCreateDialogOpen(false);
     }
   };
@@ -364,7 +383,7 @@ const Deals = () => {
   const handleDeleteDeal = async (deal: Deal) => {
     try {
       // Send delete request to backend API
-      const response = await fetch(`${config.apiUrl}/deals/${deal.id}`, {
+      const response = await fetch(`${config.apiUrl}/deals?id=${deal.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -546,8 +565,10 @@ const Deals = () => {
               size="sm" 
               className="flex items-center gap-1 bg-[#D35400] hover:bg-[#B74600]" 
               onClick={() => setIsCreateDialogOpen(true)}
+              disabled={isAddingDeal}
             >
-              <Plus className="h-4 w-4" /> New Deal
+              {isAddingDeal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+              New Deal
             </Button>
           </div>
         </div>
@@ -783,7 +804,9 @@ const Deals = () => {
                 <Button 
                   onClick={() => setIsCreateDialogOpen(true)} 
                   className="bg-[#D35400] hover:bg-[#B74600]"
+                  disabled={isAddingDeal}
                 >
+                  {isAddingDeal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
                   Create New Deal
                 </Button>
               </div>
@@ -804,6 +827,7 @@ const Deals = () => {
               customFields={dealFields}
               onSave={handleSaveNewDeal}
               onCancel={() => setIsCreateDialogOpen(false)}
+              isLoading={isAddingDeal}
             /> 
           </div>
           

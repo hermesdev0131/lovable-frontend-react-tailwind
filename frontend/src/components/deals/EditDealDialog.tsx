@@ -13,6 +13,7 @@ interface EditDealDialogProps {
   stages: Stage[];
   teamMembers: TeamMember[];
   customFields?: DealFormField[];
+  isLoading?: boolean;
 }
 
 const EditDealDialog: React.FC<EditDealDialogProps> = ({ 
@@ -22,7 +23,8 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
   onSave,
   stages,
   teamMembers,
-  customFields = []
+  customFields = [],
+  isLoading = false
 }) => {
   if (!deal) return null;
 
@@ -46,6 +48,7 @@ const EditDealDialog: React.FC<EditDealDialogProps> = ({
           customFields={customFields}
           onSave={handleSave}
           onCancel={onClose}
+          isLoading={isLoading}
         />
       </DialogContent>
     </Dialog>
