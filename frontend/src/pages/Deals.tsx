@@ -26,6 +26,7 @@ import DealForm, { DealFormField } from '@/components/deals/DealForm';
 import CustomFieldsManager from '@/components/deals/CustomFieldsManager';
 import { useCustomFields } from '@/contexts/CustomFieldsContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { config } from '@/config';
 // import ClientsTable from '@/components/clients/ClientsTable';
 
 const demoTeamMembers: TeamMember[] = [
@@ -188,7 +189,7 @@ const Deals = () => {
     };
   };
   
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     
     if (!destination || 
@@ -206,15 +207,47 @@ const Deals = () => {
       updatedAt: new Date().toISOString()
     };
     
-    updateDealInContext(updatedDeal);
-    
     const destinationColumn = columns.find(col => col.id === destination.droppableId);
-    trackDealActivity(deal.name, "moved to new stage", destinationColumn?.label || 'new stage');
     
-    toast({
-      title: "Deal Moved",
-      description: `${deal.name} moved to ${destinationColumn?.label || 'new stage'} stage`
-    });
+    try {
+      // Send stage update to backend API
+      const response = await fetch(`${config.apiUrl}/deals/${deal.id}/stage`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          stage: destination.droppableId,
+          stageName: destinationColumn?.label || 'Unknown'
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update deal stage');
+      }
+      
+      // Update in context
+      updateDealInContext(updatedDeal);
+      
+      trackDealActivity(deal.name, "moved to new stage", destinationColumn?.label || 'new stage');
+      
+      toast({
+        title: "Deal Moved",
+        description: `${deal.name} moved to ${destinationColumn?.label || 'new stage'} stage and synced with HubSpot`
+      });
+    } catch (error) {
+      console.error('Error updating deal stage:', error);
+      
+      // Still update local context even if API call fails
+      updateDealInContext(updatedDeal);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update deal stage in HubSpot. It was updated locally.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditDeal = (deal: Deal) => {
@@ -227,20 +260,48 @@ const Deals = () => {
     setIsDetailDialogOpen(true);
   };
 
-  const handleSaveEditedDeal = (updatedDeal: Deal) => {
-    updateDealInContext(updatedDeal);
-    
-    trackDealActivity(updatedDeal.name, "updated deal", "Deal details were modified");
-    
-    toast({
-      title: "Deal Updated",
-      description: `${updatedDeal.name} has been updated successfully`
-    });
-    
-    setIsEditDialogOpen(false);
+  const handleSaveEditedDeal = async (updatedDeal: Deal) => {
+    try {
+      // Send updated deal data to backend API
+      const response = await fetch(`${config.apiUrl}/deals/${updatedDeal.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedDeal),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update deal');
+      }
+      
+      // Update in context
+      updateDealInContext(updatedDeal);
+      
+      trackDealActivity(updatedDeal.name, "updated deal", "Deal details were modified");
+      
+      toast({
+        title: "Deal Updated",
+        description: `${updatedDeal.name} has been updated successfully and synced with HubSpot`
+      });
+    } catch (error) {
+      console.error('Error updating deal:', error);
+      
+      // Still update local context even if API call fails
+      updateDealInContext(updatedDeal);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update deal in HubSpot. It was updated locally.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEditDialogOpen(false);
+    }
   };
 
-  const handleSaveNewDeal = (dealData: Partial<Deal>) => {
+  const handleSaveNewDeal = async (dealData: Partial<Deal>) => {
     const now = new Date().toISOString();
     
     const newDeal = {
@@ -257,28 +318,85 @@ const Deals = () => {
       updatedAt: now
     };
     
-    addDealToContext(newDeal as Omit<Deal, 'id'>);
-    
-    trackDealActivity(dealData.name || "New Deal", "created deal", 
-      `Value: ${formatCurrency(dealData.value || 0, dealData.currency || 'USD')}`);
-    
-    toast({
-      title: "Deal Created",
-      description: `${dealData.name} has been created successfully`
-    });
-    
-    setIsCreateDialogOpen(false);
+    try {
+      // Send deal data to backend API
+      const response = await fetch(`${config.apiUrl}/deals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newDeal),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add deal');
+      }
+      
+      const data = await response.json();
+      
+      // Add the deal to local state with the returned data from HubSpot
+      addDealToContext({...newDeal, ...data});
+      
+      trackDealActivity(dealData.name || "New Deal", "created deal", 
+        `Value: ${formatCurrency(dealData.value || 0, dealData.currency || 'USD')}`);
+      
+      toast({
+        title: "Deal Created",
+        description: `${dealData.name} has been successfully added to HubSpot.`
+      });
+    } catch (error) {
+      console.error('Error adding deal:', error);
+      
+      // Still add to local context even if API call fails
+      addDealToContext(newDeal as Omit<Deal, 'id'>);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add deal to HubSpot. It was saved locally.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreateDialogOpen(false);
+    }
   };
 
-  const handleDeleteDeal = (deal: Deal) => {
-    deleteDealFromContext(deal.id);
-    
-    trackDealActivity(deal.name, "deleted deal", "");
-    
-    toast({
-      title: "Deal Deleted",
-      description: `${deal.name} has been deleted`
-    });
+  const handleDeleteDeal = async (deal: Deal) => {
+    try {
+      // Send delete request to backend API
+      const response = await fetch(`${config.apiUrl}/deals/${deal.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete deal');
+      }
+      
+      // Delete from context
+      deleteDealFromContext(deal.id);
+      
+      trackDealActivity(deal.name, "deleted deal", "");
+      
+      toast({
+        title: "Deal Deleted",
+        description: `${deal.name} has been deleted and removed from HubSpot`
+      });
+    } catch (error) {
+      console.error('Error deleting deal:', error);
+      
+      // Still delete from local context even if API call fails
+      deleteDealFromContext(deal.id);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete deal from HubSpot. It was deleted locally.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveColumns = (newColumns: Column[]) => {

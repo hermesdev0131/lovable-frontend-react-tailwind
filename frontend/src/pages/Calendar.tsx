@@ -611,9 +611,9 @@ const Calendar = () => {
                         </div>
 
                         {/* Make.com Integration */}
-                        <MakeCalendarIntegration 
+                        {/* <MakeCalendarIntegration 
                           onIntegrationChange={handleMakeIntegrationChange} 
-                        />
+                        /> */}
                       </div>
                     )}
                   </CardContent>
