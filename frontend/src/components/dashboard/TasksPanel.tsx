@@ -90,6 +90,17 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
     }
   }, [open, taskForm]);
 
+  // Filter tasks to only show TODO type tasks
+  const filteredTasks = tasks
+    .filter(task => task.type === 'TODO')
+    .filter(task => {
+      if (activeTab === 'active') return !task.completed;
+      if (activeTab === 'completed') return task.completed;
+      return true;
+    });
+
+  const sortedTasks = sortTasksByPriority(filteredTasks);
+
   const handleSubmit = async (data: TaskFormValues) => {
     if (!data.title?.trim()) {
       toast({
@@ -105,6 +116,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
     const now = new Date().toISOString();
     const newTask = {
       ...data,
+      type: 'TODO', // Force type to be TODO for tasks panel
       completed: false,
       createdAt: now,
       updatedAt: now
@@ -314,14 +326,6 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (activeTab === 'active') return !task.completed;
-    if (activeTab === 'completed') return task.completed;
-    return true;
-  });
-
-  const sortedTasks = sortTasksByPriority(filteredTasks);
-
   return (
     <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -431,30 +435,6 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={taskForm.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Task Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="TODO">To Do</SelectItem>
-                          <SelectItem value="CALL">Call</SelectItem>
-                          <SelectItem value="EMAIL">Email</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
                 <div className="flex justify-end space-x-2">
                   <DialogClose asChild>
                     <Button variant="outline" type="button">Cancel</Button>
@@ -528,19 +508,10 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                               {task.priority}
                             </Badge>
                           )}
-                          <Badge className={`${getTaskColor(task.type)} flex-shrink-0`}>
-                            <span className="flex items-center gap-1">
-                              {getTaskIcon(task.type)}
-                              <span className="hidden sm:inline capitalize text-xs">{task.type}</span>
-                            </span>
-                          </Badge>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>{formatTaskDate(task.date)}</span>
-                        {task.source && (
-                          <span className="text-xs opacity-70">via {task.source}</span>
-                        )}
                       </div>
                     </div>
                     
