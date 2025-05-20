@@ -155,3 +155,9 @@ html {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #6b7280;
 }
+
+/* Cursor styles */
+.cursor-wait, 
+.cursor-wait * {
+  cursor: wait !important;
+}

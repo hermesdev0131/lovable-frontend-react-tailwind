@@ -152,12 +152,12 @@ const Deals = () => {
     return filteredResult;
   };
 
-  const getClientName = (clientId: number) => {
+  const getClientName = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
     return client ? `${client.firstName} ${client.lastName}` : "Unknown";
   };
 
-  const getClientInitials = (clientId: number) => {
+  const getClientInitials = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
     return client ? `${client.firstName.charAt(0)}${client.lastName.charAt(0)}`.toUpperCase() : '??';
   };
@@ -302,6 +302,7 @@ const Deals = () => {
   };
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);
+  const [deletingDealId, setDeletingDealId] = useState<string | null>(null);
 
   const handleSaveNewDeal = async (dealData: Partial<Deal>) => {
     // Validate required fields
@@ -333,6 +334,8 @@ const Deals = () => {
     };
     
     try {
+
+      console.log(newDeal);
       // Send deal data to backend API
       const response = await fetch(`${config.apiUrl}/deals`, {
         method: 'POST',
@@ -381,6 +384,12 @@ const Deals = () => {
   };
 
   const handleDeleteDeal = async (deal: Deal) => {
+    // Set the deleting state to show loading cursor
+    setDeletingDealId(deal.id);
+    
+    // Add a class to the body to change cursor to wait
+    document.body.classList.add('cursor-wait');
+    
     try {
       // Send delete request to backend API
       const response = await fetch(`${config.apiUrl}/deals?id=${deal.id}`, {
@@ -415,6 +424,12 @@ const Deals = () => {
         description: error instanceof Error ? error.message : "Failed to delete deal from HubSpot. It was deleted locally.",
         variant: "destructive"
       });
+    } finally {
+      // Reset the deleting state
+      setDeletingDealId(null);
+      
+      // Remove the wait cursor class
+      document.body.classList.remove('cursor-wait');
     }
   };
 
@@ -656,9 +671,14 @@ const Deals = () => {
                                             <DropdownMenuItem 
                                               onClick={() => handleDeleteDeal(deal)} 
                                               className="text-destructive"
+                                              disabled={deletingDealId === deal.id}
                                             >
-                                              <Trash2 className="h-4 w-4 mr-2" />
-                                              Delete Deal
+                                              {deletingDealId === deal.id ? (
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                              ) : (
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                              )}
+                                              {deletingDealId === deal.id ? "Deleting..." : "Delete Deal"}
                                             </DropdownMenuItem>
                                           </DropdownMenuContent>
                                         </DropdownMenu>
@@ -751,9 +771,14 @@ const Deals = () => {
                         <DropdownMenuItem 
                           onClick={() => handleDeleteDeal(deal)} 
                           className="text-destructive"
+                          disabled={deletingDealId === deal.id}
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Deal
+                          {deletingDealId === deal.id ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 mr-2" />
+                          )}
+                          {deletingDealId === deal.id ? "Deleting..." : "Delete Deal"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createContact, updateContact, deleteContact } from '@/lib/hubspot';
+import { createContact, updateContact, deleteContact } from '@/lib/hubspotCMD';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
