@@ -93,6 +93,9 @@ const Deals = () => {
   const [sortField, setSortField] = useState<'value' | 'company' | 'name' | 'probability' | 'createdAt'>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterStage, setFilterStage] = useState<string | null>(null);
+  const [isAddingDeal, setIsAddingDeal] = useState(false);
+  const [isUpdatingDeal, setIsUpdatingDeal] = useState(false);
+  const [deletingDealId, setDeletingDealId] = useState<string | null>(null);
   
   useEffect(() => {
     setDeals(existingDeals);
@@ -261,6 +264,7 @@ const Deals = () => {
   };
 
   const handleSaveEditedDeal = async (updatedDeal: Deal) => {
+    setIsUpdatingDeal(true);
     try {
       // Send updated deal data to backend API
       console.log(updatedDeal);
@@ -298,12 +302,10 @@ const Deals = () => {
         variant: "destructive"
       });
     } finally {
+      setIsUpdatingDeal(false);
       setIsEditDialogOpen(false);
     }
   };
-
-  const [isAddingDeal, setIsAddingDeal] = useState(false);
-  const [deletingDealId, setDeletingDealId] = useState<string | null>(null);
 
   const handleSaveNewDeal = async (dealData: Partial<Deal>) => {
     // Validate required fields
@@ -876,6 +878,7 @@ const Deals = () => {
         stages={stageOptions}
         teamMembers={teamMembers}
         customFields={dealFields}
+        isLoading={isUpdatingDeal}
       />
       
       <DealDetailDialog
