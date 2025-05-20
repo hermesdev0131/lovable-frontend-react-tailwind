@@ -33,15 +33,11 @@ interface TasksPanelProps {
 
 const getTaskIcon = (type: Task['type']) => {
   switch (type) {
-    case 'email':
+    case 'EMAIL':
       return <Mail className="h-4 w-4" />;
-    case 'chat':
-      return <MessageCircle className="h-4 w-4" />;
-    case 'call':
+    case 'CALL':
       return <Phone className="h-4 w-4" />;
-    case 'social':
-      return <ExternalLink className="h-4 w-4" />;
-    case 'text':
+    case 'TODO':
       return <Send className="h-4 w-4" />;
     default:
       return <Plus className="h-4 w-4" />;
@@ -50,15 +46,15 @@ const getTaskIcon = (type: Task['type']) => {
 
 const getTaskColor = (type: Task['type']) => {
   switch (type) {
-    case 'email':
+    case 'EMAIL':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-    case 'chat':
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-    case 'call':
+    // case 'chat':
+    //   return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+    case 'CALL':
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-    case 'social':
-      return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
-    case 'text':
+    // case 'social':
+    //   return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
+    case 'TODO':
       return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
@@ -70,7 +66,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   
   const taskForm = useForm<TaskFormValues>({
@@ -78,7 +74,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
       title: '',
       date: format(new Date(), 'MM/dd/yyyy'),
       priority: undefined,
-      type: 'manual'
+      type: 'TODO'
     },
   });
 
@@ -89,7 +85,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         title: '',
         date: format(new Date(), 'MM/dd/yyyy'),
         priority: undefined,
-        type: 'manual'
+        type: 'TODO'
       });
     }
   }, [open, taskForm]);
@@ -151,7 +147,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         title: '',
         date: format(new Date(), 'MM/dd/yyyy'),
         priority: undefined,
-        type: 'manual'
+        type: 'TODO'
       });
       
       setOpen(false);
@@ -178,7 +174,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   };
 
   const toggleTaskCompletion = async (id: string, currentStatus: boolean) => {
-    setIsUpdatingTask(true);
+    setUpdatingTaskId(id);
     
     try {
       const task = tasks.find(t => t.id === id);
@@ -187,7 +183,8 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
       const updatedTask = {
         ...task,
         completed: !currentStatus,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        hubspotId: task.hubspotId || task.id // Ensure we have the HubSpot ID
       };
       
       // Send update to backend API
@@ -223,12 +220,12 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         variant: "destructive"
       });
     } finally {
-      setIsUpdatingTask(false);
+      setUpdatingTaskId(null);
     }
   };
   
   const handleSetPriority = async (id: string, priority: Task['priority']) => {
-    setIsUpdatingTask(true);
+    setUpdatingTaskId(id);
     
     try {
       const task = tasks.find(t => t.id === id);
@@ -273,7 +270,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         variant: "destructive"
       });
     } finally {
-      setIsUpdatingTask(false);
+      setUpdatingTaskId(null);
     }
   };
 
@@ -390,6 +387,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                             onSelect={(date) => {
                               if (date) {
                                 field.onChange(format(date, 'MM/dd/yyyy'));
+                                // Close the calendar after selection
+                                const calendarPopover = document.querySelector('[role="dialog"]');
+                                if (calendarPopover) {
+                                  const closeButton = calendarPopover.closest('button');
+                                  if (closeButton) {
+                                    closeButton.click();
+                                  }
+                                }
                               }
                             }}
                             disabled={(date) =>
@@ -442,12 +447,9 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="manual">Manual</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
-                          <SelectItem value="call">Call</SelectItem>
-                          <SelectItem value="chat">Chat</SelectItem>
-                          <SelectItem value="text">Text</SelectItem>
-                          <SelectItem value="social">Social</SelectItem>
+                          <SelectItem value="TODO">To Do</SelectItem>
+                          <SelectItem value="CALL">Call</SelectItem>
+                          <SelectItem value="EMAIL">Email</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormItem>
@@ -503,9 +505,9 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                       size="icon"
                       className="h-8 w-8 rounded-full"
                       onClick={() => toggleTaskCompletion(task.id, task.completed)}
-                      disabled={isUpdatingTask}
+                      disabled={updatingTaskId === task.id}
                     >
-                      {isUpdatingTask ? (
+                      {updatingTaskId === task.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : task.completed ? (
                         <Check className="h-4 w-4 text-green-500" />
@@ -546,7 +548,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                       {!task.completed && !task.priority && (
                         <Select 
                           onValueChange={(value) => handleSetPriority(task.id, value as Task['priority'])}
-                          disabled={isUpdatingTask}
+                          disabled={updatingTaskId === task.id}
                         >
                           <SelectTrigger className="h-7 w-7 p-0">
                             <Flag className="h-3.5 w-3.5" />

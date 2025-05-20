@@ -3,17 +3,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { socialMediaService } from '@/services/socialMedia';
 import { config } from '@/config';
 
-export interface Task {
+export type Task = {
   id: string;
+  hubspotId?: string;
   title: string;
   date: string;
   completed: boolean;
-  type: 'manual' | 'call' | 'email' | 'social' | 'chat' | 'text' | 'integration' | 'review' | 'deal' | 'document' | 'calendar';
-  source?: string;
-  relatedTo?: string;
-  createdAt: string;
   priority?: 'low' | 'medium' | 'high';
-}
+  type: 'TODO' | 'CALL' | 'EMAIL';
+  source?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 interface TasksContextType {
   tasks: Task[];

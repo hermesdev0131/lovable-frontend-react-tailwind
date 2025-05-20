@@ -5,12 +5,13 @@ const HUBSPOT_BASE_URL = 'https://api.hubapi.com';
 
 // Map our task types to HubSpot task types
 const taskTypeMapping: Record<string, string> = {
-  'manual': 'TASK',
-  'email': 'EMAIL',
-  'call': 'CALL',
-  'chat': 'CHAT',
-  'text': 'TEXT',
-  'social': 'SOCIAL',
+  'TODO': 'TODO',
+  'CALL': 'CALL',
+  'EMAIL': 'EMAIL',
+//   'LINKED_IN': 'LINKED_IN',
+//   'MEETING': 'MEETING',
+//   'LINKED_IN_CONNECT': 'LINKED_IN_CONNECT',
+//   'LINKED_IN_MESSAGE': 'LINKED_IN_MESSAGE'
 };
 
 // Reverse mapping for getting our type from HubSpot type
@@ -26,14 +27,14 @@ function taskToHubspotProperties(taskData: any) {
     hs_task_body: taskData.description || '',
     hs_task_priority: taskData.priority?.toUpperCase() || 'MEDIUM',
     hs_task_status: taskData.completed ? 'COMPLETED' : 'NOT_STARTED',
-    hs_task_type: taskTypeMapping[taskData.type] || 'TASK',
-    hs_task_due_date: taskData.date ? new Date(taskData.date).getTime().toString() : '',
+    hs_task_type: taskData.type || 'TODO',
   };
 
   // Store additional data in the task body as JSON
   const additionalData = {
     source: taskData.source || '',
     customFields: taskData.customFields || {},
+    dueDate: taskData.date || '',
   };
 
   // Append the additional data to the task body
@@ -54,8 +55,8 @@ function hubspotToTask(hubspotTask: any) {
     description: props.hs_task_body || '',
     completed: props.hs_task_status === 'COMPLETED',
     priority: (props.hs_task_priority || 'MEDIUM').toLowerCase(),
-    type: reverseTaskTypeMapping[props.hs_task_type] || 'manual',
-    date: props.hs_task_due_date ? new Date(parseInt(props.hs_task_due_date)).toISOString() : new Date().toISOString(),
+    type: props.hs_task_type || 'TODO',
+    date: new Date().toISOString(),
     createdAt: props.hs_timestamp ? new Date(parseInt(props.hs_timestamp)).toISOString() : new Date().toISOString(),
     updatedAt: props.hs_lastmodifieddate ? new Date(parseInt(props.hs_lastmodifieddate)).toISOString() : new Date().toISOString(),
     source: '',
@@ -71,6 +72,7 @@ function hubspotToTask(hubspotTask: any) {
       // Update task with additional data
       task.source = additionalData.source || '';
       task.customFields = additionalData.customFields || {};
+      task.date = additionalData.dueDate || task.date;
       
       // Clean up the description by removing the additional data
       task.description = props.hs_task_body.split('Additional Data:')[0].trim();
@@ -91,7 +93,7 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const taskData = await request.json();
-
+    // console.log(taskData);
     if (!taskData.title) {
       return corsHeaders(NextResponse.json({ message: 'Task title is required' }, { status: 400 }));
     }
@@ -248,10 +250,13 @@ export async function PUT(request: NextRequest) {
     if (!taskData.title) {
       return corsHeaders(NextResponse.json({ message: 'Task title is required' }, { status: 400 }));
     }
+
+    // Use hubspotId if available, otherwise use the taskId
+    const hubspotId = taskData.hubspotId || taskId;
     
     const properties = taskToHubspotProperties(taskData);
     
-    const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/tasks/${taskId}`, {
+    const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/tasks/${hubspotId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -260,18 +265,19 @@ export async function PUT(request: NextRequest) {
       body: JSON.stringify({ properties }),
     });
 
-    if (res.status === 404) {
-      return corsHeaders(NextResponse.json({ message: 'Task not found' }, { status: 404 }));
-    }
+    // if (res.status === 404) {
+    //   return corsHeaders(NextResponse.json({ message: 'Task not found' }, { status: 404 }));
+    // }
 
     if (!res.ok) {
       const errorData = await res.json();
+      console.error('HubSpot API Error:', errorData);
       throw new Error(errorData.message || 'Failed to update task');
     }
 
     const task = {
       id: taskId,
-      hubspotId: taskId,
+      hubspotId: hubspotId,
       ...taskData,
       updatedAt: new Date().toISOString(),
     };
