@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { socialMediaService } from '@/services/socialMedia';
+import { config } from '@/config';
 
 export interface Task {
   id: string;
@@ -29,6 +29,7 @@ interface TasksContextType {
   clearCompletedTasks: () => void;
   setPriority: (id: string, priority: Task['priority']) => void;
   filterTasks: (filters: { status?: 'all' | 'completed' | 'active', type?: Task['type'] }) => Task[];
+  isLoading: boolean;
 }
 
 const STORAGE_KEY = 'crm_tasks';
@@ -36,14 +37,51 @@ const STORAGE_KEY = 'crm_tasks';
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const savedTasks = localStorage.getItem(STORAGE_KEY);
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Load tasks from backend on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  }, [tasks]);
+    const loadTasks = async () => {
+      if (isInitialized) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${config.apiUrl}/tasks`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch tasks');
+        }
+        
+        const fetchedTasks = await response.json();
+        setTasks(fetchedTasks);
+        
+        // Save to localStorage as backup
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fetchedTasks));
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        
+        // Fallback to localStorage if API fails
+        const savedTasks = localStorage.getItem(STORAGE_KEY);
+        if (savedTasks) {
+          setTasks(JSON.parse(savedTasks));
+        }
+      } finally {
+        setIsLoading(false);
+        setIsInitialized(true);
+      }
+    };
+
+    loadTasks();
+  }, [isInitialized]);
+
+  // Save tasks to localStorage whenever they change
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+  }, [tasks, isInitialized]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const now = new Date().toISOString();
@@ -115,7 +153,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addActivityAsTask,
         clearCompletedTasks,
         setPriority,
-        filterTasks
+        filterTasks,
+        isLoading
       }}
     >
       {children}

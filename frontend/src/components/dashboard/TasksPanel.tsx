@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { Plus, Check, X, Mail, MessageCircle, Phone, Send, ExternalLink, Flag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Check, X, Mail, MessageCircle, Phone, Send, ExternalLink, Flag, Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -13,11 +12,19 @@ import { useForm } from 'react-hook-form';
 import { useTasks, Task } from '@/contexts/TasksContext';
 import { sortTasksByPriority, formatTaskDate, getTaskPriorityColor } from '@/utils/taskUtils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from '@/hooks/use-toast';
+import { config } from '@/config';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format, parse } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface TaskFormValues {
   title: string;
   date: string;
   priority?: 'low' | 'medium' | 'high';
+  type?: Task['type'];
 }
 
 interface TasksPanelProps {
@@ -59,46 +66,255 @@ const getTaskColor = (type: Task['type']) => {
 };
 
 const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
-  const { tasks, addTask, updateTask, deleteTask, setPriority } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask, setPriority, isLoading } = useTasks();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   
   const taskForm = useForm<TaskFormValues>({
     defaultValues: {
       title: '',
-      date: new Date().toISOString().split('T')[0],
-      priority: undefined
+      date: format(new Date(), 'MM/dd/yyyy'),
+      priority: undefined,
+      type: 'manual'
     },
   });
 
-  const handleSubmit = (data: TaskFormValues) => {
-    addTask({
-      title: data.title,
-      date: data.date,
-      completed: false,
-      type: 'manual',
-      priority: data.priority
-    });
-    
-    if (onCreateTask) {
-      onCreateTask(data);
+  // Reset form with current date when dialog opens
+  useEffect(() => {
+    if (open) {
+      taskForm.reset({
+        title: '',
+        date: format(new Date(), 'MM/dd/yyyy'),
+        priority: undefined,
+        type: 'manual'
+      });
     }
+  }, [open, taskForm]);
+
+  const handleSubmit = async (data: TaskFormValues) => {
+    if (!data.title?.trim()) {
+      toast({
+        title: "Error",
+        description: "Task title cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAddingTask(true);
     
-    taskForm.reset({
-      title: '',
-      date: new Date().toISOString().split('T')[0],
-      priority: undefined
-    });
+    const now = new Date().toISOString();
+    const newTask = {
+      ...data,
+      completed: false,
+      createdAt: now,
+      updatedAt: now
+    };
     
-    setOpen(false);
+    try {
+      // Send task data to backend API
+      const response = await fetch(`${config.apiUrl}/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTask),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add task');
+      }
+      
+      const savedTask = await response.json();
+      
+      // Add to local context with the ID from the API response
+      addTask({
+        ...savedTask,
+        id: savedTask.id || savedTask.hubspotId,
+      });
+      
+      toast({
+        title: "Task Created",
+        description: `${data.title} has been created successfully`
+      });
+      
+      if (onCreateTask) {
+        onCreateTask(data);
+      }
+      
+      // Reset form with current date
+      taskForm.reset({
+        title: '',
+        date: format(new Date(), 'MM/dd/yyyy'),
+        priority: undefined,
+        type: 'manual'
+      });
+      
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding task:', error);
+      
+      // Generate a temporary ID for local state
+      const tempId = `temp-${Date.now()}`;
+      
+      // Add to local context with a temporary ID
+      addTask({
+        ...newTask,
+        id: tempId,
+      } as Task);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create task. It was saved locally.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAddingTask(false);
+    }
   };
 
-  const toggleTaskCompletion = (id: string, currentStatus: boolean) => {
-    updateTask(id, { completed: !currentStatus });
+  const toggleTaskCompletion = async (id: string, currentStatus: boolean) => {
+    setIsUpdatingTask(true);
+    
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      const updatedTask = {
+        ...task,
+        completed: !currentStatus,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Send update to backend API
+      const response = await fetch(`${config.apiUrl}/tasks?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTask),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update task');
+      }
+      
+      // Update in context
+      updateTask(id, { completed: !currentStatus });
+      
+      toast({
+        title: "Task Updated",
+        description: `Task has been marked as ${!currentStatus ? 'completed' : 'incomplete'}`
+      });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      
+      // Still update local context even if API call fails
+      updateTask(id, { completed: !currentStatus });
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update task. It was updated locally.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingTask(false);
+    }
   };
   
-  const handleSetPriority = (id: string, priority: Task['priority']) => {
-    setPriority(id, priority);
+  const handleSetPriority = async (id: string, priority: Task['priority']) => {
+    setIsUpdatingTask(true);
+    
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      const updatedTask = {
+        ...task,
+        priority,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Send update to backend API
+      const response = await fetch(`${config.apiUrl}/tasks?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTask),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update task priority');
+      }
+      
+      // Update in context
+      setPriority(id, priority);
+      
+      toast({
+        title: "Priority Updated",
+        description: `Task priority has been set to ${priority}`
+      });
+    } catch (error) {
+      console.error('Error updating task priority:', error);
+      
+      // Still update local context even if API call fails
+      setPriority(id, priority);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update task priority. It was updated locally.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingTask(false);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    setDeletingTaskId(id);
+    
+    try {
+      // Send delete request to backend API
+      const response = await fetch(`${config.apiUrl}/tasks?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete task');
+      }
+      
+      // Delete from context
+      deleteTask(id);
+      
+      toast({
+        title: "Task Deleted",
+        description: "Task has been deleted successfully"
+      });
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      
+      // Still delete from local context even if API call fails
+      deleteTask(id);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete task. It was deleted locally.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingTaskId(null);
+    }
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -115,8 +331,12 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         <CardTitle>Tasks</CardTitle>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="default" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button variant="default" size="sm" disabled={isAddingTask}>
+              {isAddingTask ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
               Create Task
             </Button>
           </DialogTrigger>
@@ -142,11 +362,43 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                   control={taskForm.control}
                   name="date"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Due Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(parse(field.value, 'MM/dd/yyyy', new Date()), 'MM/dd/yyyy')
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? parse(field.value, 'MM/dd/yyyy', new Date()) : undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(format(date, 'MM/dd/yyyy'));
+                              }
+                            }}
+                            disabled={(date) =>
+                              date < new Date(new Date().setHours(0, 0, 0, 0))
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </FormItem>
                   )}
                 />
@@ -174,11 +426,47 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={taskForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Task Type</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="email">Email</SelectItem>
+                          <SelectItem value="call">Call</SelectItem>
+                          <SelectItem value="chat">Chat</SelectItem>
+                          <SelectItem value="text">Text</SelectItem>
+                          <SelectItem value="social">Social</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
                 <div className="flex justify-end space-x-2">
                   <DialogClose asChild>
                     <Button variant="outline" type="button">Cancel</Button>
                   </DialogClose>
-                  <Button type="submit">Create Task</Button>
+                  <Button type="submit" disabled={isAddingTask}>
+                    {isAddingTask ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Task'
+                    )}
+                  </Button>
                 </div>
               </form>
             </Form>
@@ -186,7 +474,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'active' | 'completed')}>
           <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>
@@ -194,7 +482,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
           </TabsList>
           
           <ScrollArea className="h-[300px] pr-3">
-            {sortedTasks.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-center text-muted-foreground">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                  <p>Loading tasks...</p>
+                </div>
+              </div>
+            ) : sortedTasks.length > 0 ? (
               <div className="space-y-3">
                 {sortedTasks.map((task) => (
                   <div 
@@ -208,8 +503,11 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                       size="icon"
                       className="h-8 w-8 rounded-full"
                       onClick={() => toggleTaskCompletion(task.id, task.completed)}
+                      disabled={isUpdatingTask}
                     >
-                      {task.completed ? (
+                      {isUpdatingTask ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : task.completed ? (
                         <Check className="h-4 w-4 text-green-500" />
                       ) : (
                         <div className="h-4 w-4 rounded-full border-2" />
@@ -248,6 +546,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                       {!task.completed && !task.priority && (
                         <Select 
                           onValueChange={(value) => handleSetPriority(task.id, value as Task['priority'])}
+                          disabled={isUpdatingTask}
                         >
                           <SelectTrigger className="h-7 w-7 p-0">
                             <Flag className="h-3.5 w-3.5" />
@@ -263,9 +562,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => deleteTask(task.id)}
+                        onClick={() => handleDeleteTask(task.id)}
+                        disabled={deletingTaskId === task.id}
                       >
-                        <X className="h-4 w-4" />
+                        {deletingTaskId === task.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
