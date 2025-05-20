@@ -371,6 +371,8 @@ export async function PUT(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const dealId = url.searchParams.get('id');
+    const dealStage = url.searchParams.get('stage');
+    // console.log(dealStage, dealId);
     
     if (!dealId) {
       return corsHeaders(NextResponse.json({ message: 'Deal ID is required' }, { status: 400 }));
@@ -380,14 +382,15 @@ export async function PUT(request: NextRequest) {
     const accessToken = process.env.HUBSPOT_ACCESS_TOKEN!;
     
     // Check if this is a stage update
-    const isStageUpdate = dealData.stage !== undefined;
+    // const isStageUpdate = dealData.stage !== undefined;
     
-    if (isStageUpdate) {
+    
+    if (dealStage) {
       const { stage, stageName } = dealData;
       const properties = {
         dealstage: stageMapping[stage] || 'appointmentscheduled',
       };
-      console.log("Stage Update");
+      // console.log("Stage Update");
       const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/deals/${dealId}`, {
         method: 'PATCH',
         headers: {
@@ -420,7 +423,7 @@ export async function PUT(request: NextRequest) {
       }
       
       const properties = dealToHubspotProperties(dealData);
-      console.log(properties);
+      // console.log(properties);
       const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/deals/${dealId}`, {
         method: 'PATCH',
         headers: {

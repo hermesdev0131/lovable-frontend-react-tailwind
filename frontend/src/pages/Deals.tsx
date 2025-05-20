@@ -228,7 +228,7 @@ const Deals = () => {
       updateDealInContext(updatedDeal);
       
       // Send stage update to backend API
-      const response = await fetch(`${config.apiUrl}/deals?id=${updatedDeal.id}`, {
+      const response = await fetch(`${config.apiUrl}/deals?id=${updatedDeal.id}&&stage=${updatedDeal.stage}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
