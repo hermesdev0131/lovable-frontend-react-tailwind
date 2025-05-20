@@ -96,6 +96,8 @@ const Deals = () => {
   const [isAddingDeal, setIsAddingDeal] = useState(false);
   const [isUpdatingDeal, setIsUpdatingDeal] = useState(false);
   const [deletingDealId, setDeletingDealId] = useState<string | null>(null);
+  const [draggingDealId, setDraggingDealId] = useState<string | null>(null);
+  const [dragSource, setDragSource] = useState<{droppableId: string, index: number} | null>(null);
   
   useEffect(() => {
     setDeals(existingDeals);
@@ -204,6 +206,15 @@ const Deals = () => {
     const deal = getAllDeals().find(d => d.id.toString() === draggableId);
     if (!deal) return;
     
+    // Store the source information for potential rollback
+    setDragSource({ droppableId: source.droppableId, index: source.index });
+    
+    // Set the dragging state to show loading cursor
+    setDraggingDealId(deal.id);
+    
+    // Add a class to the body to change cursor to wait
+    document.body.classList.add('cursor-wait');
+    
     const updatedDeal: Deal = {
       ...deal, 
       stage: destination.droppableId,
@@ -213,6 +224,9 @@ const Deals = () => {
     const destinationColumn = columns.find(col => col.id === destination.droppableId);
     
     try {
+      // Update in context immediately to show in destination
+      updateDealInContext(updatedDeal);
+      
       // Send stage update to backend API
       const response = await fetch(`${config.apiUrl}/deals?id=${updatedDeal.id}`, {
         method: 'PUT',
@@ -230,9 +244,6 @@ const Deals = () => {
         throw new Error(errorData.message || 'Failed to update deal stage');
       }
       
-      // Update in context
-      updateDealInContext(updatedDeal);
-      
       trackDealActivity(deal.name, "moved to new stage", destinationColumn?.label || 'new stage');
       
       toast({
@@ -242,14 +253,28 @@ const Deals = () => {
     } catch (error) {
       console.error('Error updating deal stage:', error);
       
-      // Still update local context even if API call fails
-      updateDealInContext(updatedDeal);
+      // If drag fails, revert the deal to its original position
+      if (dragSource) {
+        const revertedDeal: Deal = {
+          ...deal,
+          stage: dragSource.droppableId,
+          updatedAt: new Date().toISOString()
+        };
+        updateDealInContext(revertedDeal);
+      }
       
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update deal stage in HubSpot. It was updated locally.",
+        description: error instanceof Error ? error.message : "Failed to update deal stage in HubSpot. Deal returned to original position.",
         variant: "destructive"
       });
+    } finally {
+      // Reset the dragging state
+      setDraggingDealId(null);
+      setDragSource(null);
+      
+      // Remove the wait cursor class
+      document.body.classList.remove('cursor-wait');
     }
   };
 
@@ -630,7 +655,8 @@ const Deals = () => {
                           {...provided.droppableProps}
                           className={cn(
                             "flex-1 space-y-4 p-2 rounded-md min-h-[200px]",
-                            snapshot.isDraggingOver ? "bg-muted/50" : ""
+                            snapshot.isDraggingOver ? "bg-muted/50" : "",
+                            draggingDealId && dealsByStage[column.id].some(d => d.id === draggingDealId) ? "bg-[#D35400]/5" : ""
                           )}
                         >
                           {stageDeals.map((deal, index) => (
@@ -646,10 +672,14 @@ const Deals = () => {
                                   {...provided.dragHandleProps}
                                   className={cn(
                                     "transition-all duration-300",
-                                    snapshot.isDragging ? "opacity-75" : ""
+                                    snapshot.isDragging ? "opacity-75" : "",
+                                    draggingDealId === deal.id ? "cursor-wait" : ""
                                   )}
                                 >
-                                  <Card className="hover:shadow-md transition-all duration-300 hover:border-[#D35400]/30">
+                                  <Card className={cn(
+                                    "hover:shadow-md transition-all duration-300 hover:border-[#D35400]/30",
+                                    draggingDealId === deal.id ? "border-[#D35400]/50" : ""
+                                  )}>
                                     <CardContent className="p-4">
                                       <div className="flex justify-between items-start mb-2">
                                         <div>
@@ -659,7 +689,11 @@ const Deals = () => {
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-[#D35400]">
-                                              <MoreHorizontal className="h-4 w-4" />
+                                              {draggingDealId === deal.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                              ) : (
+                                                <MoreHorizontal className="h-4 w-4" />
+                                              )}
                                             </Button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end">
