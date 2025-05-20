@@ -211,7 +211,7 @@ const Deals = () => {
     
     try {
       // Send stage update to backend API
-      const response = await fetch(`${config.apiUrl}/deals/${deal.id}/stage`, {
+      const response = await fetch(`${config.apiUrl}/deals?id=${updatedDeal.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -263,7 +263,8 @@ const Deals = () => {
   const handleSaveEditedDeal = async (updatedDeal: Deal) => {
     try {
       // Send updated deal data to backend API
-      const response = await fetch(`${config.apiUrl}/deals/${updatedDeal.id}`, {
+      console.log(updatedDeal);
+      const response = await fetch(`${config.apiUrl}/deals?id=${updatedDeal.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

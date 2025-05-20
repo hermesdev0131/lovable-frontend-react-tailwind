@@ -4,120 +4,120 @@ import { corsOptionsResponse, corsHeaders } from '@/lib/cors';
 const HUBSPOT_BASE_URL = 'https://api.hubapi.com';
 
 // Custom properties to ensure in HubSpot for deals
-const customDealProperties = [
-  {
-    name: 'deal_probability',
-    label: 'Deal Probability',
-    description: 'Probability of closing the deal (0-100)',
-    type: 'number',
-    fieldType: 'number',
-  },
-  {
-    name: 'deal_description',
-    label: 'Deal Description',
-    description: 'Detailed description of the deal',
-    type: 'string',
-    fieldType: 'textarea',
-  },
-  {
-    name: 'custom_fields',
-    label: 'Custom Fields',
-    description: 'JSON string of custom fields for the deal',
-    type: 'string',
-    fieldType: 'textarea',
-  },
-  {
-    name: 'assigned_to',
-    label: 'Assigned To',
-    description: 'User ID or name of the person assigned to the deal',
-    type: 'string',
-    fieldType: 'text',
-  },
-  {
-    name: 'contact_id',
-    label: 'Contact ID',
-    description: 'ID of the associated contact',
-    type: 'string',
-    fieldType: 'text',
-  },
-  {
-    name: 'currency',
-    label: 'Currency',
-    description: 'Currency code for the deal value',
-    type: 'string',
-    fieldType: 'text',
-  },
-  {
-    name: 'company',
-    label: 'Company',
-    description: 'Company name associated with the deal',
-    type: 'string',
-    fieldType: 'text',
-  },
-  {
-    name: 'appointments',
-    label: 'Appointments',
-    description: 'JSON string of appointments related to the deal',
-    type: 'string',
-    fieldType: 'textarea',
-  },
-  {
-    name: 'attachments',
-    label: 'Attachments',
-    description: 'JSON string of file attachments related to the deal',
-    type: 'string',
-    fieldType: 'textarea',
-  }
-];
+// const customDealProperties = [
+//   {
+//     name: 'deal_probability',
+//     label: 'Deal Probability',
+//     description: 'Probability of closing the deal (0-100)',
+//     type: 'number',
+//     fieldType: 'number',
+//   },
+//   {
+//     name: 'deal_description',
+//     label: 'Deal Description',
+//     description: 'Detailed description of the deal',
+//     type: 'string',
+//     fieldType: 'textarea',
+//   },
+//   {
+//     name: 'custom_fields',
+//     label: 'Custom Fields',
+//     description: 'JSON string of custom fields for the deal',
+//     type: 'string',
+//     fieldType: 'textarea',
+//   },
+//   {
+//     name: 'assigned_to',
+//     label: 'Assigned To',
+//     description: 'User ID or name of the person assigned to the deal',
+//     type: 'string',
+//     fieldType: 'text',
+//   },
+//   {
+//     name: 'contact_id',
+//     label: 'Contact ID',
+//     description: 'ID of the associated contact',
+//     type: 'string',
+//     fieldType: 'text',
+//   },
+//   {
+//     name: 'currency',
+//     label: 'Currency',
+//     description: 'Currency code for the deal value',
+//     type: 'string',
+//     fieldType: 'text',
+//   },
+//   {
+//     name: 'company',
+//     label: 'Company',
+//     description: 'Company name associated with the deal',
+//     type: 'string',
+//     fieldType: 'text',
+//   },
+//   {
+//     name: 'appointments',
+//     label: 'Appointments',
+//     description: 'JSON string of appointments related to the deal',
+//     type: 'string',
+//     fieldType: 'textarea',
+//   },
+//   {
+//     name: 'attachments',
+//     label: 'Attachments',
+//     description: 'JSON string of file attachments related to the deal',
+//     type: 'string',
+//     fieldType: 'textarea',
+//   }
+// ];
 
 // Ensure custom deal properties exist
-async function ensureCustomDealPropertiesExist(accessToken: string) {
-  console.log('Ensuring custom deal properties exist...');
+// async function ensureCustomDealPropertiesExist(accessToken: string) {
+//   console.log('Ensuring custom deal properties exist...');
   
-  for (const property of customDealProperties) {
-    try {
-      console.log(`Checking if property exists: ${property.name}`);
-      const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/properties/deals/${property.name}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+//   for (const property of customDealProperties) {
+//     try {
+//       console.log(`Checking if property exists: ${property.name}`);
+//       const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/properties/deals/${property.name}`, {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//           'Content-Type': 'application/json',
+//         },
+//       });
 
-      if (res.status === 404) {
-        console.log(`Creating deal property: ${property.name}`);
-        const createRes = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/properties/deals`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: property.name,
-            label: property.label,
-            description: property.description,
-            groupName: 'dealinformation',
-            type: property.type,
-            fieldType: property.fieldType,
-          }),
-        });
+//       if (res.status === 404) {
+//         console.log(`Creating deal property: ${property.name}`);
+//         const createRes = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/properties/deals`, {
+//           method: 'POST',
+//           headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//             'Content-Type': 'application/json',
+//           },
+//           body: JSON.stringify({
+//             name: property.name,
+//             label: property.label,
+//             description: property.description,
+//             groupName: 'dealinformation',
+//             type: property.type,
+//             fieldType: property.fieldType,
+//           }),
+//         });
         
-        if (!createRes.ok) {
-          const errorData = await createRes.json();
-          console.error(`Failed to create property ${property.name}:`, JSON.stringify(errorData, null, 2));
-        } else {
-          console.log(`Successfully created property: ${property.name}`);
-        }
-      } else {
-        console.log(`Property already exists: ${property.name}`);
-      }
-    } catch (error) {
-      console.error(`Error ensuring deal property ${property.name}:`, error);
-    }
-  }
+//         if (!createRes.ok) {
+//           const errorData = await createRes.json();
+//           console.error(`Failed to create property ${property.name}:`, JSON.stringify(errorData, null, 2));
+//         } else {
+//           console.log(`Successfully created property: ${property.name}`);
+//         }
+//       } else {
+//         console.log(`Property already exists: ${property.name}`);
+//       }
+//     } catch (error) {
+//       console.error(`Error ensuring deal property ${property.name}:`, error);
+//     }
+//   }
   
-  console.log('Finished checking custom deal properties');
-}
+//   console.log('Finished checking custom deal properties');
+// }
 
 // Map our deal stages to HubSpot deal stages
 const stageMapping: Record<string, string> = {
@@ -370,42 +370,24 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
+    const dealId = url.searchParams.get('id');
     
-    // Extract deal ID and check if this is a stage update
-    let dealId;
-    let isStageUpdate = false;
-    
-    // Check URL pattern: /api/deals/{id}/stage
-    if (pathParts.length >= 5 && pathParts[pathParts.length - 1] === 'stage') {
-      dealId = pathParts[pathParts.length - 2];
-      isStageUpdate = true;
-    } 
-    // Check URL pattern: /api/deals/{id}
-    else if (pathParts.length >= 4) {
-      dealId = pathParts[pathParts.length - 1];
-    }
-    
-    if (!dealId || dealId === 'deals') {
+    if (!dealId) {
       return corsHeaders(NextResponse.json({ message: 'Deal ID is required' }, { status: 400 }));
     }
 
     const dealData = await request.json();
     const accessToken = process.env.HUBSPOT_ACCESS_TOKEN!;
     
+    // Check if this is a stage update
+    const isStageUpdate = dealData.stage !== undefined;
+    
     if (isStageUpdate) {
-      // This is a stage update request
       const { stage, stageName } = dealData;
-      
-      if (!stage) {
-        return corsHeaders(NextResponse.json({ message: 'Stage is required' }, { status: 400 }));
-      }
-      
       const properties = {
         dealstage: stageMapping[stage] || 'appointmentscheduled',
       };
-      
-      // Use fetch to update the deal stage in HubSpot
+      console.log("Stage Update");
       const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/deals/${dealId}`, {
         method: 'PATCH',
         headers: {
@@ -433,14 +415,12 @@ export async function PUT(request: NextRequest) {
         })
       );
     } else {
-      // This is a full deal update request
       if (!dealData.name) {
         return corsHeaders(NextResponse.json({ message: 'Deal name is required' }, { status: 400 }));
       }
       
       const properties = dealToHubspotProperties(dealData);
-      
-      // Use fetch to update the deal in HubSpot
+      console.log(properties);
       const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/deals/${dealId}`, {
         method: 'PATCH',
         headers: {
@@ -459,17 +439,6 @@ export async function PUT(request: NextRequest) {
         throw new Error(errorData.message || 'Failed to update deal');
       }
 
-      // Get the updated deal
-      const getRes = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/deals/${dealId}?properties=dealname,amount,dealstage,closedate,hs_lastmodifieddate`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const updatedDeal = await getRes.json();
-      
-      // Convert to our format and return
       const deal = {
         id: dealId,
         hubspotId: dealId,
