@@ -42,17 +42,17 @@ export interface WebsitePage {
 }
 
 export interface ContentItem {
-  id: number;
+  id: string;
   title: string;
   content: string;
   type: 'email' | 'social' | 'blog' | 'other';
   platform?: string;
-  createdBy: number;
+  createdBy: string;
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected';
   scheduledFor?: string;
   rejectionReason?: string;
-  approvedBy?: number;
+  approvedBy?: string;
   approvedAt?: string;
   media?: string | null;
   clientId: string | null;

@@ -31,6 +31,8 @@ interface TasksContextType {
   setPriority: (id: string, priority: Task['priority']) => void;
   filterTasks: (filters: { status?: 'all' | 'completed' | 'active', type?: Task['type'] }) => Task[];
   isLoading: boolean;
+  tasksLoaded: boolean;
+  fetchTasks: () => Promise<void>;
 }
 
 const STORAGE_KEY = 'crm_tasks';
@@ -39,50 +41,45 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tasksLoaded, setTasksLoaded] = useState(false);
 
-  // Load tasks from backend on mount
-  useEffect(() => {
-    const loadTasks = async () => {
-      if (isInitialized) return;
+  const fetchTasks = async () => {
+    if (isLoading) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${config.apiUrl}/tasks`);
       
-      try {
-        setIsLoading(true);
-        const response = await fetch(`${config.apiUrl}/tasks`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch tasks');
-        }
-        
-        const fetchedTasks = await response.json();
-        setTasks(fetchedTasks);
-        
-        // Save to localStorage as backup
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fetchedTasks));
-      } catch (error) {
-        console.error('Error loading tasks:', error);
-        
-        // Fallback to localStorage if API fails
-        const savedTasks = localStorage.getItem(STORAGE_KEY);
-        if (savedTasks) {
-          setTasks(JSON.parse(savedTasks));
-        }
-      } finally {
-        setIsLoading(false);
-        setIsInitialized(true);
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
       }
-    };
-
-    loadTasks();
-  }, [isInitialized]);
+      
+      const fetchedTasks = await response.json();
+      setTasks(fetchedTasks);
+      setTasksLoaded(true);
+      
+      // Save to localStorage as backup
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fetchedTasks));
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+      
+      // Fallback to localStorage if API fails
+      const savedTasks = localStorage.getItem(STORAGE_KEY);
+      if (savedTasks) {
+        setTasks(JSON.parse(savedTasks));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {
-    if (isInitialized) {
+    if (tasksLoaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     }
-  }, [tasks, isInitialized]);
+  }, [tasks, tasksLoaded]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const now = new Date().toISOString();
@@ -110,13 +107,14 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     source?: string;
     relatedTo?: string;
   }) => {
+    const now = new Date().toISOString();
     addTask({
       title: activity.title,
-      date: new Date().toISOString().split('T')[0],
+      date: now.split('T')[0],
       completed: true,
       type: activity.type,
       source: activity.source,
-      relatedTo: activity.relatedTo
+      updatedAt: now
     });
   };
   
@@ -155,7 +153,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         clearCompletedTasks,
         setPriority,
         filterTasks,
-        isLoading
+        isLoading,
+        tasksLoaded,
+        fetchTasks
       }}
     >
       {children}

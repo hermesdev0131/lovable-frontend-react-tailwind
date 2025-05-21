@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from "@/components/ui/toaster";
 import { DealsProvider } from './contexts/DealsContext';
 import { TasksProvider } from './contexts/TasksContext';
+import { TeamProvider } from './contexts/TeamContext';
 import Index from './pages/Index';
 import Reputation from './pages/Reputation';
 import Contacts from './pages/Contacts';
@@ -74,20 +75,22 @@ function App() {
   return (
     <Router>
       <ThemeProvider>
-				<AuthProvider>
-					<MasterAccountProvider>
-						<DealsProvider>
-							<CustomFieldsProvider>
-								<TasksProvider>
+			<AuthProvider>
+				<MasterAccountProvider>
+					<DealsProvider>
+						<CustomFieldsProvider>
+							<TasksProvider>
+								<TeamProvider>
 									<MainLayout>
 										<RoutesComponent />
 										<Toaster />
 									</MainLayout>
-								</TasksProvider>
-							</CustomFieldsProvider>
-						</DealsProvider>
-					</MasterAccountProvider>
-				</AuthProvider>
+								</TeamProvider>
+							</TasksProvider>
+						</CustomFieldsProvider>
+					</DealsProvider>
+				</MasterAccountProvider>
+			</AuthProvider>
         
       </ThemeProvider>
     </Router>

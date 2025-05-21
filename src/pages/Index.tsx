@@ -7,6 +7,8 @@ import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import { useNavigate } from 'react-router-dom';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useDeals } from '@/contexts/DealsContext';
+import { useTeam } from '@/contexts/TeamContext'
+import { useTasks } from '@/contexts/TasksContext';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,11 +16,13 @@ const Index = () => {
   const navigate = useNavigate();
   const { clients, clientsLoaded, fetchClientsData, isLoadingClients } = useMasterAccount();
   const { deals, fetchDealsData, isLoadingDeals, dealsLoaded } = useDeals();
+  const { teamMembers, fetchTeamMembers, isLoadingTeam, teamLoaded } = useTeam();
+  const { tasks, fetchTasks, isLoading: isLoadingTasks, tasksLoaded } = useTasks();
   const [isLoading, setIsLoading] = useState(false);
   const { authState } = useAuth();
   const isAuthenticated = authState?.isAuthenticated ?? false;
   
-  // Fetch clients and deals data if not already loaded and user is authenticated
+  // Fetch clients, deals, team, and tasks data if not already loaded and user is authenticated
   useEffect(() => {
     console.log("Dashboard: Initial data load check");
     const loadData = async () => {
@@ -30,8 +34,10 @@ const Index = () => {
 
       const needClientsData = !clientsLoaded && !isLoadingClients;
       const needDealsData = !dealsLoaded && !isLoadingDeals;
+      const needTeamData = !teamLoaded && !isLoadingTeam;
+      const needTasksData = !tasksLoaded && !isLoadingTasks;
       
-      if (needClientsData || needDealsData) {
+      if (needClientsData || needDealsData || needTeamData || needTasksData) {
         setIsLoading(true);
         try {
           // Load clients data if needed
@@ -44,6 +50,18 @@ const Index = () => {
           if (needDealsData) {
             console.log("Dashboard: Fetching deals data...");
             await fetchDealsData();
+          }
+
+          // Load team data if needed
+          if (needTeamData) {
+            console.log("Dashboard: Fetching team data...");
+            await fetchTeamMembers();
+          }
+
+          // Load tasks data if needed
+          if (needTasksData) {
+            console.log("Dashboard: Fetching tasks data...");
+            await fetchTasks();
           }
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -60,7 +78,7 @@ const Index = () => {
     
     loadData();
     // Only re-run when the loaded state changes or authentication state changes
-  }, [clientsLoaded, dealsLoaded, isAuthenticated]);
+  }, []);
   
   // Calculate dashboard stats from actual data
   const totalContacts = clients.length;
@@ -132,7 +150,7 @@ const Index = () => {
         openDeals={openDeals}
         totalDealValue={totalDealValue}
         onCardClick={handleCardClick}
-        isLoading={isLoading || isLoadingClients || isLoadingDeals}
+        isLoading={isLoading || isLoadingClients || isLoadingDeals || isLoadingTeam || isLoadingTasks}
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

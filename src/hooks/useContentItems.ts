@@ -50,7 +50,7 @@ export function useContentItems(
     });
   };
 
-  const updateContentItem = (id: string, updatedData: Partial<ContentItem>) => {
+  const updateContentItem = (id: number, data: Partial<ContentItem>) => {
     const contentItem = contentItems.find(item => item.id === id);
     if (!contentItem) return;
     
@@ -64,7 +64,7 @@ export function useContentItems(
     }
     
     const updatedContentItems = contentItems.map(item => 
-      item.id === id ? { ...item, ...updatedData } : item
+      item.id === id ? { ...item, ...data } : item
     );
     
     setContentItems(updatedContentItems);
@@ -141,7 +141,7 @@ export function useContentItems(
     });
   };
 
-  const getContentItems = (clientId?: number | null, status?: string) => {
+  const getContentItems = (clientId?: string | null, status?: string) => {
     return contentItems.filter(item => {
       if (clientId !== undefined) {
         if (item.clientId !== clientId && item.createdBy !== clientId) return false;
