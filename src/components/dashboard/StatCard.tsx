@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -10,6 +9,7 @@ interface StatCardProps {
   subtitle: string;
   onClick?: () => void;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 const StatCard = ({
@@ -18,12 +18,17 @@ const StatCard = ({
   icon: Icon,
   subtitle,
   onClick,
-  isLoading = false
+  isLoading = false,
+  disabled = false
 }: StatCardProps) => {
   return (
     <Card 
-      className="hover:shadow transition-all duration-300 ease-in-out cursor-pointer bg-white text-black dark:bg-card dark:text-card-foreground"
-      onClick={onClick}
+      className={`transition-all duration-300 ease-in-out ${
+        disabled 
+          ? 'opacity-80' 
+          : 'hover:shadow cursor-pointer'
+      } bg-white text-black dark:bg-card dark:text-card-foreground`}
+      onClick={disabled ? undefined : onClick}
     >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>

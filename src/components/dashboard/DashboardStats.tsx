@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Users, LineChart, PieChart } from 'lucide-react';
 import StatCard from './StatCard';
 import { formatCurrency } from '@/utils/formatters';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardStatsProps {
   totalContacts: number;
@@ -19,6 +19,14 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
   onCardClick,
   isLoading = false
 }) => {
+  const { authState } = useAuth();
+  const isAuthenticated = authState?.isAuthenticated ?? false;
+
+  const handleCardClick = (title: string, path: string) => {
+    if (!isAuthenticated) return;
+    onCardClick(title, path);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <StatCard
@@ -26,8 +34,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={totalContacts}
         icon={Users}
         subtitle={totalContacts === 0 ? "No contacts added yet" : `${totalContacts} total contacts`}
-        onClick={() => onCardClick("Contacts", "/clients")}
+        onClick={() => handleCardClick("Contacts", "/clients")}
         isLoading={isLoading}
+        disabled={!isAuthenticated}
       />
       
       <StatCard
@@ -35,8 +44,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={openDeals}
         icon={LineChart}
         subtitle={openDeals === 0 ? "No active deals" : `${openDeals} active deals in progress`}
-        onClick={() => onCardClick("Deals", "/reports")}
+        onClick={() => handleCardClick("Deals", "/deals")}
         isLoading={isLoading}
+        disabled={!isAuthenticated}
       />
       
       <StatCard
@@ -44,8 +54,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={formatCurrency(totalDealValue)}
         icon={PieChart}
         subtitle={totalDealValue === 0 ? "No value in pipeline yet" : `${formatCurrency(totalDealValue)} total pipeline value`}
-        onClick={() => onCardClick("Opportunities", "/reports")}
+        onClick={() => handleCardClick("Opportunities", "/reports")}
         isLoading={isLoading}
+        disabled={!isAuthenticated}
       />
     </div>
   );

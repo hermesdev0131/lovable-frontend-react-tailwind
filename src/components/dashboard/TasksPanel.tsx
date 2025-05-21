@@ -20,6 +20,7 @@ import { format, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface TaskFormValues {
   title: string;
@@ -64,6 +65,8 @@ const getTaskColor = (type: Task['type']) => {
 
 const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   const { tasks, addTask, updateTask, deleteTask, setPriority, isLoading } = useTasks();
+  const { authState } = useAuth();
+  const isAuthenticated = authState?.isAuthenticated ?? false;
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -115,6 +118,15 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   const sortedTasks = sortTasksByPriority(filteredTasks);
 
   const handleSubmit = async (data: TaskFormValues) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create tasks",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!data.title?.trim()) {
       toast({
         title: "Error",
@@ -199,6 +211,15 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   };
 
   const toggleTaskCompletion = async (id: string, currentStatus: boolean) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to update tasks",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUpdatingTaskId(id);
     
     try {
@@ -250,6 +271,15 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   };
   
   const handleSetPriority = async (id: string, priority: Task['priority']) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to set task priority",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUpdatingTaskId(id);
     
     try {
@@ -300,6 +330,15 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   };
 
   const handleDeleteTask = async (id: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to delete tasks",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setDeletingTaskId(id);
     
     try {
@@ -373,12 +412,18 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   };
 
   return (
-    <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
+    <Card className={`transition-all duration-300 ease-in-out ${
+      !isAuthenticated ? 'opacity-80' : 'hover:shadow'
+    } bg-white text-black dark:bg-card dark:text-card-foreground`}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Tasks</CardTitle>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="default" size="sm" disabled={isAddingTask}>
+            <Button 
+              variant="default" 
+              size="sm" 
+              disabled={isAddingTask || !isAuthenticated}
+            >
               {isAddingTask ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
@@ -530,7 +575,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                       size="icon"
                       className="h-8 w-8 rounded-full"
                       onClick={() => toggleTaskCompletion(task.id, task.completed)}
-                      disabled={updatingTaskId === task.id}
+                      disabled={updatingTaskId === task.id || !isAuthenticated}
                     >
                       {updatingTaskId === task.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -564,7 +609,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                       {!task.completed && !task.priority && (
                         <Select 
                           onValueChange={(value) => handleSetPriority(task.id, value as Task['priority'])}
-                          disabled={updatingTaskId === task.id}
+                          disabled={updatingTaskId === task.id || !isAuthenticated}
                         >
                           <SelectTrigger className="h-7 w-7 p-0">
                             <Flag className="h-3.5 w-3.5" />
@@ -581,7 +626,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => handleDeleteTask(task.id)}
-                        disabled={deletingTaskId === task.id}
+                        disabled={deletingTaskId === task.id || !isAuthenticated}
                       >
                         {deletingTaskId === task.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -597,7 +642,12 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
               <div className="flex items-center justify-center h-32 border border-dashed rounded-md">
                 <div className="text-center text-muted-foreground">
                   <p className="mb-2">No {activeTab !== 'all' ? activeTab : ''} tasks</p>
-                  <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setOpen(true)}
+                    disabled={!isAuthenticated}
+                  >
                     <Plus className="h-4 w-4 mr-1" /> Add Task
                   </Button>
                 </div>

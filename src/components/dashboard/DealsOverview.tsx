@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChartData {
   name: string;
@@ -19,9 +19,18 @@ interface DealsOverviewProps {
 
 const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }) => {
   const navigate = useNavigate();
+  const { authState } = useAuth();
+  const isAuthenticated = authState?.isAuthenticated ?? false;
+
+  const handleCreateDeal = () => {
+    if (!isAuthenticated) return;
+    navigate('/deals');
+  };
 
   return (
-    <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
+    <Card className={`transition-all duration-300 ease-in-out ${
+      !isAuthenticated ? 'opacity-80' : 'hover:shadow'
+    } bg-white text-black dark:bg-card dark:text-card-foreground`}>
       <CardHeader>
         <CardTitle>Deals Overview</CardTitle>
       </CardHeader>
@@ -68,8 +77,9 @@ const DealsOverview: React.FC<DealsOverviewProps> = ({ dealStageData, hasDeals }
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/deals')}
+              onClick={handleCreateDeal}
               className="flex items-center gap-1"
+              disabled={!isAuthenticated}
             >
               <Plus className="h-4 w-4" /> Create Deal
             </Button>

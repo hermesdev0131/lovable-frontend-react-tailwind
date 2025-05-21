@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Trash2, Calendar, Mail, MessageCircle, Phone, Send, Globe, Star, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTasks } from '@/contexts/TasksContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ActivityItem {
   id: number;
@@ -19,6 +20,9 @@ interface ActivityFeedProps {
 
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity }) => {
   const { clearCompletedTasks } = useTasks();
+  const { authState } = useAuth();
+  const isAuthenticated = authState?.isAuthenticated ?? false;
+  const { toast } = useToast();
 
   // Function to get icon based on activity type
   const getActivityIcon = (action: string) => {
@@ -33,6 +37,15 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
   };
 
   const handleClearAll = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to clear activities",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Clear all completed tasks from TasksContext
     clearCompletedTasks();
     
@@ -44,8 +57,25 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
     }
   };
 
+  const handleClearActivity = (id: number) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to clear activities",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (onClearActivity) {
+      onClearActivity(id);
+    }
+  };
+
   return (
-    <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
+    <Card className={`transition-all duration-300 ease-in-out ${
+      !isAuthenticated ? 'opacity-80' : 'hover:shadow'
+    } bg-white text-black dark:bg-card dark:text-card-foreground`}>
       <CardHeader className="border-b border-muted/20 flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-medium flex items-center">
           <div className="w-1 h-6 bg-[#D35400] mr-2 rounded-full"></div>
@@ -57,6 +87,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
             size="sm"
             onClick={handleClearAll}
             className="text-sm"
+            disabled={!isAuthenticated}
           >
             Clear All
           </Button>
@@ -87,7 +118,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
                     variant="ghost" 
                     size="icon"
                     className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-muted hover:opacity-100"
-                    onClick={() => onClearActivity(item.id)}
+                    onClick={() => handleClearActivity(item.id)}
+                    disabled={!isAuthenticated}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
