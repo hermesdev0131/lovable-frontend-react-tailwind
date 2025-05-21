@@ -358,12 +358,12 @@ const Deals = () => {
       closingDate: dealData.closingDate || now,
       description: dealData.description || "",
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      appointments: dealData.appointments || [],
+      attachments: dealData.attachments || []
     };
     
     try {
-
-      console.log(newDeal);
       // Send deal data to backend API
       const response = await fetch(`${config.apiUrl}/deals`, {
         method: 'POST',

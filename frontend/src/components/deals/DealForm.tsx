@@ -258,30 +258,47 @@ const DealForm: React.FC<DealFormProps> = ({
       });
       return;
     }
-    
-    const newAppointment = {
-      title: appointmentTitle,
-      datetime: `${appointmentDate}T${appointmentTime}`
-    };
-    
-    setAppointments([...appointments, newAppointment]);
-    
-    // Track the scheduled appointment
-    trackAppointmentScheduled(
-      "Contact", // This would be the actual contact name in a real implementation
-      form.getValues("name") || "New Deal",
-      `${appointmentDate} at ${appointmentTime}`
-    );
-    
-    // Reset form fields
-    setAppointmentDate("");
-    setAppointmentTime("");
-    setAppointmentTitle("");
-    
-    toast({
-      title: "Appointment added",
-      description: `Appointment scheduled for ${appointmentDate} at ${appointmentTime}`
-    });
+
+    try {
+      // Parse the date and time
+      const parsedDate = parse(appointmentDate, 'MM/dd/yyyy', new Date());
+      const [hours, minutes] = appointmentTime.split(':').map(Number);
+      
+      // Create a new date object with the correct time
+      const appointmentDateTime = new Date(parsedDate);
+      appointmentDateTime.setHours(hours, minutes, 0, 0);
+      
+      const newAppointment = {
+        title: appointmentTitle,
+        datetime: format(appointmentDateTime, 'MM/dd/yyyy HH:mm')
+      };
+      
+      setAppointments([...appointments, newAppointment]);
+      
+      // Track the scheduled appointment
+      trackAppointmentScheduled(
+        "Contact", // This would be the actual contact name in a real implementation
+        form.getValues("name") || "New Deal",
+        format(appointmentDateTime, 'MMM d, yyyy h:mm a')
+      );
+      
+      // Reset form fields
+      setAppointmentDate("");
+      setAppointmentTime("");
+      setAppointmentTitle("");
+      
+      toast({
+        title: "Appointment added",
+        description: `Appointment scheduled for ${format(appointmentDateTime, 'MMM d, yyyy h:mm a')}`
+      });
+    } catch (error) {
+      console.error('Error adding appointment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add appointment. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   const removeAppointment = (index: number) => {
@@ -713,27 +730,35 @@ const DealForm: React.FC<DealFormProps> = ({
                     {appointments.length > 0 && (
                       <div className="space-y-2 mt-4">
                         <h4 className="text-sm font-medium">Scheduled Appointments</h4>
-                        {appointments.map((appointment, index) => (
-                          <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
-                            <div className="flex items-center gap-2">
-                              <Calendar size={16} className="text-muted-foreground" />
-                              <div>
-                                <p className="text-sm font-medium">{appointment.title}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {format(parse(appointment.datetime, 'MM/dd/yyyy HH:mm', new Date()), 'MMM d, yyyy h:mm a')}
-                                </p>
+                        {appointments.map((appointment, index) => {
+                          try {
+                            const appointmentDate = parse(appointment.datetime, 'MM/dd/yyyy HH:mm', new Date());
+                            return (
+                              <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
+                                <div className="flex items-center gap-2">
+                                  <Calendar size={16} className="text-muted-foreground" />
+                                  <div>
+                                    <p className="text-sm font-medium">{appointment.title}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {format(appointmentDate, 'MMM d, yyyy h:mm a')}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeAppointment(index)}
+                                  className="h-7 w-7"
+                                >
+                                  <X size={14} />
+                                </Button>
                               </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeAppointment(index)}
-                              className="h-7 w-7"
-                            >
-                              <X size={14} />
-                            </Button>
-                          </div>
-                        ))}
+                            );
+                          } catch (error) {
+                            console.error('Error displaying appointment:', error);
+                            return null;
+                          }
+                        })}
                       </div>
                     )}
                   </div>
