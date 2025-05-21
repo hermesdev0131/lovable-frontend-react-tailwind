@@ -303,12 +303,19 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
     setDeletingTaskId(id);
     
     try {
-      // Send delete request to backend API
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      // Send delete request to backend API with task data
       const response = await fetch(`${config.apiUrl}/tasks?id=${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+          hubspotId: task.hubspotId || id,
+          ...task
+        })
       });
       
       if (!response.ok) {
@@ -469,7 +476,13 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                 />
                 <div className="flex justify-end space-x-2">
                   <DialogClose asChild>
-                    <Button variant="outline" type="button">Cancel</Button>
+                    <Button 
+                      variant="outline" 
+                      type="button"
+                      disabled={isAddingTask}
+                    >
+                      Cancel
+                    </Button>
                   </DialogClose>
                   <Button type="submit" disabled={isAddingTask}>
                     {isAddingTask ? (

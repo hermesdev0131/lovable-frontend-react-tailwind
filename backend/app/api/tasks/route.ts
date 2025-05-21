@@ -307,14 +307,14 @@ export async function DELETE(request: NextRequest) {
     }
 
     const accessToken = process.env.HUBSPOT_ACCESS_TOKEN!;
-    if (!accessToken) {
-      console.error("No HubSpot access token found");
-      return corsHeaders(NextResponse.json({ message: 'Server configuration error' }, { status: 500 }));
-    }
     
-    console.log(`Attempting to delete task with ID: ${taskId}`);
+    // Get the task data to check for hubspotId
+    const taskData = await request.json();
     
-    const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/tasks/${taskId}`, {
+    // Use hubspotId if available, otherwise use the taskId
+    const hubspotId = taskData.hubspotId || taskId;
+    
+    const res = await fetch(`${HUBSPOT_BASE_URL}/crm/v3/objects/tasks/${hubspotId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -322,19 +322,26 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    if (res.status === 404) {
-      return corsHeaders(NextResponse.json({ message: 'Task not found' }, { status: 404 }));
-    }
-
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || 'Failed to delete task');
+      // For DELETE requests, HubSpot returns 204 on success and no body
+      // If we get here, it means there was an error
+      let errorMessage = 'Failed to delete task';
+      try {
+        const errorData = await res.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        // If we can't parse the error response, use the status text
+        errorMessage = res.statusText || errorMessage;
+      }
+      console.error('HubSpot API Error:', errorMessage);
+      throw new Error(errorMessage);
     }
 
     return corsHeaders(
       NextResponse.json({
         message: 'Task deleted successfully from HubSpot',
-        id: taskId
+        id: taskId,
+        hubspotId: hubspotId
       })
     );
   } catch (error: any) {
