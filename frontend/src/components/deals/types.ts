@@ -43,9 +43,15 @@ export const DEFAULT_COLUMNS: Column[] = [
   { id: 'discovery', label: 'Discovery' },
   { id: 'proposal', label: 'Proposal' },
   { id: 'negotiation', label: 'Negotiation' },
+  { id: 'decision', label: 'Decision' },
+  { id: 'contract_sent', label: 'Contract Sent' },
   { id: 'closed_won', label: 'Closed Won' },
   { id: 'closed_lost', label: 'Closed Lost' }
+  
+  
 ];
+
+
 
 export const STORAGE_KEYS = {
   DEALS_COLUMNS: 'crm_deals_columns',

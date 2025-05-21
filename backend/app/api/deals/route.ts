@@ -10,6 +10,8 @@ const stageMapping: Record<string, string> = {
   'discovery': 'appointmentscheduled',
   'proposal': 'qualifiedtobuy',
   'negotiation': 'presentationscheduled',
+  'decision': 'decisionmakerboughtin',
+  'contract_sent': 'contractsent',
   'closed_won': 'closedwon',
   'closed_lost': 'closedlost',
 };
@@ -270,7 +272,7 @@ export async function PUT(request: NextRequest) {
     // Check if this is a stage update
     // const isStageUpdate = dealData.stage !== undefined;
     
-    
+    // console.log(dealStage);
     if (dealStage) {
       const { stage, stageName } = dealData;
       const properties = {

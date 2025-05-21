@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, X, Edit, GripVertical } from "lucide-react";
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DEFAULT_COLUMNS } from '@/components/deals/types';
 
 export interface Column {
   id: string;
@@ -32,6 +33,7 @@ const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingLabel, setEditingLabel] = useState('');
   const [newColumnLabel, setNewColumnLabel] = useState('');
+  const [selectedStageId, setSelectedStageId] = useState<string>('');
   const { toast } = useToast();
 
   const handleSave = () => {
@@ -68,9 +70,28 @@ const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
       return;
     }
 
-    const newId = `column-${Date.now()}`;
-    setWorkingColumns([...workingColumns, { id: newId, label: newColumnLabel }]);
+    if (!selectedStageId) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a stage ID",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if stage ID is already used
+    if (workingColumns.some(col => col.id === selectedStageId)) {
+      toast({
+        title: "Stage ID already exists",
+        description: "This stage ID is already in use. Please select a different one.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setWorkingColumns([...workingColumns, { id: selectedStageId, label: newColumnLabel }]);
     setNewColumnLabel('');
+    setSelectedStageId('');
   };
 
   const handleRemoveColumn = (index: number) => {
@@ -112,7 +133,7 @@ const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
     }
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     
     const items = Array.from(workingColumns);
@@ -121,6 +142,11 @@ const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
     
     setWorkingColumns(items);
   };
+
+  // Get available default stages (excluding those already used)
+  const availableStages = DEFAULT_COLUMNS.filter(
+    stage => !workingColumns.some(col => col.id === stage.id)
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -181,7 +207,10 @@ const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
                               </Button>
                             </div>
                           ) : (
-                            <span className="flex-1 mx-2">{column.label}</span>
+                            <div className="flex-1 mx-2">
+                              <span className="font-medium">{column.label}</span>
+                              <span className="text-xs text-muted-foreground ml-2">(id: {column.id})</span>
+                            </div>
                           )}
                           
                           <div className="flex gap-1">
@@ -217,20 +246,40 @@ const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
           
           <div className="border-t pt-4">
             <Label htmlFor="new-column" className="mb-2 block">Add New Column</Label>
-            <div className="flex gap-2">
-              <Input
-                id="new-column"
-                value={newColumnLabel}
-                onChange={(e) => setNewColumnLabel(e.target.value)}
-                placeholder="Enter column name"
-                className="flex-1"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newColumnLabel.trim()) handleAddColumn();
-                }}
-              />
-              <Button onClick={handleAddColumn}>
-                <Plus className="h-4 w-4 mr-2" /> Add
-              </Button>
+            <div className="space-y-2">
+
+              <div className="space-y-1">
+                <Label htmlFor="stage-id" className="text-sm text-muted-foreground">Select Stage ID</Label>
+                <Select value={selectedStageId} onValueChange={setSelectedStageId}>
+                  <SelectTrigger id="stage-id">
+                    <SelectValue placeholder="Select a stage ID" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableStages.map((stage) => (
+                      <SelectItem key={stage.id} value={stage.id}>
+                        {stage.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  id="new-column"
+                  value={newColumnLabel}
+                  onChange={(e) => setNewColumnLabel(e.target.value)}
+                  placeholder="Enter column name"
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newColumnLabel.trim() && selectedStageId) handleAddColumn();
+                  }}
+                />
+                <Button onClick={handleAddColumn}>
+                  <Plus className="h-4 w-4 mr-2" /> Add
+                </Button>
+              </div>
+              
+              
             </div>
           </div>
         </div>
