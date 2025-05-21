@@ -94,7 +94,13 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
         )}
       </CardHeader>
       <CardContent className="pt-4">
-        {activities.length > 0 ? (
+        {!isAuthenticated ? (
+          <div className="h-[120px] flex items-center justify-center text-center">
+            <div>
+              <p className="text-muted-foreground mb-2">Please log in to view activities</p>
+            </div>
+          </div>
+        ) : activities.length > 0 ? (
           <div className="space-y-4">
             {activities.map((item, i) => (
               <div 

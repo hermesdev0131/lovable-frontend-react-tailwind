@@ -554,7 +554,13 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
           </TabsList>
           
           <ScrollArea className="h-[300px] pr-3">
-            {isLoading ? (
+            {!isAuthenticated ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-center text-muted-foreground">
+                  <p>Please log in to view tasks</p>
+                </div>
+              </div>
+            ) : isLoading ? (
               <div className="flex items-center justify-center h-32">
                 <div className="text-center text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />

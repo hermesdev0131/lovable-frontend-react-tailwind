@@ -8,18 +8,26 @@ import { useNavigate } from 'react-router-dom';
 import { useMasterAccount } from '@/contexts/MasterAccountContext';
 import { useDeals } from '@/contexts/DealsContext';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const navigate = useNavigate();
   const { clients, clientsLoaded, fetchClientsData, isLoadingClients } = useMasterAccount();
   const { deals, fetchDealsData, isLoadingDeals, dealsLoaded } = useDeals();
   const [isLoading, setIsLoading] = useState(false);
+  const { authState } = useAuth();
+  const isAuthenticated = authState?.isAuthenticated ?? false;
   
-  // Fetch clients and deals data if not already loaded
+  // Fetch clients and deals data if not already loaded and user is authenticated
   useEffect(() => {
     console.log("Dashboard: Initial data load check");
     const loadData = async () => {
-      // Only proceed if we need to load data and aren't already loading
+      // Only proceed if authenticated and we need to load data and aren't already loading
+      if (!isAuthenticated) {
+        console.log("Dashboard: User not authenticated, skipping data load");
+        return;
+      }
+
       const needClientsData = !clientsLoaded && !isLoadingClients;
       const needDealsData = !dealsLoaded && !isLoadingDeals;
       
@@ -51,8 +59,8 @@ const Index = () => {
     };
     
     loadData();
-    // Only re-run when the loaded state changes, not when the loading state or fetch functions change
-  }, [clientsLoaded, dealsLoaded]);
+    // Only re-run when the loaded state changes or authentication state changes
+  }, [clientsLoaded, dealsLoaded, isAuthenticated]);
   
   // Calculate dashboard stats from actual data
   const totalContacts = clients.length;
@@ -89,14 +97,29 @@ const Index = () => {
     { id: 3, action: 'New task created', time: '3 hours ago', name: 'Support' },
   ]);
   
-	
   // Handle card click navigation
   const handleCardClick = useCallback((title: string, path: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access this feature",
+        variant: "destructive"
+      });
+      return;
+    }
     navigate(path);
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
   
   // Handle clearing activity
   const handleClearActivity = (id: number) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to clear activities",
+        variant: "destructive"
+      });
+      return;
+    }
     setActivities(activities.filter(activity => activity.id !== id));
   };
 
@@ -142,28 +165,3 @@ const Index = () => {
 export default Index;
 
 
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-
-// const DashboardMetrics = () => {
-//   const [metrics, setMetrics] = useState(null);
-
-//   useEffect(() => {
-//     axios.get("http://localhost:8000/dashboard/metrics")
-//       .then(res => setMetrics(res.data))
-//       .catch(err => console.error("Error fetching metrics", err));
-//   }, []);
-
-//   if (!metrics) return <p>Loading...</p>;
-
-//   return (
-//     <div className="grid grid-cols-3 gap-4">
-//       Total Clients: {metrics.total_clients}
-//       <div className="p-4 bg-white shadow rounded-xl">Total Clients: {metrics.total_clients}</div>
-//       <div className="p-4 bg-white shadow rounded-xl">Active Deals: {metrics.active_deals}</div>
-//       <div className="p-4 bg-white shadow rounded-xl">Pipeline Value: ${metrics.pipeline_value}</div>
-//     </div>
-//   );
-// };
-
-// export default DashboardMetrics;
