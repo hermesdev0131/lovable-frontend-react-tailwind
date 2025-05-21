@@ -13,6 +13,10 @@ import { Deal, Stage } from './types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { TeamMember } from '@/components/settings/TeamMembers';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format, parse } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 // Define the form field type for customization
 export type DealFormField = {
@@ -36,6 +40,27 @@ interface DealFormProps {
   isLoading?: boolean;
 }
 
+// Add interface for form values
+interface DealFormValues {
+  name: string;
+  company: string;
+  value: number;
+  currency: string;
+  probability: number;
+  stage: string;
+  closingDate: string;
+  description: string;
+  assignedTo: string;
+  contactId: string;
+  [key: string]: string | number; // For custom fields - only string or number values
+}
+
+// Add interface for appointment
+interface Appointment {
+  title: string;
+  datetime: string;
+}
+
 const DealForm: React.FC<DealFormProps> = ({ 
   deal, 
   stages, 
@@ -46,28 +71,44 @@ const DealForm: React.FC<DealFormProps> = ({
   isLoading = false
 }) => {
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [appointmentDate, setAppointmentDate] = useState<string>("");
   const [appointmentTime, setAppointmentTime] = useState<string>("");
   const [appointmentTitle, setAppointmentTitle] = useState<string>("");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const [isBasicDatePickerOpen, setIsBasicDatePickerOpen] = useState(false);
   const { toast } = useToast();
   const { trackDealActivity, trackAppointmentScheduled } = useActivityTracker();
   
-  // Set up react-hook-form
-  // interface DealFormValues {
-  //   name: string;
-  //   company: string;
-  //   value: number;
-  //   currency: string;
-  //   probability: number;
-  //   stage: string;
-  //   closingDate: string;
-  //   description: string;
-  //   assignedTo: string;
-  //   contactId: string;
-  //   [customField: string]: any; // For dynamic/custom fields
-  // }
-  const form = useForm<any>({
+  // Helper function to safely parse dates
+  const safeParseDate = (dateStr: string | undefined): Date | undefined => {
+    if (!dateStr || typeof dateStr !== 'string') return undefined;
+    try {
+      const parsed = parse(dateStr, 'MM/dd/yyyy', new Date());
+      return isNaN(parsed.getTime()) ? undefined : parsed;
+    } catch {
+      return undefined;
+    }
+  };
+
+  // Helper function to safely format dates
+  const safeFormatDate = (date: Date | undefined): string => {
+    if (!date || isNaN(date.getTime())) return '';
+    try {
+      return format(date, 'MM/dd/yyyy');
+    } catch {
+      return '';
+    }
+  };
+
+  // Helper function to ensure string value for date fields
+  const ensureStringValue = (value: string | number): string => {
+    return typeof value === 'string' ? value : String(value);
+  };
+  
+  // Set up react-hook-form with proper types
+  const form = useForm<DealFormValues>({
     defaultValues: {
       name: deal?.name || "",
       company: deal?.company || "",
@@ -75,7 +116,7 @@ const DealForm: React.FC<DealFormProps> = ({
       currency: deal?.currency || "USD",
       probability: deal?.probability || 50,
       stage: deal?.stage || (stages.length > 0 ? stages[0].id : ""),
-      closingDate: deal?.closingDate || new Date().toISOString().split('T')[0],
+      closingDate: deal?.closingDate ? format(new Date(deal.closingDate), 'MM/dd/yyyy') : format(new Date(), 'MM/dd/yyyy'),
       description: deal?.description || "",
       assignedTo: deal?.assignedTo || "account-owner",
       contactId: deal?.contactId || "",
@@ -255,7 +296,7 @@ const DealForm: React.FC<DealFormProps> = ({
     });
   };
   
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: DealFormValues) => {
     // Combine form data with attachments and appointments
     const dealData = {
       ...data,
@@ -279,6 +320,21 @@ const DealForm: React.FC<DealFormProps> = ({
     onSave(dealData);
   };
   
+  // Add helper function for time formatting
+  const formatTime = (hours: number, minutes: number): string => {
+    return format(new Date().setHours(hours, minutes, 0, 0), 'HH:mm');
+  };
+
+  // Add helper function for time display
+  const displayTime = (time: string): string => {
+    try {
+      const [hours, minutes] = time.split(':').map(Number);
+      return format(new Date().setHours(hours, minutes, 0, 0), 'h:mm a');
+    } catch {
+      return '';
+    }
+  };
+  
   // Render form field based on type
   const renderField = (field: DealFormField) => (
     <FormField
@@ -293,6 +349,7 @@ const DealForm: React.FC<DealFormProps> = ({
               <Input 
                 placeholder={field.placeholder} 
                 {...formField} 
+                value={ensureStringValue(formField.value)}
               />
             )}
           </FormControl>
@@ -302,6 +359,7 @@ const DealForm: React.FC<DealFormProps> = ({
                 type="number" 
                 placeholder={field.placeholder} 
                 {...formField} 
+                value={typeof formField.value === 'number' ? formField.value : ''}
                 onChange={e => formField.onChange(Number(e.target.value))}
               />
             )}
@@ -314,6 +372,7 @@ const DealForm: React.FC<DealFormProps> = ({
                 min="0"
                 max="100" 
                 {...formField} 
+                value={typeof formField.value === 'number' ? formField.value : ''}
                 onChange={e => formField.onChange(Number(e.target.value))}
               />
             )}
@@ -324,14 +383,22 @@ const DealForm: React.FC<DealFormProps> = ({
                 placeholder={field.placeholder} 
                 className="min-h-[100px]"
                 {...formField} 
+                value={ensureStringValue(formField.value)}
               />
             )}
           </FormControl>
           <FormControl>
             {field.type === "select" && field.options && (
               <Select 
-                value={formField.value?.toString()} 
-                onValueChange={formField.onChange}
+                value={ensureStringValue(formField.value)} 
+                onValueChange={(value) => {
+                  // Convert to number if the field type is number
+                  if (field.type === 'number') {
+                    formField.onChange(Number(value));
+                  } else {
+                    formField.onChange(value);
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select..." />
@@ -348,10 +415,40 @@ const DealForm: React.FC<DealFormProps> = ({
           </FormControl>
           <FormControl>
             {field.type === "date" && (
-              <Input
-                type="date"
-                {...formField}
-              />
+              <Popover open={isBasicDatePickerOpen} onOpenChange={setIsBasicDatePickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !formField.value && "text-muted-foreground"
+                    )}
+                  >
+                    {formField.value ? (
+                      safeFormatDate(safeParseDate(ensureStringValue(formField.value)))
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={safeParseDate(ensureStringValue(formField.value))}
+                    onSelect={(date) => {
+                      if (date) {
+                        formField.onChange(safeFormatDate(date));
+                        setIsBasicDatePickerOpen(false);
+                      }
+                    }}
+                    disabled={(date) =>
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             )}
           </FormControl>
           <FormControl>
@@ -362,6 +459,7 @@ const DealForm: React.FC<DealFormProps> = ({
                   placeholder="0"
                   className="flex-grow"
                   {...formField}
+                  value={typeof formField.value === 'number' ? formField.value : ''}
                   onChange={e => formField.onChange(Number(e.target.value))}
                 />
                 <Select defaultValue="USD">
@@ -475,31 +573,129 @@ const DealForm: React.FC<DealFormProps> = ({
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <Label htmlFor="appt-title">Title</Label>
+                        <Label>Title</Label>
                         <Input
-                          id="appt-title"
                           placeholder="Meeting title"
                           value={appointmentTitle}
                           onChange={(e) => setAppointmentTitle(e.target.value)}
                         />
                       </div>
                       <div>
-                        <Label htmlFor="appt-date">Date</Label>
-                        <Input
-                          id="appt-date"
-                          type="date"
-                          value={appointmentDate}
-                          onChange={(e) => setAppointmentDate(e.target.value)}
-                        />
+                        <Label>Date</Label>
+                        <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !appointmentDate && "text-muted-foreground"
+                              )}
+                            >
+                              {appointmentDate ? (
+                                format(parse(appointmentDate, 'MM/dd/yyyy', new Date()), 'MM/dd/yyyy')
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={appointmentDate ? parse(appointmentDate, 'MM/dd/yyyy', new Date()) : undefined}
+                              onSelect={(date) => {
+                                if (date) {
+                                  setAppointmentDate(format(date, 'MM/dd/yyyy'));
+                                  setIsDatePickerOpen(false);
+                                }
+                              }}
+                              disabled={(date) =>
+                                date < new Date(new Date().setHours(0, 0, 0, 0))
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div>
-                        <Label htmlFor="appt-time">Time</Label>
-                        <Input
-                          id="appt-time"
-                          type="time"
-                          value={appointmentTime}
-                          onChange={(e) => setAppointmentTime(e.target.value)}
-                        />
+                        <Label>Time</Label>
+                        <Popover open={isTimePickerOpen} onOpenChange={setIsTimePickerOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !appointmentTime && "text-muted-foreground"
+                              )}
+                            >
+                              {appointmentTime ? (
+                                displayTime(appointmentTime)
+                              ) : (
+                                <span>Pick a time</span>
+                              )}
+                              <Clock className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <div className="p-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                {/* AM Times */}
+                                <div className="space-y-2">
+                                  <div className="text-xs font-medium text-muted-foreground px-2">AM</div>
+                                  <div className="grid grid-cols-3 gap-1">
+                                    {Array.from({ length: 12 }).map((_, hour) => (
+                                      <div key={`am-${hour}`} className="space-y-1">
+                                        <div className="text-xs text-muted-foreground px-1">
+                                          {format(new Date().setHours(hour, 0, 0, 0), 'h a')}
+                                        </div>
+                                        {[0, 30].map((minute) => (
+                                          <Button
+                                            key={`am-${hour}-${minute}`}
+                                            variant="ghost"
+                                            className="h-7 w-full text-xs"
+                                            onClick={() => {
+                                              setAppointmentTime(formatTime(hour, minute));
+                                              setIsTimePickerOpen(false);
+                                            }}
+                                          >
+                                            {format(new Date().setHours(hour, minute, 0, 0), 'h:mm')}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                
+                                {/* PM Times */}
+                                <div className="space-y-2">
+                                  <div className="text-xs font-medium text-muted-foreground px-2">PM</div>
+                                  <div className="grid grid-cols-3 gap-1">
+                                    {Array.from({ length: 12 }).map((_, hour) => (
+                                      <div key={`pm-${hour}`} className="space-y-1">
+                                        <div className="text-xs text-muted-foreground px-1">
+                                          {format(new Date().setHours(hour + 12, 0, 0, 0), 'h a')}
+                                        </div>
+                                        {[0, 30].map((minute) => (
+                                          <Button
+                                            key={`pm-${hour}-${minute}`}
+                                            variant="ghost"
+                                            className="h-7 w-full text-xs"
+                                            onClick={() => {
+                                              setAppointmentTime(formatTime(hour + 12, minute));
+                                              setIsTimePickerOpen(false);
+                                            }}
+                                          >
+                                            {format(new Date().setHours(hour + 12, minute, 0, 0), 'h:mm')}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                     
@@ -524,7 +720,7 @@ const DealForm: React.FC<DealFormProps> = ({
                               <div>
                                 <p className="text-sm font-medium">{appointment.title}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {new Date(appointment.datetime).toLocaleString()}
+                                  {format(parse(appointment.datetime, 'MM/dd/yyyy HH:mm', new Date()), 'MMM d, yyyy h:mm a')}
                                 </p>
                               </div>
                             </div>
