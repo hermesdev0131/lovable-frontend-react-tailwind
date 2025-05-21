@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -177,9 +176,8 @@ const DealForm: React.FC<DealFormProps> = ({
   )];
   
   // Filter fields by section
-  const basicFields = allFields.filter(field => field.section === 'basic');
+  const basicFields = allFields.filter(field => field.section === 'basic' || field.section === 'custom');
   const detailFields = allFields.filter(field => field.section === 'details');
-  const customFieldsList = allFields.filter(field => field.section === 'custom');
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -393,9 +391,6 @@ const DealForm: React.FC<DealFormProps> = ({
             <TabsTrigger value="basic">Basic Information</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="attachments">Files & Calendar</TabsTrigger>
-            {customFieldsList.length > 0 && (
-              <TabsTrigger value="custom">Custom Fields</TabsTrigger>
-            )}
           </TabsList>
           
           {/* Basic Information Tab */}
@@ -550,15 +545,6 @@ const DealForm: React.FC<DealFormProps> = ({
               </Card>
             </div>
           </TabsContent>
-          
-          {/* Custom Fields Tab */}
-          {customFieldsList.length > 0 && (
-            <TabsContent value="custom" className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {customFieldsList.map(renderField)}
-              </div>
-            </TabsContent>
-          )}
         </Tabs>
         
         <div className="flex justify-end gap-3 pt-4 border-t">

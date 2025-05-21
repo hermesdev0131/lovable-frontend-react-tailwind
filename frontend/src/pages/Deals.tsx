@@ -887,23 +887,25 @@ const Deals = () => {
               stages={stageOptions}
               teamMembers={teamMembers}
               customFields={dealFields}
-              onSave={handleSaveNewDeal}
+              onSave={(dealData) => {
+                // Ensure custom fields are included in the deal data
+                const dealWithCustomFields = {
+                  ...dealData,
+                  customFields: Object.fromEntries(
+                    dealFields
+                      .filter(field => field.section === 'custom')
+                      .map(field => [field.id, dealData[field.id]])
+                  )
+                };
+                handleSaveNewDeal(dealWithCustomFields);
+              }}
               onCancel={() => setIsCreateDialogOpen(false)}
               isLoading={isAddingDeal}
             /> 
           </div>
-          
         </DialogContent>
       </Dialog>
       
-
-      {/* <DealForm
-              stages={stageOptions}
-              teamMembers={teamMembers}
-              customFields={dealFields}
-              onSave={handleSaveNewDeal}
-              onCancel={() => setIsCreateDialogOpen(false)}
-      /> */}
       <EditDealDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
