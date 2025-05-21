@@ -1,12 +1,9 @@
 # Node modules
 node_modules/
-**/node_modules/
 
 # Build outputs
 dist/
 build/
-.next/
-out/
 
 # Logs
 *.log
