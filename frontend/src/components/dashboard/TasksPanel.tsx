@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Check, X, Mail, MessageCircle, Phone, Send, ExternalLink, Flag, Loader2 } from 'lucide-react';
+import { Plus, Check, X, Mail, MessageCircle, Phone, Send, ExternalLink, Flag, Loader2, CalendarIcon, Clock } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -16,9 +16,10 @@ import { toast } from '@/hooks/use-toast';
 import { config } from '@/config';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TaskFormValues {
   title: string;
@@ -68,6 +69,18 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editDueDate, setEditDueDate] = useState<string>("");
+  const [editDueTime, setEditDueTime] = useState<string>("");
+  const [editPriority, setEditPriority] = useState<Task['priority']>("medium");
+  const [editStatus, setEditStatus] = useState<Task['completed']>(false);
+  const [editAssignedTo, setEditAssignedTo] = useState<string>("");
+  const { toast } = useToast();
   
   const taskForm = useForm<TaskFormValues>({
     defaultValues: {
@@ -326,6 +339,32 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
     }
   };
 
+  // Helper function to safely parse dates
+  const safeParseDate = (dateStr: string | undefined): Date | undefined => {
+    if (!dateStr || typeof dateStr !== 'string') return undefined;
+    try {
+      const parsed = parse(dateStr, 'MM/dd/yyyy', new Date());
+      return isNaN(parsed.getTime()) ? undefined : parsed;
+    } catch {
+      return undefined;
+    }
+  };
+
+  // Helper function to safely format dates
+  const safeFormatDate = (date: Date | undefined): string => {
+    if (!date || isNaN(date.getTime())) return '';
+    try {
+      return format(date, 'MM/dd/yyyy');
+    } catch {
+      return '';
+    }
+  };
+
+  // Helper function to ensure string value
+  const ensureStringValue = (value: string | number): string => {
+    return typeof value === 'string' ? value : String(value);
+  };
+
   return (
     <Card className="hover:shadow transition-all duration-300 ease-in-out bg-white text-black dark:bg-card dark:text-card-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -365,7 +404,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Due Date</FormLabel>
-                      <Popover>
+                      <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
@@ -376,7 +415,7 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                               )}
                             >
                               {field.value ? (
-                                format(parse(field.value, 'MM/dd/yyyy', new Date()), 'MM/dd/yyyy')
+                                safeFormatDate(safeParseDate(field.value))
                               ) : (
                                 <span>Pick a date</span>
                               )}
@@ -387,18 +426,11 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={field.value ? parse(field.value, 'MM/dd/yyyy', new Date()) : undefined}
+                            selected={safeParseDate(field.value)}
                             onSelect={(date) => {
                               if (date) {
-                                field.onChange(format(date, 'MM/dd/yyyy'));
-                                // Close the calendar after selection
-                                const calendarPopover = document.querySelector('[role="dialog"]');
-                                if (calendarPopover) {
-                                  const closeButton = calendarPopover.closest('button');
-                                  if (closeButton) {
-                                    closeButton.click();
-                                  }
-                                }
+                                field.onChange(safeFormatDate(date));
+                                setIsDatePickerOpen(false);
                               }
                             }}
                             disabled={(date) =>
