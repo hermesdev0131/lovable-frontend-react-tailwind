@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/auth';
+import { getRelativeTimeString } from '@/utils/dateUtils';
 
 interface TaskFormValues {
   title: string;
@@ -169,6 +171,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
         ...savedTask,
         id: savedTask.id || savedTask.hubspotId,
       });
+
+      // Add activity log for task creation
+      authService.addActivity({
+        id: Date.now(),
+        action: `New task created: ${data.title}`,
+        time: new Date().toLocaleString(),
+        name: authState.user?.name || 'User'
+      });
       
       toast({
         title: "Task Created",
@@ -249,6 +259,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
       
       // Update in context
       updateTask(id, { completed: !currentStatus });
+
+      // Add activity log for task completion
+      authService.addActivity({
+        id: Date.now(),
+        action: `Task ${!currentStatus ? 'completed' : 'reopened'}: ${task.title}`,
+        time: new Date().toLocaleString(),
+        name: authState.user?.name || 'User'
+      });
       
       toast({
         title: "Task Updated",
@@ -308,6 +326,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
       
       // Update in context
       setPriority(id, priority);
+
+      // Add activity log for priority update
+      authService.addActivity({
+        id: Date.now(),
+        action: `Task priority updated to ${priority}: ${task.title}`,
+        time: new Date().toLocaleString(),
+        name: authState.user?.name || 'User'
+      });
       
       toast({
         title: "Priority Updated",
@@ -364,6 +390,14 @@ const TasksPanel: React.FC<TasksPanelProps> = ({ onCreateTask }) => {
       
       // Delete from context
       deleteTask(id);
+
+      // Add activity log for task deletion
+      authService.addActivity({
+        id: Date.now(),
+        action: `Task deleted: ${task.title}`,
+        time: new Date().toLocaleString(),
+        name: authState.user?.name || 'User'
+      });
       
       toast({
         title: "Task Deleted",
