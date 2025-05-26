@@ -32,14 +32,14 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const fetchDealsData = async (): Promise<boolean> => {
     // Add more detailed logging to help with debugging
-    console.log("fetchDealsData called. Current state:", { dealsLoaded, isLoadingDeals });
+    // console.log("fetchDealsData called. Current state:", { dealsLoaded, isLoadingDeals });
     
     if (dealsLoaded || isLoadingDeals) {
-      console.log("Deals already loaded or loading, skipping fetch");
+      // console.log("Deals already loaded or loading, skipping fetch");
       return true;
     }
 
-    console.log("Starting deals fetch...");
+    // console.log("Starting deals fetch...");
     setIsLoadingDeals(true);
     try {
       clearAllDeals();
@@ -52,7 +52,7 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
       
       const data = await response.json();
-      console.log("Fetched deals data:", data.length, "items");
+      // console.log("Fetched deals data:", data.length, "items");
       
       if (Array.isArray(data)) {
         data.forEach(deal => {
@@ -60,7 +60,7 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         });
       }
       
-      console.log("Deals fetch completed successfully");
+      // console.log("Deals fetch completed successfully");
       setDealsLoaded(true);
       setIsLoadingDeals(false);
       return true;
@@ -77,7 +77,7 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const refreshDealsData = async (): Promise<boolean> => {
-    console.log("refreshDealsData called - explicitly refreshing deals data");
+    // console.log("refreshDealsData called - explicitly refreshing deals data");
     setIsLoadingDeals(true);
     try {
       const response = await fetch(`${config.apiUrl}/deals`);
@@ -88,7 +88,7 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
       
       const data = await response.json();
-      console.log("Refreshed deals data:", data.length, "items");
+      // console.log("Refreshed deals data:", data.length, "items");
       
       clearAllDeals();
       if (Array.isArray(data)) {
@@ -97,7 +97,7 @@ export const DealsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         });
       }
       
-      console.log("Deals refresh completed successfully");
+      // console.log("Deals refresh completed successfully");
       setDealsLoaded(true);
       setIsLoadingDeals(false);
       return true;
