@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMasterAccount } from "@/contexts/MasterAccountContext";
 import { useAuth } from '@/contexts/AuthContext';
+import { useDeals } from '@/contexts/DealsContext';
+import { useTasks } from '@/contexts/TasksContext';
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -15,7 +16,9 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { loginToAccount, fetchClientsData, clientsLoaded } = useMasterAccount();
+  const { fetchClientsData, clientsLoaded } = useMasterAccount();
+  const { fetchDealsData, dealsLoaded} = useDeals();
+  const { fetchTasks,tasksLoaded} = useTasks();
   const { login, authState } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,25 +27,47 @@ export const LoginForm = () => {
   useEffect(() => {
     const handleSuccessfulLogin = async () => {
       if (authState.isAuthenticated) {
-        console.log("Auth state detected as authenticated");
+        // console.log("Auth state detected as authenticated");
         
-        // Fetch client data only if not already loaded
-        if (!clientsLoaded) {
-          console.log("Fetching client data after login");
-          try {
-            await fetchClientsData();
-          } catch (error) {
-            console.error("Error fetching client data:", error);
+        try {
+          // Load all data in parallel with individual error handling
+          // console.log("clientsLoaded", clientsLoaded);
+          // console.log("dealsLoaded", dealsLoaded);
+          // console.log("tasksLoaded", tasksLoaded);
+          const results = await Promise.allSettled([
+            !clientsLoaded && fetchClientsData(),
+            !dealsLoaded && fetchDealsData(),
+            !tasksLoaded && fetchTasks()
+          ]);
+
+          // Check for any failures
+          const failures = results.filter(result => result.status === 'rejected');
+          if (failures.length > 0) {
+            console.error("Some data failed to load:", failures);
+            toast({
+              title: "Warning",
+              description: "Some data failed to load. The application may not function correctly.",
+              variant: "destructive"
+            });
+          } else {
+            // console.log("All data loaded successfully");
           }
+          
+          // Navigate to dashboard regardless of data loading status
+          navigate('/', { replace: true });
+        } catch (error) {
+          console.error("Error during data loading:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load application data. Please try refreshing the page.",
+            variant: "destructive"
+          });
         }
-        
-        console.log("Redirecting to dashboard");
-        navigate('/', { replace: true });
       }
     };
     
     handleSuccessfulLogin();
-  }, [authState.isAuthenticated, navigate, fetchClientsData, clientsLoaded]);
+  }, [authState.isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,47 +84,19 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      //const success = loginToAccount(email, password);
-      //console.log("Login success:", success);
-      //if (success) {
-      //  // Redirect to the intended destination or to the home page
-      //  const destination = location.state?.from?.pathname || '/';
-      //  navigate(destination, { replace: true });
-
-			await login(email, password);
-
-			// If real auth succeeds, redirect to the intended destination
-      if (authState.isAuthenticated) {
-        console.log("Login success, redirecting to dashboard");
-        // Always go directly to the dashboard, ignoring any previous location
-        const destination = location.state?.from?.pathname || '/';
-        navigate(destination, { replace: true });
-      } else {
-        navigate('/login', { replace: true});
-      }
-      
-    } catch (authError) {
-      console.error("Auth service login failed:", authError);
-      navigate('/login', { replace: true });
-      // Fallback to master account login for development
-      // try {
-      //   const success = loginToAccount(email, password);
-      //   console.log("Master account login success:", success);
-      //   if (success) {
-      //     // Redirect to the intended destination or to the home page
-      //     const destination = location.state?.from?.pathname || '/';
-      //     navigate(destination, { replace: true });
-      //   } else {
-      //     throw new Error("Master account login failed");
-      //   }
-      // } catch (masterError) {
-      //   console.error("Master account login failed:", masterError);
-      //   // Toast is already shown by auth service, no need to show another one here
-      // }
+      await login(email, password);
+    } catch (error) {
+      // console.error("Login failed:", error);
+      // toast({
+      //   title: "Login Failed",
+      //   description: "Invalid email or password",
+      //   variant: "destructive"
+      // });
+      throw new Error("Login failed");
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -182,3 +179,4 @@ export const LoginForm = () => {
     </div>
   );
 };
+
