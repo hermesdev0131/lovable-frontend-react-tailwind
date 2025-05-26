@@ -7,21 +7,9 @@ export const ProtectedRoute = () => {
   const { authState } = useAuth();
   const location = useLocation();
   
-  console.log("refresh state");
-  // In ProtectedRoute component
-  useEffect(() => {
-    // If we're not authenticated and not on the login page, ensure all storage is cleared
-    if (!authState.isAuthenticated && location.pathname !== '/login' && location.pathname !== '/logout') {
-      // localStorage.clear();
-      sessionStorage.clear();
-    }
-  }, []);
-
   if (!authState.isAuthenticated) {
-
     const isRedirectFromLogin = location.state?.from?.pathname === '/login';
-    // const isRedirectFromLogout = location.state?.from?.pathname === '/logout';
-    console.log(location.state?.from?.pathname);
+    
     if (location.pathname !== '/login' && location.pathname !== '/' && !isRedirectFromLogin) {
       toast({
         title: "Authentication Required",
@@ -36,10 +24,6 @@ export const ProtectedRoute = () => {
     const { role } = authState.user;
     const adminOnlyPaths = ['/master-account'];
     const editorRestrictedPaths = ['/settings'];
-
-    // if (role === 'admin') {
-    //   return <Outlet />;
-    // }
 
     if (role === 'viewer' && (adminOnlyPaths.includes(location.pathname))) {
       toast({
