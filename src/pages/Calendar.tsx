@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, Clock, Copy, ExternalLink, Info, Link, Plus, Share2, CalendarIcon, RefreshCw, Pencil, Trash } from 'lucide-react';
@@ -360,10 +359,60 @@ const Calendar = () => {
           </TabsContent>
           
           <TabsContent value="week">
-            <div className="py-10 text-center">
-              <h3 className="text-lg font-medium mb-2">Week View</h3>
-              <p className="text-muted-foreground mb-4">Week view coming soon!</p>
-              <Button variant="outline">Go to Month View</Button>
+            <div className="space-y-4">
+              <div className="grid grid-cols-8 gap-1 mb-6">
+                <div className="text-center py-2 font-medium text-sm">
+                  Time
+                </div>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="text-center py-2 font-medium text-sm">
+                    {day}
+                  </div>
+                ))}
+                
+                {/* Time slots */}
+                {Array.from({ length: 24 }).map((_, hour) => (
+                  <React.Fragment key={hour}>
+                    <div className="text-right pr-2 text-xs text-muted-foreground border-t border-border">
+                      {format(new Date().setHours(hour, 0, 0, 0), 'h a')}
+                    </div>
+                    {Array.from({ length: 7 }).map((_, dayIndex) => {
+                      const currentDay = addDays(startOfWeek(currentDate), dayIndex);
+                      const isCurrentMonth = isSameMonth(currentDay, currentDate);
+                      const isToday = isSameDay(currentDay, new Date());
+                      const dayEvents = getEventsForDate(currentDay).filter(event => 
+                        event.start.getHours() === hour
+                      );
+                      
+                      return (
+                        <div
+                          key={`${hour}-${dayIndex}`}
+                          className={`min-h-[40px] p-1 border-t border-border ${
+                            isCurrentMonth ? 'bg-background' : 'bg-muted/30'
+                          } ${isToday ? 'bg-primary/5' : ''}`}
+                        >
+                          {dayEvents.map((event) => (
+                            <div
+                              key={event.id}
+                              className={`px-1 py-0.5 text-xs rounded-sm truncate ${
+                                eventTypes[event.type as keyof typeof eventTypes]?.color || 'bg-gray-300'
+                              } text-white`}
+                            >
+                              {event.title}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
+                  Today
+                </Button>
+              </div>
             </div>
           </TabsContent>
           

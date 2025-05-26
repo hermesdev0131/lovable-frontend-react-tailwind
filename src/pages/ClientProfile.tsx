@@ -30,17 +30,17 @@ const ClientProfile = () => {
       return;
     }
 
-    console.log("Looking for client with ID:", clientId);
-    console.log("Available clients:", clients);
+    // console.log("Looking for client with ID:", clientId);  
+    // console.log("Available clients:", clients);
     
     // No need to parse clientId as it's already a string
     const clientData = clients.find(c => c.id === clientId);
     if (clientData) {
-      console.log("Client found:", clientData);
+      // console.log("Client found:", clientData);
       setClient(clientData);
     } else {
       if (clients.length > 0) {
-        console.log("Client not found in loaded clients");
+        // console.log("Client not found in loaded clients");
         navigate('/clients');
         toast({
           title: "Client not found",
@@ -48,7 +48,7 @@ const ClientProfile = () => {
           variant: "destructive"
         });
       } else {
-        console.log("No clients loaded yet, waiting...");
+        // console.log("No clients loaded yet, waiting...");
       }
     }
   }, [clientId, clients, navigate]);

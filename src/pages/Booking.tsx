@@ -20,7 +20,7 @@ const Booking = () => {
   
   const handleBookingComplete = () => {
     // In a real app, this would update the calendar, send notifications, etc.
-    console.log("Booking completed:", selectedBookingType);
+    // console.log("Booking completed:", selectedBookingType);
   };
   
   return (

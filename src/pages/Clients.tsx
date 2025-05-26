@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,7 +55,7 @@ const Clients = () => {
   useEffect(() => {
     // Only fetch clients if they haven't been loaded yet
     if (!clientsLoaded && !isLoadingClients) {
-      console.log("Clients not loaded yet, fetching...");
+      // console.log("Clients not loaded yet, fetching...");
       setIsLoading(true);
       fetchClientsData()
         .then(() => {
@@ -67,7 +66,7 @@ const Clients = () => {
           setIsLoading(false);
         });
     } else {
-      console.log("Clients already loaded, skipping fetch");
+      // console.log("Clients already loaded, skipping fetch");
       // setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -183,6 +182,12 @@ const Clients = () => {
     }
   };
   
+  const validateEmail = (email: string) => {
+    // More strict email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email.trim());
+  };
+
   const handleAddClient = async () => {
     if (!newClient.firstName || !newClient.lastName) {
       toast({
@@ -193,16 +198,33 @@ const Clients = () => {
       return;
     }
 
+    // Validate all emails before proceeding
+    const invalidEmails = newClient.emails
+      .filter(email => email.trim() !== '') // Only check non-empty emails
+      .filter(email => !validateEmail(email));
+
+    if (invalidEmails.length > 0) {
+      toast({
+        title: "Invalid Email",
+        description: `Please provide valid email addresses. Invalid emails: ${invalidEmails.join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAddingClient(true);
 
-    // Filter out any empty emails or phone numbers
+    // Filter out any empty emails or phone numbers and trim them
     const filteredClient = {
       ...newClient,
-      emails: newClient.emails.filter(email => email.trim() !== ''),
-      phoneNumbers: newClient.phoneNumbers.filter(phone => phone.trim() !== '')
+      emails: newClient.emails
+        .filter(email => email.trim() !== '')
+        .map(email => email.trim()),
+      phoneNumbers: newClient.phoneNumbers
+        .filter(phone => phone.trim() !== '')
+        .map(phone => phone.trim())
     };
     
-    // console.log(filteredClient);
     try {
       // Send client data to backend API
       const response = await fetch(`${config.apiUrl}/contacts`, {
@@ -234,7 +256,6 @@ const Clients = () => {
         leadType: 'Prospect',
         leadSource: 'Website',
         tags: [],
-        // status: 'new', // Using 'new' to match HubSpot's NEW status
         users: 0,
         deals: 0,
         contacts: 0,
