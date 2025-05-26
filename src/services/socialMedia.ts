@@ -189,7 +189,7 @@ class SocialMediaService {
   ): Promise<{ success: boolean; message: string; postId?: string }> {
     // Twitter API implementation would go here
     // For now, returning a placeholder
-    console.log('Would post to Twitter:', payload, 'with credentials:', credentials);
+    // console.log('Would post to Twitter:', payload, 'with credentials:', credentials);
     return { success: false, message: 'Twitter API integration not fully implemented yet' };
   }
 
@@ -202,7 +202,7 @@ class SocialMediaService {
   ): Promise<{ success: boolean; message: string; postId?: string }> {
     // Instagram API implementation would go here
     // For now, returning a placeholder
-    console.log('Would post to Instagram:', payload, 'with credentials:', credentials);
+    // console.log('Would post to Instagram:', payload, 'with credentials:', credentials);
     return { success: false, message: 'Instagram API integration not fully implemented yet' };
   }
 
@@ -215,7 +215,7 @@ class SocialMediaService {
   ): Promise<{ success: boolean; message: string; postId?: string }> {
     // LinkedIn API implementation would go here
     // For now, returning a placeholder
-    console.log('Would post to LinkedIn:', payload, 'with credentials:', credentials);
+    // console.log('Would post to LinkedIn:', payload, 'with credentials:', credentials);
     return { success: false, message: 'LinkedIn API integration not fully implemented yet' };
   }
 }

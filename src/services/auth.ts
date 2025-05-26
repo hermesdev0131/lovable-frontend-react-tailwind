@@ -5,6 +5,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 //import { PrismaClient } from '@prisma/client';
 //import bcrypt from 'bcrypt';
 //import jwt from 'jsonwebtoken';
+import { Message } from '../components/chatbot/ChatbotUI';
 
 interface LoginCredentials {
 	email: string;
@@ -47,6 +48,12 @@ export interface AuthState {
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	error: string | null;
+	activities: Array<{
+		id: number;
+		action: string;
+		time: string;
+		name: string;
+	}>;
 }
 
 //const prisma = new PrismaClient();
@@ -61,6 +68,7 @@ export class AuthService {
 		isAuthenticated: false,
 		isLoading: false,
 		error: null,
+		activities: [],
 	};
 	private subscribers: Set<(state: AuthState) => void> = new Set();
 
@@ -101,20 +109,21 @@ export class AuthService {
 						isAuthenticated: true,
 						isLoading: false,
 						error: null,
+						activities: [],
 					};
 					
-					console.log("Auth state restored from storage");
+					// console.log("Auth state restored from storage");
 					this.notifyListeners();
 				} else {
-					console.log("Stored token has expired");
+					// console.log("Stored token has expired");
 					this.clearAuth();
 				}
 			} catch (error) {
-				console.error("Error parsing stored auth data:", error);
+				// console.error("Error parsing stored auth data:", error);
 				this.clearAuth();
 			}
 		} else {
-			console.log("No complete auth data found in storage");
+			// console.log("No complete auth data found in storage");
 		}
 	}
 
@@ -122,15 +131,23 @@ export class AuthService {
 		// Check session every minute
 		setInterval(() => {
 			const expiry = localStorage.getItem('tokenExpiry');
+			
 			if (expiry && new Date(expiry) <= new Date()) {
 				this.clearAuth();
+				// console.log("Session expired");
+				
+				
 				toast({
 					title: "Session Expired",
 					description: "Your session has expired. Please log in again.",
 					variant: "destructive",
 				});
+
+				window.location.href = '/login';
+				// Force redirect to login page
+				// window.location.href = '/login';
 			}
-		}, 10);
+		}, 60000);
 	}
 
 	public subscribe(listener: (state: AuthState) => void) {
@@ -174,11 +191,12 @@ export class AuthService {
 				isAuthenticated: false,
 				isLoading: false,
 				error: error instanceof Error ? error.message : 'Login failed',
+				activities: [],
 			};
 			this.notifyListeners();
 			toast({
 				title: "Login Failed",
-				description: "Invalid email or password",
+				description: `${error.message}`,
 				variant: "destructive",
 			});
 			throw error;
@@ -190,7 +208,7 @@ export class AuthService {
 			const data = await response.json();
 			
 			if (response.ok) {
-				console.log("Login successful!");
+				// console.log("Login successful!");
 				const { user, token, expiresIn, refreshToken } = data;
 				const expiryDate = new Date(Date.now() + expiresIn * 1000);
 
@@ -206,6 +224,7 @@ export class AuthService {
 					isAuthenticated: true,
 					isLoading: false,
 					error: null,
+					activities: [],
 				};
 
 				// Save to storage and notify listeners
@@ -218,7 +237,7 @@ export class AuthService {
 					description: `Welcome back, ${user.name || 'User'}!`,
 				});
 			} else {
-				console.log("Login failed:", data.message);
+				// console.log("Login failed:", data.message);
 				
 				// Clear any previous auth state
 				this.clearAuth();
@@ -228,6 +247,7 @@ export class AuthService {
 					...this.authState,
 					error: data.message || 'Login failed',
 					isLoading: false,
+					activities: [],
 				};
 				
 				this.notifyListeners();
@@ -250,6 +270,7 @@ export class AuthService {
 				...this.authState,
 				error: 'Error processing login response',
 				isLoading: false,
+				activities: [],
 			};
 			
 			this.notifyListeners();
@@ -269,13 +290,13 @@ export class AuthService {
 	public async logout(): Promise<void> {
 		// Prevent multiple simultaneous logout calls
 		if (this.isLoggingOut) {
-			console.log("Logout already in progress, ignoring additional call");
+			// console.log("Logout already in progress, ignoring additional call");
 			return;
 		}
 		
 		try {
 			this.isLoggingOut = true;
-			console.log("Logout process started");
+			// console.log("Logout process started");
 			// Store tokens before clearing auth state
 			const token = this.authState.token;
 			const refreshToken = this.authState.refreshToken;
@@ -306,7 +327,7 @@ export class AuthService {
 						signal: controller.signal
 					});
 					clearTimeout(timeoutId);
-					console.log("Logout API call successful");
+					// console.log("Logout API call successful");
 				} catch (error) {
 					console.error('Logout API error:', error);
 					// Continue with logout process even if API call fails
@@ -321,7 +342,7 @@ export class AuthService {
 				description: "You have been successfully logged out",
 			});
 			
-			console.log("Logout process completed");
+			// console.log("Logout process completed");
 			
 			// Note: Navigation to login page is handled in the Navbar component
 			// This ensures we have access to the router context for navigation
@@ -332,29 +353,79 @@ export class AuthService {
 	}
 
 	private clearAuth() {
-		// Clear all auth-related items from localStorage
-		localStorage.removeItem('user');
-		localStorage.removeItem('token');
-		localStorage.removeItem('tokenExpiry');
-		localStorage.removeItem('refreshToken');
-		localStorage.removeItem('master_account_is_master_mode');
-		localStorage.removeItem('master_account_current_client');
-		localStorage.setItem('master_account_is_master_mode', 'false');
-		localStorage.removeItem('master_account_current_client');
-		// Reset the auth state to initial values
-		this.authState = {
-			user: null,
-			token: null,
-			refreshToken: null,
-			expiresAt: null,
-			isAuthenticated: false,
-			isLoading: false,
-			error: null,
-		};
+		// console.log("Clearing auth state----------------------------");
 		
-		// Notify all subscribers about the state change
-		this.notifyListeners();
-		console.log("Auth state cleared completely");
+		try {
+			// First set master mode to false and clear master account data
+			localStorage.setItem('master_account_is_master_mode', 'false');
+			localStorage.removeItem('master_account_current_client');
+			localStorage.removeItem('master_account_is_master_mode');
+			
+			// Clear all auth-related items
+			const authKeys = [
+				'user',
+				'token',
+				'tokenExpiry',
+				'refreshToken',
+				'hubspot_access_token',
+				'hubspot_refresh_token',
+				'hubspot_token_expiry',
+				'mailchimp_credentials',
+				'yextCredentials'
+			];
+			
+			// Clear all application data
+			const appKeys = [
+				'crm_deals',
+				'crm_clients',
+				'crm_tasks',
+				'crm_team_members',
+				'crm_contacts',
+				'crm_analytics',
+				'crm_settings',
+				'crm_preferences'
+			];
+			
+			// Remove all items
+			[...authKeys, ...appKeys].forEach(key => {
+				try {
+					localStorage.removeItem(key);
+				} catch (error) {
+					console.warn(`Failed to remove ${key} from localStorage:`, error);
+				}
+			});
+			
+			// Reset the auth state to initial values
+			this.authState = {
+				user: null,
+				token: null,
+				refreshToken: null,
+				expiresAt: null,
+				isAuthenticated: false,
+				isLoading: false,
+				error: null,
+				activities: [],
+			};
+			
+			// Notify all subscribers about the state change
+			this.notifyListeners();
+			// console.log("Auth state and application data cleared completely");
+			
+		} catch (error) {
+			console.error("Error during clearAuth:", error);
+			// Even if there's an error, try to reset the auth state
+			this.authState = {
+				user: null,
+				token: null,
+				refreshToken: null,
+				expiresAt: null,
+				isAuthenticated: false,
+				isLoading: false,
+				error: null,
+				activities: [],
+			};
+			this.notifyListeners();
+		}
 	}
 
 	public async refreshToken(): Promise<void> {
@@ -521,7 +592,7 @@ export class AuthService {
 			// Notify listeners of the state change
 			this.notifyListeners();
 			
-			console.log("Access token refreshed successfully");
+			// console.log("Access token refreshed successfully");
 		} catch (error) {
 			console.error("Failed to refresh access token:", error);
 			// If refresh fails, clear tokens and log out
@@ -531,23 +602,76 @@ export class AuthService {
 		}
 	}
 
- private saveToStorage(): void {
-	 // Only save if we have valid data
-	 if (this.authState.user && this.authState.token) {
-		 localStorage.setItem('user', JSON.stringify(this.authState.user));
-		 localStorage.setItem('token', this.authState.token);
-		 localStorage.setItem('tokenExpiry', this.authState.expiresAt?.toISOString() || '');
-		 
-		 // Save refresh token if available
-		 if (this.authState.refreshToken) {
-			 localStorage.setItem('refreshToken', this.authState.refreshToken);
-		 }
-		 
-		 console.log("Auth data saved to storage");
-	 } else {
-		 console.warn("Attempted to save incomplete auth data to storage");
-	 }
- }
+	private saveToStorage(): void {
+		// Only save if we have valid data
+		if (this.authState.user && this.authState.token) {
+			localStorage.setItem('user', JSON.stringify(this.authState.user));
+			localStorage.setItem('token', this.authState.token);
+			localStorage.setItem('tokenExpiry', this.authState.expiresAt?.toISOString() || '');
+			
+			// Save refresh token if available
+			if (this.authState.refreshToken) {
+				localStorage.setItem('refreshToken', this.authState.refreshToken);
+			}
+			
+			// console.log("Auth data saved to storage");
+		} else {
+			console.warn("Attempted to save incomplete auth data to storage");
+		}
+	}
+
+	public addActivity(activity: { id: number; action: string; time: string; name: string }) {
+		const updatedActivities = [activity, ...this.authState.activities];
+		this.authState = {
+			...this.authState,
+			activities: updatedActivities,
+		};
+		// Save to localStorage
+		localStorage.setItem('activities', JSON.stringify(updatedActivities));
+		this.notifyListeners();
+	}
+
+	public clearActivity(id: number) {
+		const updatedActivities = this.authState.activities.filter(activity => activity.id !== id);
+		this.authState = {
+			...this.authState,
+			activities: updatedActivities,
+		};
+		// Update localStorage
+		localStorage.setItem('activities', JSON.stringify(updatedActivities));
+		this.notifyListeners();
+	}
+
+	public clearAllActivities() {
+		this.authState = {
+			...this.authState,
+			activities: [],
+		};
+		// Remove from localStorage
+		localStorage.removeItem('activities');
+		this.notifyListeners();
+	}
+
+	public getActivities() {
+		// Try to get activities from localStorage first
+		const storedActivities = localStorage.getItem('activities');
+		if (storedActivities) {
+			try {
+				const parsedActivities = JSON.parse(storedActivities);
+				// Update state if localStorage has activities
+				if (parsedActivities.length > 0) {
+					this.authState = {
+						...this.authState,
+						activities: parsedActivities,
+					};
+				}
+			} catch (error) {
+				console.error('Error parsing stored activities:', error);
+				localStorage.removeItem('activities');
+			}
+		}
+		return this.authState.activities;
+	}
 }
 
 export const authService = AuthService.getInstance();
