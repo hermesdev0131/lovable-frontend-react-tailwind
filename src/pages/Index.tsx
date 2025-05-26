@@ -11,6 +11,7 @@ import { useTeam } from '@/contexts/TeamContext'
 import { useTasks } from '@/contexts/TasksContext';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/auth';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,48 +22,37 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { authState } = useAuth();
   const isAuthenticated = authState?.isAuthenticated ?? false;
+  const activities = authService.getActivities();
   
   // Fetch clients, deals, team, and tasks data if not already loaded and user is authenticated
   useEffect(() => {
-    console.log("Dashboard: Initial data load check");
+    // console.log("Dashboard: Initial data load check");
     const loadData = async () => {
       // Only proceed if authenticated and we need to load data and aren't already loading
       if (!isAuthenticated) {
-        console.log("Dashboard: User not authenticated, skipping data load");
+        // console.log("Dashboard: User not authenticated, skipping data load");
         return;
       }
 
-      const needClientsData = !clientsLoaded && !isLoadingClients;
-      const needDealsData = !dealsLoaded && !isLoadingDeals;
-      const needTeamData = !teamLoaded && !isLoadingTeam;
-      const needTasksData = !tasksLoaded && !isLoadingTasks;
-      
-      if (needClientsData || needDealsData || needTeamData || needTasksData) {
+      const initialLoad = !clientsLoaded || !dealsLoaded || !teamLoaded || !tasksLoaded;
+      // console.log("Dashboard: Initial load:", initialLoad);
+      if (initialLoad) {
         setIsLoading(true);
         try {
           // Load clients data if needed
-          if (needClientsData) {
-            console.log("Dashboard: Fetching client data...");
-            await fetchClientsData();
-          }
-          
-          // Load deals data if needed
-          if (needDealsData) {
-            console.log("Dashboard: Fetching deals data...");
-            await fetchDealsData();
-          }
 
-          // Load team data if needed
-          if (needTeamData) {
-            console.log("Dashboard: Fetching team data...");
-            await fetchTeamMembers();
-          }
+          await Promise.allSettled([
+            !clientsLoaded && fetchClientsData(),
+            !dealsLoaded && fetchDealsData(),
+            !teamLoaded && fetchTeamMembers(),
+            !tasksLoaded && fetchTasks()
+          ]);
 
-          // Load tasks data if needed
-          if (needTasksData) {
-            console.log("Dashboard: Fetching tasks data...");
-            await fetchTasks();
-          }
+          // if (!clientsResult || !dealsResult || !teamResult || !tasksResult) {
+          //   throw new Error("Failed to load some data");
+          // }
+  
+          // console.log("Dashboard: All data loaded successfully");
         } catch (error) {
           console.error("Error fetching data:", error);
           toast({
@@ -78,7 +68,7 @@ const Index = () => {
     
     loadData();
     // Only re-run when the loaded state changes or authentication state changes
-  }, []);
+  }, [isAuthenticated]);
   
   // Calculate dashboard stats from actual data
   const totalContacts = clients.length;
@@ -108,13 +98,6 @@ const Index = () => {
     };
   });
   
-  // Sample data for activity feed (kept as is)
-  const [activities, setActivities] = useState([
-    { id: 1, action: 'Email sent to John Doe', time: '10 mins ago', name: 'Sales Team' },
-    { id: 2, action: 'Call scheduled with ABC Corp', time: '1 hour ago', name: 'Marketing' },
-    { id: 3, action: 'New task created', time: '3 hours ago', name: 'Support' },
-  ]);
-  
   // Handle card click navigation
   const handleCardClick = useCallback((title: string, path: string) => {
     if (!isAuthenticated) {
@@ -130,15 +113,7 @@ const Index = () => {
   
   // Handle clearing activity
   const handleClearActivity = (id: number) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to clear activities",
-        variant: "destructive"
-      });
-      return;
-    }
-    setActivities(activities.filter(activity => activity.id !== id));
+    authService.clearActivity(id);
   };
 
   return (
@@ -170,10 +145,7 @@ const Index = () => {
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <ActivityFeed 
-            activities={activities}
-            onClearActivity={handleClearActivity}
-          />
+          <ActivityFeed />
         </CardContent>
       </Card>
     </div>

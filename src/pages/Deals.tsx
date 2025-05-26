@@ -18,7 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import EditDealDialog from '@/components/deals/EditDealDialog';
 import ColumnCustomizer, { Column } from '@/components/ui/column-customizer';
 import { DEFAULT_COLUMNS, STORAGE_KEYS, Deal } from '@/components/deals/types';
-import { TeamMember } from '@/components/settings/TeamMembers';
 import { useDeals } from "@/contexts/DealsContext";
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import DealDetailDialog from '@/components/deals/DealDetailDialog';
@@ -27,33 +26,9 @@ import CustomFieldsManager from '@/components/deals/CustomFieldsManager';
 import { useCustomFields } from '@/contexts/CustomFieldsContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { config } from '@/config';
+import { useTeam } from '@/contexts/TeamContext';
+import { authService } from '@/services/auth';
 // import ClientsTable from '@/components/clients/ClientsTable';
-
-const demoTeamMembers: TeamMember[] = [
-  {
-    id: "1",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "admin",
-    status: "active",
-    updatedAt: "Today at 2:34 PM"
-  },
-  {
-    id: "2",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "editor",
-    status: "active",
-    updatedAt: "Yesterday at 5:12 PM"
-  },
-  {
-    id: "3",
-    name: "Alex Johnson",
-    email: "alex@example.com",
-    role: "viewer",
-    status: "pending",
-  }
-];
 
 const getInitialDealsByStage = (deals: Deal[], columns: Column[]) => {
   const result: Record<string, Deal[]> = {};
@@ -71,6 +46,7 @@ const Deals = () => {
   const { deals: existingDeals, addDeal: addDealToContext, updateDeal: updateDealInContext, deleteDeal: deleteDealFromContext } = useDeals();
   const { trackChatbotInteraction, trackEmailSent, trackCall, trackTextMessage, trackIntegrationEvent, trackReviewActivity, trackDealActivity } = useActivityTracker();
   const { dealFields, updateDealFields } = useCustomFields();
+  const { teamMembers } = useTeam();
   
   const [deals, setDeals] = useState<Deal[]>(() => {
     return existingDeals || [];
@@ -89,7 +65,6 @@ const Deals = () => {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
-  const [teamMembers] = useState<TeamMember[]>(demoTeamMembers);
   const [sortField, setSortField] = useState<'value' | 'company' | 'name' | 'probability' | 'createdAt'>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterStage, setFilterStage] = useState<string | null>(null);
@@ -107,6 +82,8 @@ const Deals = () => {
   useEffect(() => {
     setDealsByStage(getInitialDealsByStage(deals, columns));
   }, [columns, deals]);
+
+  
   
   const getAllDeals = () => {
     return Object.values(dealsByStage).flat();
@@ -244,7 +221,12 @@ const Deals = () => {
         throw new Error(errorData.message || 'Failed to update deal stage');
       }
       
-      trackDealActivity(deal.name, "moved to new stage", destinationColumn?.label || 'new stage');
+      authService.addActivity({
+        id: Date.now(),
+        action: `Deal ${deal.name} moved to ${destinationColumn?.label || 'new stage'}`,
+        time: new Date().toISOString(),
+        name: authService.getCurrentUser()?.name || 'User'
+      });
       
       toast({
         title: "Deal Moved",
@@ -291,14 +273,21 @@ const Deals = () => {
   const handleSaveEditedDeal = async (updatedDeal: Deal) => {
     setIsUpdatingDeal(true);
     try {
+      // Preserve existing dates if they exist
+      const existingDeal = deals.find(d => d.id === updatedDeal.id);
+      const dealToUpdate = {
+        ...updatedDeal,
+        closingDate: updatedDeal.closingDate || existingDeal?.closingDate || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
       // Send updated deal data to backend API
-      console.log(updatedDeal);
       const response = await fetch(`${config.apiUrl}/deals?id=${updatedDeal.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedDeal),
+        body: JSON.stringify(dealToUpdate),
       });
       
       if (!response.ok) {
@@ -307,9 +296,14 @@ const Deals = () => {
       }
       
       // Update in context
-      updateDealInContext(updatedDeal);
+      updateDealInContext(dealToUpdate);
       
-      trackDealActivity(updatedDeal.name, "updated deal", "Deal details were modified");
+      authService.addActivity({
+        id: Date.now(),
+        action: `Deal ${updatedDeal.name} updated`,
+        time: new Date().toISOString(),
+        name: authService.getCurrentUser()?.name || 'User'
+      });
       
       toast({
         title: "Deal Updated",
@@ -383,8 +377,12 @@ const Deals = () => {
       // Add the deal to local state with the returned data from HubSpot
       addDealToContext({...newDeal, ...data});
       
-      trackDealActivity(dealData.name || "New Deal", "created deal", 
-        `Value: ${formatCurrency(dealData.value || 0, dealData.currency || 'USD')}`);
+      authService.addActivity({
+        id: Date.now(),
+        action: `New deal created: ${dealData.name || "New Deal"}`,
+        time: new Date().toISOString(),
+        name: authService.getCurrentUser()?.name || 'User'
+      });
       
       toast({
         title: "Deal Created",
@@ -435,7 +433,12 @@ const Deals = () => {
       // Delete from context
       deleteDealFromContext(deal.id);
       
-      trackDealActivity(deal.name, "deleted deal", "");
+      authService.addActivity({
+        id: Date.now(),
+        action: `Deal ${deal.name} deleted`,
+        time: new Date().toISOString(),
+        name: authService.getCurrentUser()?.name || 'User'
+      });
       
       toast({
         title: "Deal Deleted",
@@ -747,7 +750,7 @@ const Deals = () => {
                                           </div>
                                         </div>
                                         <div className="text-xs text-muted-foreground">
-                                          {new Date(deal.closingDate || deal.createdAt).toLocaleDateString()}
+                                          {deal.closingDate ? new Date(deal.closingDate).toLocaleDateString() : 'No closing date'}
                                         </div>
                                       </div>
                                     </CardContent>
@@ -853,7 +856,7 @@ const Deals = () => {
                   
                   <div className="flex justify-between items-center mt-3 pt-2 border-t border-border/40 text-sm text-muted-foreground">
                     <div>Assigned: {getAssignedPersonName(deal.assignedTo)}</div>
-                    <div>Close: {new Date(deal.closingDate || deal.createdAt).toLocaleDateString()}</div>
+                    <div>Close: {deal.closingDate ? new Date(deal.closingDate).toLocaleDateString() : 'No closing date'}</div>
                   </div>
                 </CardContent>
               </Card>
