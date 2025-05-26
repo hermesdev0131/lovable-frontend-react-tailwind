@@ -1,10 +1,12 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Trash2, Calendar, Mail, MessageCircle, Phone, Send, Globe, Star, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTasks } from '@/contexts/TasksContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { authService } from '@/services/auth';
+import { getRelativeTimeString } from '@/utils/dateUtils';
 
 interface ActivityItem {
   id: number;
@@ -13,16 +15,12 @@ interface ActivityItem {
   name: string;
 }
 
-interface ActivityFeedProps {
-  activities: ActivityItem[];
-  onClearActivity?: (id: number) => void;
-}
-
-const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity }) => {
+const ActivityFeed: React.FC = () => {
   const { clearCompletedTasks } = useTasks();
   const { authState } = useAuth();
   const isAuthenticated = authState?.isAuthenticated ?? false;
   const { toast } = useToast();
+  const activities = authService.getActivities().slice(0, 10);
 
   // Function to get icon based on activity type
   const getActivityIcon = (action: string) => {
@@ -32,7 +30,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
     if (action.includes("Text") || action.includes("text")) return <Send className="h-4 w-4" />;
     if (action.includes("Chat") || action.includes("chat")) return <MessageCircle className="h-4 w-4" />;
     if (action.includes("review") || action.includes("Review")) return <Star className="h-4 w-4" />;
-    if (action.includes("Posted") || action.includes("Social")) return <Globe className="h-4 w-4" />;
+    if (action.includes("Deal") || action.includes("Deal")) return <Globe className="h-4 w-4" />;
     return <PenLine className="h-4 w-4" />;
   };
 
@@ -49,12 +47,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
     // Clear all completed tasks from TasksContext
     clearCompletedTasks();
     
-    // If using the local activities state (from dashboard)
-    if (activities.length > 0 && onClearActivity) {
-      activities.forEach(activity => {
-        onClearActivity(activity.id);
-      });
-    }
+    // Clear all activities from auth service
+    authService.clearAllActivities();
   };
 
   const handleClearActivity = (id: number) => {
@@ -67,9 +61,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
       return;
     }
 
-    if (onClearActivity) {
-      onClearActivity(id);
-    }
+    // Clear activity from auth service
+    authService.clearActivity(id);
   };
 
   return (
@@ -115,21 +108,19 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, onClearActivity
                   <div>
                     <div className="font-medium">{item.action}</div>
                     <div className="text-sm text-muted-foreground">
-                      {item.name} • {item.time}
+                      {item.name} • {getRelativeTimeString(item.time)}
                     </div>
                   </div>
                 </div>
-                {onClearActivity && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-muted hover:opacity-100"
-                    onClick={() => handleClearActivity(item.id)}
-                    disabled={!isAuthenticated}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-muted hover:opacity-100"
+                  onClick={() => handleClearActivity(item.id)}
+                  disabled={!isAuthenticated}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
           </div>
