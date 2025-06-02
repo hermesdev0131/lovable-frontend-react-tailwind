@@ -64,6 +64,7 @@ const RoutesComponent = () => {
 				<Route path="/master-account" element={<MasterAccount />} />
 				<Route path="/deals" element={<Deals />} />
 				<Route path="/settings" element={<SettingsPage />} />
+				<Route path="/help" element={<ChatbotManagement knowledgeBase={[]} onAddKnowledge={() => {}} />} />
 			</Route>
       
       {/* <Route path="/help" element={<ChatbotManagement knowledgeBase={"Bo"}/>} /> */}
