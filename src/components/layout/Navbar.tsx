@@ -48,7 +48,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const handleLogout = async () => {
     // Prevent multiple logout attempts
     if (isLoggingOut) {
-      console.log("Logout already in progress, ignoring additional click");
+      // console.log("Logout already in progress, ignoring additional click");
       return;
     }
     
@@ -56,7 +56,7 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
       // Set logging out state to prevent multiple clicks
       setIsLoggingOut(true);
       
-      console.log("Starting logout and redirect process");
+      // console.log("Starting logout and redirect process");
       
       // Clear client selection first
       
@@ -65,13 +65,13 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
       // if (isInMasterMode) {
       //   toggleMasterMode();
       // }
-      
-      // Use the auth service to properly logout and redirect to login page
-      await logoutAndRedirect();
-      
       if (currentClientId !== null) {
         switchToClient(null);
       }
+      // Use the auth service to properly logout and redirect to login page
+      await logoutAndRedirect();
+      
+      
       if (isInMasterMode) {
         toggleMasterMode();
       }

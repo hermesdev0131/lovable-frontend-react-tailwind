@@ -45,7 +45,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     }
   }, [authState, switchToClient, navigate, toggleMasterMode]);
 
-  const handleSwitchToClient = (clientId: number) => {
+  const handleSwitchToClient = (clientId: string) => {
     setOpen(false);
     
     if (!authState.isAuthenticated) {
@@ -59,7 +59,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
     }
     
     switchToClient(clientId);
-    console.log(`Navigating to home after switching to client ID: ${clientId}`);
+    // console.log(`Navigating to home after switching to client ID: ${clientId}`);
     navigate('/');
     toast({
       title: "Client Account Switched",
@@ -70,7 +70,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
   const handleLogout = async () => {
       // Prevent multiple logout attempts
       if (isLoggingOut) {
-        console.log("Logout already in progress, ignoring additional click");
+        // console.log("Logout already in progress, ignoring additional click");
         return;
       }
       
@@ -78,7 +78,7 @@ export const ClientSwitcher = ({ triggerClassName }: ClientSwitcherProps = {}) =
         // Set logging out state to prevent multiple clicks
         setIsLoggingOut(true);
         
-        console.log("Starting logout and redirect process");
+        // console.log("Starting logout and redirect process");
         
         // Clear client selection first
         

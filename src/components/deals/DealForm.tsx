@@ -5,18 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, FilePlus, UserPlus, Clock, Calendar, X, Upload, Paperclip, Loader2 } from "lucide-react";
+import { CalendarIcon, FilePlus, UserPlus, Clock, Calendar, X, Upload, Paperclip, Loader2, Check } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Deal, Stage } from './types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useActivityTracker } from '@/hooks/useActivityTracker';
-import { TeamMember } from '@/components/settings/TeamMembers';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useTeam, TeamMember } from '@/contexts/TeamContext';
+import * as SelectPrimitive from "@radix-ui/react-select";
 
 // Define the form field type for customization
 export type DealFormField = {
@@ -32,9 +33,9 @@ export type DealFormField = {
 // Props for the component
 interface DealFormProps {
   deal?: Partial<Deal>;
-  stages: Stage[];
+  stages: { id: string; label: string }[];
   teamMembers: TeamMember[];
-  customFields?: DealFormField[];
+  customFields: DealFormField[];
   onSave: (dealData: Partial<Deal>) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -80,6 +81,7 @@ const DealForm: React.FC<DealFormProps> = ({
   const [isBasicDatePickerOpen, setIsBasicDatePickerOpen] = useState(false);
   const { toast } = useToast();
   const { trackDealActivity, trackAppointmentScheduled } = useActivityTracker();
+
   
   // Helper function to safely parse dates
   const safeParseDate = (dateStr: string | undefined): Date | undefined => {
@@ -196,10 +198,10 @@ const DealForm: React.FC<DealFormProps> = ({
       section: "details",
       options: [
         { value: "account-owner", label: "Account Owner" },
-        ...teamMembers.map(member => ({
+        ...(teamMembers?.map(member => ({
           value: member.id,
           label: member.name
-        }))
+        })) || [])
       ]
     },
     {
@@ -418,11 +420,22 @@ const DealForm: React.FC<DealFormProps> = ({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
+                  <SelectValue>
+                    {field.options.find(opt => opt.value === formField.value)?.label || "Select..."}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {field.options.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem 
+                      key={option.value} 
+                      value={option.value}
+                      className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                    >
+                      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                        {option.value === formField.value && (
+                          <Check className="h-4 w-4" />
+                        )}
+                      </span>
                       {option.label}
                     </SelectItem>
                   ))}

@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,30 +7,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send, Users} from "lucide-react";
+import { UserPlus, Mail, Shield, UserCog, Trash2, Check, X, Send, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { trackEmailAction, trackError } from "@/lib/analytics";
-import { config } from "@/config";
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "admin" | "editor" | "viewer";
-  status: "active" | "pending" | "inactive";
-  avatar?: string;
-  updatedAt?: string;
-}
+import { useTeam, TeamMember } from "@/contexts/TeamContext";
 
 const TeamMembers = () => {
-  // Remove sample data
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const { 
+    teamMembers, 
+    isLoadingTeam, 
+    addTeamMember, 
+    updateTeamMember, 
+    removeTeamMember 
+  } = useTeam();
 
   const [newMember, setNewMember] = useState<{
     name: string;
     email: string;
     role: "admin" | "editor" | "viewer";
-    status : "active" | "pending" | "inactive"
+    status: "active" | "pending" | "inactive"
   }>({
     name: "",
     email: "",
@@ -42,28 +37,8 @@ const TeamMembers = () => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [inviteMessage, setInviteMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-
-  useEffect(() => {
-    const fetchTeamMembers = async () => {
-      try {
-        const response = await fetch(`${config.apiUrl}/settings/teammembers`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch team members');
-        }
-        const data = await response.json();
-        setTeamMembers(data);
-      } catch (error) {
-        console.error('Error fetching team members:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load team members.",
-          variant: "destructive"
-        });
-      }
-    };
-
-    fetchTeamMembers();
-  }, []);
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
 
   const handleAddMember = async() => {
     if (!newMember.name || !newMember.email) {
@@ -75,16 +50,19 @@ const TeamMembers = () => {
       return;
     }
 
-    if (!validateEmail(newMember.email)) {
+    // Trim email to remove any whitespace
+    const trimmedEmail = newMember.email.trim();
+    
+    if (!validateEmail(trimmedEmail)) {
       toast({
         title: "Invalid email",
-        description: "Please provide a valid email address.",
+        description: "Please provide a valid email address (e.g., user@domain.com).",
         variant: "destructive"
       });
       return;
     }
 
-    if (teamMembers.some(member => member.email.toLowerCase() === newMember.email.toLowerCase())) {
+    if (teamMembers.some(member => member.email.toLowerCase() === trimmedEmail.toLowerCase())) {
       toast({
         title: "Duplicate email",
         description: "A team member with this email already exists.",
@@ -93,128 +71,40 @@ const TeamMembers = () => {
       return;
     }
 
-    // const newTeamMember: TeamMember = {
-    //   id: Date.now().toString(),
-    //   name: newMember.name,
-    //   email: newMember.email,
-    //   role: newMember.role,
-    //   status: "pending",
-    // };
-
+    setIsAddingMember(true);
     try {
-      const response = await fetch(`${config.apiUrl}/settings/teammembers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMember),
+      await addTeamMember({
+        ...newMember,
+        email: trimmedEmail
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast({
-          title: "Error",
-          description: errorData.message || "Failed to add team member.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const addedMember = await response.json();
-      setTeamMembers(prevMembers => [...prevMembers, addedMember]);
 
       // Reset the input fields after adding
       setNewMember({ name: "", email: "", role: "editor", status: "pending"});
-
-      toast({
-        title: "Success",
-        description: "Team member added successfully.",
-        variant: "default"
-      });
     } catch (error) {
       console.error('Error adding team member:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add team member.",
-        variant: "destructive"
-      });
+    } finally {
+      setIsAddingMember(false);
     }
   };
 
   const handleRoleChange = async (memberId: string, newRole: "admin" | "editor" | "viewer") => {
     try {
-      const response = await fetch(`${config.apiUrl}/settings/teammembers?id=${memberId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update team member role');
-      }
-
-      const updatedMember = await response.json();
-      
-      // Update the UI with the response from the server
-      setTeamMembers(
-        teamMembers.map(member => 
-          member.id === memberId 
-            ? { ...member, ...updatedMember } 
-            : member
-        )
-      );
-      
-      toast({
-        title: "Role updated",
-        description: "Team member role has been updated successfully."
-      });
+      await updateTeamMember(memberId, { role: newRole });
     } catch (error) {
       console.error('Error updating team member role:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update team member role.",
-        variant: "destructive"
-      });
-      
-      // Revert the UI change if the API call fails
-      // This requires fetching the team members again to get the current state
-      try {
-        const response = await fetch(`${config.apiUrl}/settings/teammembers`);
-        if (response.ok) {
-          const data = await response.json();
-          setTeamMembers(data);
-        }
-      } catch (refreshError) {
-        console.error('Error refreshing team members:', refreshError);
-      }
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
+    setDeletingMemberId(memberId);
     try {
-      const response = await fetch(`${config.apiUrl}/settings/teammembers?id=${memberId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to remove team member');
-      }
-
-      // Only update the UI if the API call was successful
-      setTeamMembers(teamMembers.filter(member => member.id !== memberId));
-      
-      toast({
-        title: "Team member removed",
-        description: "The team member has been removed successfully."
-      });
+      await removeTeamMember(memberId);
     } catch (error) {
       console.error('Error removing team member:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to remove team member.",
-        variant: "destructive"
-      });
+    } finally {
+      setDeletingMemberId(null);
     }
-   };
+  };
 
   const handleResendInvite = (email: string) => {
     toast({
@@ -224,7 +114,9 @@ const TeamMembers = () => {
   };
 
   const validateEmail = (email: string) => {
-    return email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+    // More strict email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
   };
 
   const getRoleIcon = (role: string) => {
@@ -276,7 +168,7 @@ const TeamMembers = () => {
   const handleInvitationEmail = async (email: string) => {
     try {
       // Implement your own email sending logic here
-      console.log(`Sending invitation email to ${email}`);
+      // console.log(`Sending invitation email to ${email}`);
       // Add your email sending implementation
     } catch (error) {
       console.error('Failed to send invitation email:', error);
@@ -311,9 +203,18 @@ const TeamMembers = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {teamMembers.length === 0 ? (
+                {isLoadingTeam ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-6">
+                      <div className="flex justify-center items-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="ml-2">Loading team members...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : teamMembers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                       No team members added yet. Add your first team member below.
                     </TableCell>
                   </TableRow>
@@ -354,7 +255,6 @@ const TeamMembers = () => {
                               </div>
                             </SelectItem>
                             <SelectItem value="viewer">
-                              {/* <Users className="h-4 w-4 mr-2" /> */}
                               Viewer
                             </SelectItem>
                           </SelectContent>
@@ -363,25 +263,9 @@ const TeamMembers = () => {
                       
                       <TableCell>
                         {renderStatusBadge(member.status)}
-                        
-                      </TableCell>
-                      <TableCell>
-                        {member.updatedAt && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Last active: {member.updatedAt}
-                          </div>
-                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          {/* <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openInviteDialog(member)}
-                          >
-                            <Send className="h-4 w-4 mr-1" />
-                            Invite
-                          </Button> */}
                           {member.status === "pending" && (
                             <Button 
                               variant="outline" 
@@ -396,8 +280,13 @@ const TeamMembers = () => {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleRemoveMember(member.id)}
+                            disabled={deletingMemberId === member.id}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {deletingMemberId === member.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </Button>
                         </div>
                       </TableCell>
@@ -453,9 +342,7 @@ const TeamMembers = () => {
                       Editor
                     </div>
                   </SelectItem>
-                  
                   <SelectItem value="viewer">
-                    {/* <Users className="h-4 w-4 mr-2" /> */}
                     Viewer
                   </SelectItem>
                 </SelectContent>
@@ -465,9 +352,18 @@ const TeamMembers = () => {
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleAddMember}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add Team Member
+        <Button onClick={handleAddMember} disabled={isAddingMember}>
+          {isAddingMember ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Adding...
+            </>
+          ) : (
+            <>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Team Member
+            </>
+          )}
         </Button>
       </CardFooter>
 
